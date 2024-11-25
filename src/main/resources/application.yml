@@ -1,0 +1,60 @@
+server:
+  port: ${PORT}
+  servlet:
+    context-path: /base
+spring:
+  mvc:
+    dispatch-options-request: true
+  application:
+    name: BASE-SERVICE
+    environment: ${ENVIRONMENT}
+  datasource:
+    url: ${POSTGRESQL_DATABASE_URL}
+    username: ${POSTGRESQL_USERNAME}
+    password: ${POSTGRESQL_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      connection-timeout: ${DB_CONNECTION_TIMEOUT}
+      maximum-pool-size: ${DB_MAX_POOL_SIZE}
+      max-lifetime: ${DB_MAX_LIFETIME}
+  jpa:
+    show-sql: ${DEBUG:true}
+    open-in-view: false
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        enable_lazy_load_no_trans: true
+        temp:
+          use_jdbc_metadata_defaults: false
+        jdbc:
+          lob:
+            non_contextual_creation: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        show_sql: ${DEBUG:true}
+  main:
+    allow-bean-definition-overriding: true
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 20MB
+      enabled: true
+      file-size-threshold: 2KB
+telegram:
+  chatId: ${TELEGRAM_CHAT_ID}
+  apiToken: ${TELEGRAM_API_TOKEN}
+debug: ${DEBUG:true}
+ommani:
+  sso-service: ${SSO_SERVICE:http://sso-service:8080}
+async:
+  config:
+    core-pool-size: ${ASYNC_CORE_POOL_SIZE}
+logging:
+  level:
+    org:
+      springframework:
+        boot:
+          autoconfigure: INFO
+
+
