@@ -9,10 +9,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.ptit</groupId>
-	<artifactId>base-service</artifactId>
+	<artifactId>mqtt-service</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>base-service</name>
-	<description>base-service</description>
+	<name>mqtt-service</name>
+	<description>mqtt-service</description>
 	<properties>
 		<java.version>1.8</java.version>
 		<lombok.version>1.18.22</lombok.version>
@@ -130,6 +130,28 @@
             <artifactId>springfox-boot-starter</artifactId>
             <version>3.0.0</version>
         </dependency>
+        <!-- Lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <!-- Spring Boot Actuator -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-websocket</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.paho</groupId>
+            <artifactId>org.eclipse.paho.client.mqttv3</artifactId>
+            <version>1.2.5</version>
+        </dependency>
+
         <dependency>
             <groupId>com.ommanisoft.common</groupId>
             <artifactId>ommanisoft-common</artifactId>

@@ -1,10 +1,10 @@
 version: '2'
 services:
-  qr-service:
+  mqtt-service:
     build:
       context: .
       dockerfile: Dockerfile
-    image: qr-service
+    image: mqtt-service
     env_file:
       - /opt/global/.env
     logging:
@@ -12,7 +12,7 @@ services:
       options:
         max-size: "10m"
         max-file: "10"
-    container_name: farm-service
+    container_name: ptit-service
     mem_limit: 512m
     restart: always
     networks:
