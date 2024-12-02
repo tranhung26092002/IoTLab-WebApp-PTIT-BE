@@ -1,26 +1,31 @@
 package com.ptit.service.domain.services;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ptit.service.app.responses.MessageResponse;
 import com.ptit.service.domain.entities.Gateway;
 import com.ptit.service.domain.entities.Node;
-import com.ptit.service.domain.entities.SensorData;
-import com.ptit.service.domain.repositories.GatewayRepository;
-import org.eclipse.paho.client.mqttv3.MqttException;
-import org.eclipse.paho.client.mqttv3.MqttMessage;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class GatewayService extends BaseService{
 
     public List<Gateway> getAllGateways() {
-        return gatewayRepository.findAll();
+        return gatewayRepository.findAll()
+                .stream()
+                .sorted(Comparator.comparing(Gateway::getId))
+                .peek(gateway -> gateway.setNodes(
+                        gateway.getNodes()
+                                .stream()
+                                .sorted(Comparator.comparing(Node::getId))
+                                .collect(Collectors.toList())
+                ))
+                .collect(Collectors.toList());
     }
-
     public Gateway getGatewayById(Long id) {
         return gatewayRepository.findById(id).orElse(null);
     }
@@ -29,4 +34,14 @@ public class GatewayService extends BaseService{
         return gatewayRepository.save(gateway);
     }
 
+    public void activeGateway(String gatewayId) {
+        Gateway gateway = gatewayRepository.findByGatewayId(gatewayId).orElse(null);
+
+        if (gateway != null) {
+            gateway.setActive(true);
+            gatewayRepository.save(gateway);
+        } else {
+            throw new RuntimeException("Gateway not found");
+        }
+    }
 }

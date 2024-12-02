@@ -2,21 +2,29 @@ package com.ptit.service.app.controllers;
 
 import com.ptit.service.domain.entities.SensorData;
 import com.ptit.service.domain.services.SensorDataService;
+
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/sensor_data")
+@RequiredArgsConstructor
+@RequestMapping("/api/sensor-data")
 public class SensorDataController {
 
-    @Autowired
-    private SensorDataService sensorDataService;
+    private final SensorDataService sensorDataService;
 
-    @GetMapping
-    public List<SensorData> getSensorDataByNode(@RequestParam Long nodeId) {
+    @GetMapping("/node/{nodeId}")
+    public List<SensorData> getSensorDataByNode(@PathVariable Long nodeId) {
         return sensorDataService.getSensorDataByNode(nodeId);
+    }
+
+    @GetMapping("/latest")
+    public SensorData getLatestSensorData() {
+        return sensorDataService.getLatestSensorData();
     }
 
     @PostMapping

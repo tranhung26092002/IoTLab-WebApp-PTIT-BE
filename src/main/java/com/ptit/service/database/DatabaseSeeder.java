@@ -40,8 +40,8 @@ public class DatabaseSeeder implements ApplicationRunner {
 
     private void genarateGateways() {
         gateways = new ArrayList<>();
-        gateways.add(new Gateway("Gateway_01", "Gateway 1", "Hanoi", "", "Active"));
-        gateways.add(new Gateway("Gateway_02", "Gateway 2", "Hanoi", "", "Active"));
+        gateways.add(new Gateway("Gateway_01", "Gateway 1", "Hanoi", "", false));
+        gateways.add(new Gateway("Gateway_02", "Gateway 2", "Hanoi", "", false));
 
         gatewayRepository.saveAll(gateways);
     }
@@ -50,6 +50,9 @@ public class DatabaseSeeder implements ApplicationRunner {
         nodes = new ArrayList<>();
         nodes.add(new Node("Node_01", "Node 1", false, gateways.get(0)));
         nodes.add(new Node("Node_02", "Node 2", false, gateways.get(0)));
+
+        nodes.add(new Node("Node_03", "Node 3", false, gateways.get(1)));
+        nodes.add(new Node("Node_04", "Node 4", false, gateways.get(1)));
 
         nodeRepository.saveAll(nodes);
     }

@@ -19,9 +19,19 @@ public class NodeController {
         return nodeService.getAllNodes();
     }
 
+    @GetMapping("/gateway/{gatewayId}")
+    public List<Node> getNodesByGateway(@PathVariable Long gatewayId) {
+        return nodeService.getNodesByGateway(gatewayId);
+    }
+
     @GetMapping("/{id}")
     public Node getNodeById(@PathVariable Long id) {
         return nodeService.getNodeById(id);
+    }
+
+    @PutMapping("/{id}")
+    public void activeNode(@PathVariable String id) {
+        nodeService.activeNode(id);
     }
 
     @PostMapping

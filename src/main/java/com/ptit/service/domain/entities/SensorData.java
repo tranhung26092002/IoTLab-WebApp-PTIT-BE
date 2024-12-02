@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.*;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -12,7 +13,7 @@ import javax.persistence.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class SensorData extends BaseEntity {
+public class SensorData {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,6 +30,9 @@ public class SensorData extends BaseEntity {
     @Column(name = "humidity")
     private float humidity;
 
+    @Column(name = "led")
+    private int led;
+
     @Column(name = "co2")
     private float co2;
 
@@ -40,4 +44,12 @@ public class SensorData extends BaseEntity {
 
     @Column(name = "light")
     private float light;
+
+    @Column(name = "timestamp")
+    private LocalDateTime timestamp;
+
+    @PrePersist
+    public void onCreate() {
+        timestamp = LocalDateTime.now();
+    }
 }

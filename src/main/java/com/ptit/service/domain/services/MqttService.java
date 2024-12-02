@@ -44,6 +44,10 @@ public class MqttService extends BaseService{
 
             Node node = nodeRepository.findByNodeId(nameNode).orElse(null);
             if (node != null) {
+                if (node.isActive() == isActive) {
+                    return;
+                }
+
                 node.setActive(isActive);
                 nodeRepository.save(node);
 
@@ -77,7 +81,7 @@ public class MqttService extends BaseService{
                 // Lấy dữ liệu từ Node, ví dụ: temp, hum, status
                 float temperature = dataNode.has("temp") ? dataNode.get("temp").floatValue() : 0.0f;
                 float humidity = dataNode.has("hum") ? dataNode.get("hum").floatValue() : 0.0f;
-                int status = dataNode.has("status") ? dataNode.get("status").intValue() : 0;
+                int led = dataNode.has("led") ? dataNode.get("led").intValue() : 0;
                 float light = dataNode.has("light") ? dataNode.get("light").floatValue() : 0.0f;
                 float gas = dataNode.has("gas") ? dataNode.get("gas").floatValue() : 0.0f;
                 float smoke = dataNode.has("smoke") ? dataNode.get("smoke").floatValue() : 0.0f;
@@ -89,6 +93,7 @@ public class MqttService extends BaseService{
                     sensorData.setNode(node);
                     sensorData.setTemperature(temperature);
                     sensorData.setHumidity(humidity);
+                    sensorData.setLed(led);
                     sensorData.setLight(light);
                     sensorData.setGas(gas);
                     sensorData.setSmoke(smoke);
@@ -97,14 +102,15 @@ public class MqttService extends BaseService{
                     sensorDataService.saveSensorData(sensorData);
 
                     // Send WebSocket message
-                    messagingTemplate.convertAndSend("/topic/sensorData", sensorData);                }
+                    messagingTemplate.convertAndSend("/topic/sensorData/"+ node.getId(), sensorData);
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    @Scheduled(fixedRate = 60000) // Thực thi mỗi 10 giây
+    @Scheduled(fixedRate = 10000) // Thực thi mỗi 10 giây
     public void publishNodeStatusToGateway() {
         try {
             // Lấy danh sách tất cả các node từ cơ sở dữ liệu

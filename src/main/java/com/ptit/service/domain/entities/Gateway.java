@@ -2,7 +2,6 @@ package com.ptit.service.domain.entities;
 
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -33,18 +32,18 @@ public class Gateway extends BaseEntity {
     @Column(name = "ip_address")
     private String ipAddress;
 
-    @Column(name = "status")
-    private String status;
+    @Column(name = "is_active")
+    private boolean isActive;
 
     @OneToMany(mappedBy = "gateway", cascade = CascadeType.ALL)
     @JsonManagedReference
     private List<Node> nodes;
 
-    public Gateway(String gatewayId, String name, String location, String ipAddress, String status) {
+    public Gateway(String gatewayId, String name, String location, String ipAddress, Boolean isActive) {
         this.gatewayId = gatewayId;
         this.name = name;
         this.location = location;
         this.ipAddress = ipAddress;
-        this.status = status;
+        this.isActive = isActive;
     }
 }

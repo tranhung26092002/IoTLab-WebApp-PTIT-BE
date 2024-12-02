@@ -5,6 +5,7 @@ import org.springframework.stereotype.Repository;
 
 import com.ptit.service.domain.entities.Gateway;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
