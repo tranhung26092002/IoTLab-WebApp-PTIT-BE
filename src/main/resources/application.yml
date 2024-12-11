@@ -1,0 +1,39 @@
+server:
+  port: ${PORT:8086}
+
+spring:
+  mvc:
+    dispatch-options-request: true
+  application:
+    name: STORAGE-SERVICE
+    environment: ${ENVIRONMENT:DEV}
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 20MB
+      enabled: true
+      file-size-threshold: 2KB
+
+storage:
+  location: E:/workspace/Do_An/uploads
+
+logging:
+  level:
+    org:
+      springframework:
+        boot:
+          autoconfigure: INFO
+
+telegram:
+  chatId: ${TELEGRAM_CHAT_ID:-1000000000}
+  apiToken: ${TELEGRAM_API_TOKEN:-0000000000:XXXXXXXXXXXXXXXXXXXXXXXX}
+debug: ${DEBUG:true}
+async:
+  config:
+    core-pool-size: ${ASYNC_CORE_POOL_SIZE:3}
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: ${EUREKA_URI:http://localhost:8761/eureka}
+
+

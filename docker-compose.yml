@@ -1,0 +1,23 @@
+version: '2'
+services:
+  qr-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: qr-service
+    env_file:
+      - /opt/global/.env
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "10"
+    container_name: farm-service
+    mem_limit: 512m
+    restart: always
+    networks:
+      - iotlabptit
+networks:
+  iotlabptit:
+    external:
+      name: iotlabptit
