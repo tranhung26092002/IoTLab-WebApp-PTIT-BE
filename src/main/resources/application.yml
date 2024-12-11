@@ -1,0 +1,70 @@
+server:
+  port: ${PORT:8081}
+  servlet:
+    context-path: /user
+
+jwt:
+  key: 4dN3bu1pm4FSA0YKyEBluatqucc3UktG3fobnhXtPdZd7Iovjl
+  expiration: 86400000
+refresh-token:
+  expiration: 864000000
+  key: rU8gSVL5RZ460yJOYkWk0YbLgKTdp3ruuKOt9ddkd19wMUEVWi
+
+spring:
+  mvc:
+    dispatch-options-request: true
+  application:
+    name: USER-SERVICE
+    environment: ${ENVIRONMENT:DEV}
+  datasource:
+    url: ${POSTGRESQL_DATABASE_URL:jdbc:postgresql://localhost:5432/iot_lab}
+    username: ${POSTGRESQL_USERNAME:postgres}
+    password: ${POSTGRESQL_PASSWORD:hungtran}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      connection-timeout: ${DB_CONNECTION_TIMEOUT:30000}
+      maximum-pool-size: ${DB_MAX_POOL_SIZE:10}
+      max-lifetime: ${DB_MAX_LIFETIME:1000000}
+  jpa:
+    show-sql: ${DEBUG:true}
+    open-in-view: false
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        enable_lazy_load_no_trans: true
+        temp:
+          use_jdbc_metadata_defaults: false
+        jdbc:
+          lob:
+            non_contextual_creation: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        show_sql: ${DEBUG:true}
+  main:
+    allow-bean-definition-overriding: true
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 20MB
+      enabled: true
+      file-size-threshold: 2KB
+telegram:
+  chatId: ${TELEGRAM_CHAT_ID:-1000000000}
+  apiToken: ${TELEGRAM_API_TOKEN:-1234567890:ABCDEFGHIJKLMNOPQRSTUVWXYZ}
+debug: ${DEBUG:true}
+#ommani:
+#  sso-service: ${SSO_SERVICE:http://sso-service:8080}
+async:
+  config:
+    core-pool-size: ${ASYNC_CORE_POOL_SIZE:3}
+logging:
+  level:
+    org:
+      springframework:
+        boot:
+          autoconfigure: INFO
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: ${EUREKA_URI:http://localhost:8761/eureka}
