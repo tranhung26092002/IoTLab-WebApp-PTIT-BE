@@ -1,0 +1,23 @@
+version: '2'
+
+services:
+  eureka-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: eureka-service
+    image: eureka-service
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "10"
+    mem_limit: 200MB
+    restart: always
+    networks:
+      - ommanisoft
+networks:
+  ommanisoft:
+    external:
+      name: ommanisoft
+

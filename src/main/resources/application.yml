@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: eureka-discovery-service
+
+server:
+  port: 8761
+eureka:
+  client:
+    registerWithEureka: false
+    fetchRegistry: false
+  server:
+    enableSelfPreservation: true  # Bảo vệ server trong trường hợp mất kết nối tạm thời với các instance
+    evictionIntervalTimerInMs: 60000  # Thời gian kiểm tra và loại bỏ instance không còn kết nối (ms)
+logging:
+  level:
+    com.netflix.eureka: DEBUG
