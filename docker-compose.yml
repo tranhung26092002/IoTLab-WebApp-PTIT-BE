@@ -1,0 +1,26 @@
+version: '3'
+
+services:
+  gateway1-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: gateway1-service
+    image: gateway1-serivce
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "10"
+    deploy:
+      resources:
+        limits:
+          memory: 500M
+    restart: always
+    networks:
+      - ommanisoft
+networks:
+  ommanisoft:
+    external:
+      name: ommanisoft
+
