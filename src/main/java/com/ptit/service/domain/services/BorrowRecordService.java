@@ -85,4 +85,29 @@ public class BorrowRecordService {
         Page<Device> devicePage = borrowRecordRepository.findDevicesBorrowedByUser(userId, pageable);
         return new ResponsePage<>(devicePage);
     }
+
+    public ResponsePage<BorrowRecordResponse> getBorrowHistory(Pageable pageable) {
+        Page<BorrowRecord> borrowRecords = borrowRecordRepository.findAll(pageable);
+
+        Page<BorrowRecordResponse> responsePage = borrowRecords.map(record -> {
+            BorrowRecordResponse response = new BorrowRecordResponse();
+            response.setId(record.getId());
+
+            DeviceReponse device = new DeviceReponse();
+            device.setId(record.getDevice().getId());
+            device.setName(record.getDevice().getName());
+            device.setCode(record.getDevice().getCode());
+
+            response.setDevice(device);
+            response.setUserId(record.getUserId());
+            response.setNote(record.getNote());
+            response.setBorrowedAt(record.getBorrowedAt());
+            response.setExpiredAt(record.getExpiredAt());
+            response.setReturnedAt(record.getReturnedAt());
+            response.setStatus(record.getStatus());
+            return response;
+        });
+
+        return new ResponsePage<>(responsePage);
+    }
 }

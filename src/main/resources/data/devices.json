@@ -1,50 +1,290 @@
 [
-  { "name": "Arduino Uno", "type": "Microcontroller" },
-  { "name": "ESP32", "type": "Microcontroller" },
-  { "name": "Raspberry Pi 4", "type": "Microprocessor" },
-  { "name": "DHT11", "type": "Temperature Sensor" },
-  { "name": "LDR", "type": "Light Sensor" },
-  { "name": "HC-SR04", "type": "Ultrasonic Sensor" },
-  { "name": "MQ-2", "type": "Gas Sensor" },
-  { "name": "Relay Module", "type": "Control Module" },
-  { "name": "Servo Motor", "type": "Actuator" },
-  { "name": "Stepper Motor", "type": "Actuator" },
-  { "name": "OLED Display", "type": "Display Module" },
-  { "name": "7-Segment Display", "type": "Display Module" },
-  { "name": "Potentiometer", "type": "Variable Resistor" },
-  { "name": "LED Strip", "type": "Lighting" },
-  { "name": "Buzzer", "type": "Audio Module" },
-  { "name": "IR Receiver", "type": "Remote Module" },
-  { "name": "RFID Module", "type": "Identification Module" },
-  { "name": "Bluetooth Module", "type": "Communication Module" },
-  { "name": "Wi-Fi Module", "type": "Communication Module" },
-  { "name": "GPS Module", "type": "Navigation Module" },
-  { "name": "Soil Moisture Sensor", "type": "Environmental Sensor" },
-  { "name": "PH Sensor", "type": "Chemical Sensor" },
-  { "name": "Tilt Sensor", "type": "Motion Sensor" },
-  { "name": "Flame Sensor", "type": "Fire Sensor" },
-  { "name": "Light Bulb", "type": "Lighting" },
-  { "name": "Smart Plug", "type": "Power Module" },
-  { "name": "DC Motor", "type": "Actuator" },
-  { "name": "Sound Sensor", "type": "Audio Sensor" },
-  { "name": "MQ-135", "type": "Air Quality Sensor" },
-  { "name": "LCD Display", "type": "Display Module" },
-  { "name": "Push Button", "type": "Switch" },
-  { "name": "Temperature Probe", "type": "Temperature Sensor" },
-  { "name": "Pulse Sensor", "type": "Health Monitoring Sensor" },
-  { "name": "Infrared Emitter", "type": "Remote Module" },
-  { "name": "Vibration Motor", "type": "Actuator" },
-  { "name": "Fan Module", "type": "Cooling Module" },
-  { "name": "UV Sensor", "type": "Environmental Sensor" },
-  { "name": "RGB LED", "type": "Lighting" },
-  { "name": "Hall Effect Sensor", "type": "Magnetic Sensor" },
-  { "name": "Thermistor", "type": "Temperature Sensor" },
-  { "name": "Piezoelectric Sensor", "type": "Vibration Sensor" },
-  { "name": "Capacitive Touch Sensor", "type": "Touch Sensor" },
-  { "name": "PIR Motion Sensor", "type": "Motion Sensor" },
-  { "name": "L298N Motor Driver", "type": "Driver Module" },
-  { "name": "MOSFET Module", "type": "Control Module" },
-  { "name": "Electromagnetic Lock", "type": "Locking Module" },
-  { "name": "Relay Shield", "type": "Control Module" },
-  { "name": "XBee Module", "type": "Communication Module" }
+  {
+    "name": "Arduino Uno",
+    "type": "arduino",
+    "description": "Microcontroller board based on the ATmega328P, ideal for beginners in IoT and robotics.",
+    "imageUrl": "20241213002521_Arduino Uno.png"
+  },
+  {
+    "name": "ESP32",
+    "type": "esp",
+    "description": "Powerful microcontroller with built-in Wi-Fi and Bluetooth for IoT applications.",
+    "imageUrl": "20241213002540_ESP32.png"
+  },
+  {
+    "name": "Raspberry Pi 4",
+    "type": "raspberry",
+    "description": "Microprocessor board used for building high-performance IoT and AI projects.",
+    "imageUrl": "20241213002558_Raspberry Pi 4.jpg"
+  },
+  {
+    "name": "DHT11",
+    "type": "sensor",
+    "description": "Basic digital temperature and humidity sensor for environmental monitoring.",
+    "imageUrl": "20241213002610_DHT11.jpg"
+  },
+  {
+    "name": "LDR",
+    "type": "sensor",
+    "description": "Light-dependent resistor used for detecting light intensity changes.",
+    "imageUrl": "20241213002626_LDR.jpg"
+  },
+  {
+    "name": "HC-SR04",
+    "type": "sensor",
+    "description": "Ultrasonic sensor used for distance measurement in robotics and automation.",
+    "imageUrl": "20241213002639_HC-SR04.png"
+  },
+  {
+    "name": "MQ-2",
+    "type": "sensor",
+    "description": "Gas sensor for detecting smoke, methane, and LPG levels.",
+    "imageUrl": "20241213002651_MQ-2.jpg"
+  },
+  {
+    "name": "Relay Module",
+    "type": "module",
+    "description": "Control module for switching high-voltage devices using low-voltage signals.",
+    "imageUrl": "20241213002703_Relay Module.jpg"
+  },
+  {
+    "name": "Servo Motor",
+    "type": "actuator",
+    "description": "Precision motor used for angular or linear position control in robotics.",
+    "imageUrl": "20241213002722_Servo Motor.jpeg"
+  },
+  {
+    "name": "Stepper Motor",
+    "type": "actuator",
+    "description": "Motor used for precise control of rotational steps in automation.",
+    "imageUrl": "20241213002733_Stepper Motor.jpg"
+  },
+  {
+    "name": "OLED Display",
+    "type": "display",
+    "description": "Compact, energy-efficient display module with high contrast and brightness.",
+    "imageUrl": "20241213002742_OLED Display.jpg"
+  },
+  {
+    "name": "7-Segment Display",
+    "type": "display",
+    "description": "Display module used to show numerical data in embedded systems.",
+    "imageUrl": "20241213002753_7-Segment Display.png"
+  },
+  {
+    "name": "Potentiometer",
+    "type": "sensor",
+    "description": "Variable resistor used to control voltage or measure resistance.",
+    "imageUrl": "20241213002806_Potentiometer.jpg"
+  },
+  {
+    "name": "LED Strip",
+    "type": "lighting",
+    "description": "Flexible lighting module for visual effects or indication purposes.",
+    "imageUrl": "20241213002816_LED Strip.jpg"
+  },
+  {
+    "name": "Buzzer",
+    "type": "module",
+    "description": "Audio module used for generating alert sounds in devices.",
+    "imageUrl": "20241213002826_Buzzer.png"
+  },
+  {
+    "name": "IR Receiver",
+    "type": "sensor",
+    "description": "Module used for receiving infrared signals from remote controls.",
+    "imageUrl": "20241213002835_IR Receiver.jpg"
+  },
+  {
+    "name": "RFID Module",
+    "type": "sensor",
+    "description": "Identification module used for reading and writing RFID tags.",
+    "imageUrl": "20241213002851_RFID Module.jpg"
+  },
+  {
+    "name": "Bluetooth Module",
+    "type": "communication",
+    "description": "Module for enabling wireless data transfer using Bluetooth technology.",
+    "imageUrl": "20241213002901_Bluetooth Module.jpg"
+  },
+  {
+    "name": "Wi-Fi Module",
+    "type": "communication",
+    "description": "Module for connecting IoT devices to wireless networks.",
+    "imageUrl": "20241213002911_Wi-Fi Module.jpg"
+  },
+  {
+    "name": "GPS Module",
+    "type": "navigation",
+    "description": "Module used for obtaining geographical location and time data.",
+    "imageUrl": "20241213002922_GPS Module.jpg"
+  },
+  {
+    "name": "Soil Moisture Sensor",
+    "type": "sensor",
+    "description": "Sensor for measuring the water content in soil, ideal for agriculture projects.",
+    "imageUrl": "20241213002933_Soil Moisture Sensor.jpg"
+  },
+  {
+    "name": "PH Sensor",
+    "type": "sensor",
+    "description": "Chemical sensor used for measuring the pH level of liquids.",
+    "imageUrl": "20241213002943_PH Sensor.jpeg"
+  },
+  {
+    "name": "Tilt Sensor",
+    "type": "sensor",
+    "description": "Motion sensor used for detecting angular movement or tilt.",
+    "imageUrl": "20241213002953_Tilt Sensor.jpg"
+  },
+  {
+    "name": "Flame Sensor",
+    "type": "sensor",
+    "description": "Fire detection sensor used for sensing infrared light from flames.",
+    "imageUrl": "20241213003007_Flame Sensor.png"
+  },
+  {
+    "name": "Light Bulb",
+    "type": "lighting",
+    "description": "Lighting module used in automation or IoT-based smart home projects.",
+    "imageUrl": "20241213003020_Light Bulb.jpg"
+  },
+  {
+    "name": "Smart Plug",
+    "type": "power",
+    "description": "Module for controlling power supply to devices remotely.",
+    "imageUrl": "20241213003029_Smart Plug.jpg"
+  },
+  {
+    "name": "DC Motor",
+    "type": "actuator",
+    "description": "Actuator used for driving rotational motion in devices.",
+    "imageUrl": "20241213003038_DC Motor.jpg"
+  },
+  {
+    "name": "Sound Sensor",
+    "type": "sensor",
+    "description": "Audio sensor used for detecting sound intensity or loudness.",
+    "imageUrl": "20241213003047_Sound Sensor.jpg"
+  },
+  {
+    "name": "MQ-135",
+    "type": "sensor",
+    "description": "Air quality sensor used for monitoring harmful gases like CO2.",
+    "imageUrl": "20241213003103_MQ-135.jpg"
+  },
+  {
+    "name": "LCD Display",
+    "type": "display",
+    "description": "Liquid crystal display used for presenting text and data in embedded systems.",
+    "imageUrl": "20241213003112_LCD Display.jpg"
+  },
+  {
+    "name": "Push Button",
+    "type": "switch",
+    "description": "Mechanical switch used for user interaction in devices.",
+    "imageUrl": "20241213003124_Push Button.jpg"
+  },
+  {
+    "name": "Temperature Probe",
+    "type": "sensor",
+    "description": "Temperature sensor for precise measurement in scientific applications.",
+    "imageUrl": "20241213003134_Temperature Probe.jpg"
+  },
+  {
+    "name": "Pulse Sensor",
+    "type": "sensor",
+    "description": "Health monitoring sensor for measuring heartbeat rate.",
+    "imageUrl": "20241213003147_Pulse Sensor.jpg"
+  },
+  {
+    "name": "Infrared Emitter",
+    "type": "sensor",
+    "description": "Module used for emitting infrared signals in remote control systems.",
+    "imageUrl": "20241213003158_Infrared Emitter.jpg"
+  },
+  {
+    "name": "Vibration Motor",
+    "type": "actuator",
+    "description": "Actuator that generates vibration for feedback or alert purposes.",
+    "imageUrl": "20241213003208_Vibration Motor.jpg"
+  },
+  {
+    "name": "Fan Module",
+    "type": "cooling",
+    "description": "Cooling module used for temperature regulation in devices.",
+    "imageUrl": "20241213003219_Fan Module.jpg"
+  },
+  {
+    "name": "UV Sensor",
+    "type": "sensor",
+    "description": "Sensor for measuring ultraviolet light intensity in the environment.",
+    "imageUrl": "20241213003230_UV Sensor.jpg"
+  },
+  {
+    "name": "RGB LED",
+    "type": "lighting",
+    "description": "Multicolor LED used for creating dynamic lighting effects.",
+    "imageUrl": "20241213003241_RGB LED.jpg"
+  },
+  {
+    "name": "Hall Effect Sensor",
+    "type": "sensor",
+    "description": "Magnetic sensor used for detecting magnetic field strength and polarity.",
+    "imageUrl": "20241213003256_Hall Effect Sensor.jpg"
+  },
+  {
+    "name": "Thermistor",
+    "type": "sensor",
+    "description": "Temperature sensor whose resistance varies with temperature.",
+    "imageUrl": "20241213003307_Thermistor.jpg"
+  },
+  {
+    "name": "Piezoelectric Sensor",
+    "type": "sensor",
+    "description": "Sensor used for detecting vibration or strain in devices.",
+    "imageUrl": "20241213003319_Piezoelectric Sensor.jpg"
+  },
+  {
+    "name": "Capacitive Touch Sensor",
+    "type": "sensor",
+    "description": "Sensor used for touch detection in user interfaces.",
+    "imageUrl": "20241213003329_Capacitive Touch Sensor.jpg"
+  },
+  {
+    "name": "PIR Motion Sensor",
+    "type": "sensor",
+    "description": "Passive infrared sensor used for motion detection.",
+    "imageUrl": "20241213003339_PIR Motion Sensor.jpg"
+  },
+  {
+    "name": "L298N Motor Driver",
+    "type": "driver",
+    "description": "Module used for controlling DC and stepper motors in robotics.",
+    "imageUrl": "20241213003348_L298N Motor Driver.jpg"
+  },
+  {
+    "name": "MOSFET Module",
+    "type": "module",
+    "description": "Control module used for switching and amplifying signals.",
+    "imageUrl": "20241213003359_MOSFET Module.jpg"
+  },
+  {
+    "name": "Electromagnetic Lock",
+    "type": "lock",
+    "description": "Locking module used in security and access control systems.",
+    "imageUrl": "20241213003409_Electromagnetic Lock.jpg"
+  },
+  {
+    "name": "Relay Shield",
+    "type": "module",
+    "description": "Control module for managing multiple relay switches.",
+    "imageUrl": "20241213003417_Relay Shield.jpg"
+  },
+  {
+    "name": "XBee Module",
+    "type": "communication",
+    "description": "Wireless communication module used for Zigbee protocol.",
+    "imageUrl": "20241213003427_XBee Module.jpg"
+  }
 ]

@@ -1,6 +1,7 @@
 package com.ptit.service.app.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.ptit.service.app.dtos.DeviceFilterDto;
 import com.ptit.service.app.responses.ResponsePage;
 import com.ptit.service.domain.entities.Device;
@@ -38,8 +39,21 @@ public class DeviceController {
     }
 
     @PostMapping
-    public Device addDevice(@RequestBody Device device) {
-        return deviceService.addDevice(device);
+    public Device createDevice(
+            @RequestParam(value = "device", required = false) String deviceJson,
+            @RequestParam(value = "file", required = false) MultipartFile file
+    ) throws IOException {
+        // Chuyển đổi JSON thành đối tượng Device
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule()); // Đăng ký JavaTimeModule
+        // objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        Device device = null;
+
+        if (deviceJson != null) {
+            device = objectMapper.readValue(deviceJson, Device.class);
+        }
+
+        return deviceService.createDevice(device, file);
     }
 
     @GetMapping("/filter")
@@ -59,13 +73,20 @@ public class DeviceController {
     @PutMapping("/{id}")
     public ResponseEntity<Device> updateDevice(
             @PathVariable Long id,
-            @RequestParam("device") String deviceJson,
-            @RequestParam("file") MultipartFile file) throws IOException {
+            @RequestParam(value = "device", required = false) String deviceJson,
+            @RequestParam(value = "file", required = false) MultipartFile file
+    ) throws IOException {
         // Chuyển đổi JSON thành đối tượng Device
         ObjectMapper objectMapper = new ObjectMapper();
-        Device device = objectMapper.readValue(deviceJson, Device.class);
+        objectMapper.registerModule(new JavaTimeModule()); // Đăng ký JavaTimeModule
+        // objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        Device device = null;
 
+        if (deviceJson != null) {
+            device = objectMapper.readValue(deviceJson, Device.class);
+        }
         Device updatedDevice = deviceService.updateDevice(id, device, file);
+
         return ResponseEntity.ok(updatedDevice);
     }
 

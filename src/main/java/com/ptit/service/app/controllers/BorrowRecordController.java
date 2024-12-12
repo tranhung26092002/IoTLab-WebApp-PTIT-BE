@@ -43,6 +43,13 @@ public class BorrowRecordController {
         return borrowRecordService.getBorrowHistoryByDeviceId(deviceId, pageable);
     }
 
+    @GetMapping("/history")
+    public ResponsePage<BorrowRecordResponse> getBorrowHistory(
+            Pageable pageable
+    ) {
+        return borrowRecordService.getBorrowHistory(pageable);
+    }
+
     @PostMapping("/borrow")
     public BorrowRecord borrowDevice(
             @RequestParam Long deviceId,

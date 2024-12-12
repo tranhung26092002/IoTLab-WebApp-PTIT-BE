@@ -40,9 +40,27 @@ public class DeviceService {
         return new ResponsePage<>(devices);
     }
 
-    public Device addDevice(Device device) {
-        device.setStatus(DeviceStatus.AVAILABLE);
-        return deviceRepository.save(device);
+    public Device createDevice(Device deviceDto, MultipartFile file) {
+        Device newDevice = new Device();
+
+        FnCommon.coppyNonNullProperties(newDevice, deviceDto);
+
+        // Nếu có file ảnh, lưu ảnh và cập nhật đường dẫn ảnh
+        if (file != null && !file.isEmpty()) {
+            try {
+                String imageName = uploadFile(file); // Lưu file và nhận tên ảnh
+                if (imageName != null && !imageName.isEmpty()) {
+                    newDevice.setImageUrl(imageName); // Cập nhật đường dẫn ảnh
+                } else {
+                    throw new RuntimeException("Failed to upload image.");
+                }
+            } catch (Exception e) {
+                throw new RuntimeException("Error occurred while uploading file: " + e.getMessage(), e);
+            }
+        }
+
+        // Lưu lại thiết bị sau khi cập nhật
+        return deviceRepository.save(newDevice);
     }
 
     public Device borrowDevice(Long deviceId, Long userId) {
