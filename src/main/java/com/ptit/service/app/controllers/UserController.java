@@ -1,5 +1,8 @@
 package com.ptit.service.app.controllers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.ptit.service.app.dtos.UserDto;
 import com.ptit.service.app.dtos.auth.ChangePasswordDto;
 import com.ptit.service.app.responses.MessageResponse;
@@ -15,7 +18,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import javax.websocket.server.PathParam;
+
+import org.springframework.web.multipart.MultipartFile;
 import org.thymeleaf.context.Context;
+
+import java.io.IOException;
 
 @RestController
 @RequiredArgsConstructor
@@ -29,17 +36,22 @@ public class UserController {
         return userService.getUserById(userId);
     }
 
-    /**
-     * update or create profile
-     *
-     * @param userId
-     * @param dto
-     * @return
-     */
     @PutMapping("/me")
     public UserResponse updateMe(
-            @RequestHeader(name = Constant.headerUserId) Long userId, @RequestBody UserDto dto) {
-        return userService.updateUser(userId, dto);
+            @RequestHeader(name = Constant.headerUserId) Long userId,
+            @RequestParam(value = "user", required = false) String userJson,
+            @RequestParam(value = "file", required = false) MultipartFile file
+    ) throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule()); // Đăng ký JavaTimeModule
+//        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        UserDto user = null;
+
+        if (userJson != null) {
+            user = objectMapper.readValue(userJson, UserDto.class);
+        }
+
+        return userService.updateMe(userId, user, file);
     }
 
 //    @PreAuthorize("hasRole('ADMIN')")

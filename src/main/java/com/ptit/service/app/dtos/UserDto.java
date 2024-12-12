@@ -25,6 +25,8 @@ public class UserDto {
 
     private String phoneNumber;
 
+    private String avatarUrl;
+
     private String email;
 
     private Gender gender;

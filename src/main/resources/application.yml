@@ -68,3 +68,6 @@ eureka:
   client:
     serviceUrl:
       defaultZone: ${EUREKA_URI:http://localhost:8761/eureka}
+
+ptit:
+  storage-service: ${STORAGE_SERVICE:http://localhost:8086}

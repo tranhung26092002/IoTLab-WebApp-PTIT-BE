@@ -17,15 +17,23 @@ import com.ptit.service.domain.services.UserService;
 import com.ptit.service.domain.utils.AddressUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
 import org.thymeleaf.context.Context;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +46,9 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
 
     private final AddressUtil addressUtil;
+
+    @Value("${ptit.storage-service}")
+    private String storageService;
 
     @Override
     public User findUserByEmail(String email) {
@@ -146,6 +157,40 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public UserResponse updateMe(Long id, UserDto userDto, MultipartFile file) {
+        User user = userRepository.findById(id).orElseThrow(
+                () -> new ExceptionOm(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND.val())
+        );
+
+        if (userDto.getAddress() != null) {
+            Address address = addressUtil.generateAddress(userDto.getAddress());
+            if (!addressUtil.isSameAddress(user.getAddress(), address)) {
+                user.setAddress(address);
+            }
+        }
+
+        // Nếu có file ảnh, lưu ảnh và cập nhật đường dẫn ảnh
+        if (file != null && !file.isEmpty()) {
+            try {
+                String imageName = uploadFile(file); // Lưu file và nhận tên ảnh
+                if (imageName != null && !imageName.isEmpty()) {
+                    user.setAvatarUrl(imageName); // Cập nhật đường dẫn ảnh
+                } else {
+                    throw new RuntimeException("Failed to upload image.");
+                }
+            } catch (Exception e) {
+                throw new RuntimeException("Error occurred while uploading file: " + e.getMessage(), e);
+            }
+        }
+
+        FnCommon.coppyNonNullProperties(user, userDto);
+
+        userRepository.save(user);
+
+        return convertToUserResponse(user);
+    }
+
+    @Override
     public UserResponse updateUser(Long id, UserDto userDto) {
         User user = userRepository.findById(id).orElseThrow(
                 () -> new ExceptionOm(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND.val())
@@ -206,5 +251,57 @@ public class UserServiceImpl implements UserService {
         FnCommon.coppyNonNullProperties(userResponse, user);
 
         return userResponse;
+    }
+
+    private String uploadFile(MultipartFile file) {
+        try {
+            // Tạo RestTemplate
+            RestTemplate restTemplate = new RestTemplate();
+
+            // Tạo HttpHeaders và thiết lập Content-Type là MULTIPART_FORM_DATA
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+
+            // Tạo HttpEntity chứa file và headers
+            MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+            body.add("file", new MultipartInputStreamFileResource(file.getInputStream(), file.getOriginalFilename()));
+            HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
+
+            // Gửi yêu cầu POST tới storageService
+            ResponseEntity<String> response = restTemplate.exchange(
+                    storageService + "/storage/upload",
+                    HttpMethod.POST,
+                    requestEntity,
+                    String.class);
+
+            // Kiểm tra phản hồi và trả về tên file nếu thành công
+            if (response.getStatusCode() == HttpStatus.OK) {
+                return response.getBody();
+            } else {
+                throw new ExceptionOm(HttpStatus.BAD_REQUEST, "Upload file thất bại");
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Error occurred while uploading file: " + e.getMessage(), e);
+        }
+    }
+
+    // Lớp hỗ trợ để chuyển đổi MultipartFile thành Resource
+    class MultipartInputStreamFileResource extends InputStreamResource {
+        private final String filename;
+
+        MultipartInputStreamFileResource(InputStream inputStream, String filename) {
+            super(inputStream);
+            this.filename = filename;
+        }
+
+        @Override
+        public String getFilename() {
+            return this.filename;
+        }
+
+        @Override
+        public long contentLength() throws IOException {
+            return -1; // Chúng ta không biết trước độ dài của nội dung
+        }
     }
 }

@@ -26,7 +26,7 @@ public class UserResponse extends BaseResponse {
 
     private String email;
 
-    private String avatar;
+    private String avatarUrl;
 
     private Gender gender;
 

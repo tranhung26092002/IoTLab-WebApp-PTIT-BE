@@ -10,6 +10,7 @@ import com.ptit.service.domain.enums.StateUser;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.thymeleaf.context.Context;
 
 @Service
@@ -23,6 +24,8 @@ public interface UserService {
     MessageResponse changeStatusAccount(Long id, StateUser status);
 
     User findUserByEmail(String username);
+
+    UserResponse updateMe(Long id, UserDto userDto, MultipartFile file);
 
     UserResponse updateUser(Long id, UserDto userDto);
 

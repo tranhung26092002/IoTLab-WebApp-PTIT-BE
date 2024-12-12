@@ -53,7 +53,7 @@ public class User implements UserDetails, Serializable {
     private String email;
 
     @Column(name = "avatar")
-    private String avatar;
+    private String avatarUrl;
 
     @Column(name = "gender")
     @Enumerated(EnumType.STRING)
