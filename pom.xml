@@ -9,10 +9,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.ptit</groupId>
-	<artifactId>base-service</artifactId>
+	<artifactId>practice-service</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>base-service</name>
-	<description>base-service</description>
+	<name>practice-service</name>
+	<description>practice-service</description>
 	<properties>
 		<java.version>1.8</java.version>
 		<lombok.version>1.18.22</lombok.version>
@@ -135,6 +135,10 @@
             <artifactId>ommanisoft-common</artifactId>
             <version>latest</version>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+        </dependency>
 	</dependencies>
 	<repositories>
 		<repository>
@@ -142,6 +146,18 @@
 			<url>https://gitlab.com/api/v4/projects/52672173/packages/maven</url>
 		</repository>
 	</repositories>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>2020.0.3</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
 	<build>
 		<plugins>
