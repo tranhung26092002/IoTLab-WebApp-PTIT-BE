@@ -9,10 +9,10 @@ spring:
     environment: ${ENVIRONMENT:DEV}
   servlet:
     multipart:
-      max-file-size: 20MB
-      max-request-size: 20MB
       enabled: true
-      file-size-threshold: 2KB
+      max-file-size: 200MB    # Giới hạn dung lượng file đơn lẻ
+      max-request-size: 200MB  # Giới hạn dung lượng toàn bộ yêu cầu (bao gồm tất cả các tệp)
+      file-size-threshold: 10KB # Kích thước tối thiểu của file trước khi tạm lưu vào bộ nhớ
 
 storage:
   location: E:/workspace/Do_An/uploads

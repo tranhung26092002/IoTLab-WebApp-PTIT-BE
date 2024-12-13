@@ -42,7 +42,7 @@ public class StorageController {
     }
 
     // Tải tệp xuống
-    @GetMapping("/files/{fileName}")
+    @GetMapping("/download/{fileName}")
     public ResponseEntity<byte[]> downloadFile(@PathVariable String fileName) {
         try {
             byte[] fileContent = storageService.load(fileName);
@@ -55,10 +55,10 @@ public class StorageController {
     }
 
     // API hiển thị ảnh
-    @GetMapping("/images/{fileName}")
-    public ResponseEntity<byte[]> viewImage(@PathVariable String fileName) {
+    @GetMapping("/load/{fileName}")
+    public ResponseEntity<byte[]> viewFile(@PathVariable String fileName) {
         try {
-            StorageService.ImageData imageData = storageService.loadImage(fileName);
+            StorageService.FileData imageData = storageService.loadFile(fileName);
 
             return ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_TYPE, imageData.getMimeType())

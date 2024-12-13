@@ -18,6 +18,8 @@ public class StorageService {
 
     @Value("${storage.location}")
     private String storageLocation;
+    private long maxFileSize = 100 * 1024 * 1024; // 100MB (có thể điều chỉnh)
+    private String[] allowedMimeTypes = {"image/jpeg", "image/png", "application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "video/mp4"};
 
     @PostConstruct
     public void init() throws IOException {
@@ -34,6 +36,17 @@ public class StorageService {
             throw new IOException("Failed to store empty file.");
         }
 
+        // Kiểm tra dung lượng tệp
+        if (file.getSize() > maxFileSize) {
+            throw new IOException("File size exceeds the maximum limit of 100MB.");
+        }
+
+        // Kiểm tra loại MIME của tệp
+        String mimeType = file.getContentType();
+        if (mimeType == null || !isValidMimeType(mimeType)) {
+            throw new IOException("Invalid file type. Allowed types are: " + String.join(", ", allowedMimeTypes));
+        }
+
         // Đường dẫn đích
         Path targetLocation = Paths.get(storageLocation).resolve(newFileName);
 
@@ -46,6 +59,16 @@ public class StorageService {
         // Lưu tệp
         Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
         return newFileName;
+    }
+
+    // Kiểm tra MIME type có hợp lệ hay không
+    private boolean isValidMimeType(String mimeType) {
+        for (String allowedMime : allowedMimeTypes) {
+            if (allowedMime.equalsIgnoreCase(mimeType)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     // Truy xuất tệp
@@ -68,7 +91,7 @@ public class StorageService {
         return folder.listFiles();
     }
 
-    public ImageData loadImage(String fileName) throws IOException {
+    public FileData loadFile(String fileName) throws IOException {
         // Sử dụng phương thức load() để lấy nội dung file
         byte[] content = load(fileName);
 
@@ -76,17 +99,17 @@ public class StorageService {
         Path filePath = Paths.get(storageLocation, fileName);
         String mimeType = Files.probeContentType(filePath);
         if (mimeType == null) {
-            mimeType = "application/octet-stream"; // MIME mặc định
+            mimeType = "application/octet-stream"; // MIME mặc định nếu không xác định được
         }
 
-        return new ImageData(content, mimeType);
+        return new FileData(content, mimeType);
     }
 
-    public static class ImageData {
+    public static class FileData {
         private final byte[] content;
         private final String mimeType;
 
-        public ImageData(byte[] content, String mimeType) {
+        public FileData(byte[] content, String mimeType) {
             this.content = content;
             this.mimeType = mimeType;
         }
