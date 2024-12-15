@@ -13,8 +13,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
-        .setAllowedOrigins("http://localhost:3000")
-        .withSockJS();
+                .setAllowedOrigins("http://localhost:3000", "http://localhost:5173") // Thêm cả 5173 vào
+                .withSockJS();
     }
 
     @Override

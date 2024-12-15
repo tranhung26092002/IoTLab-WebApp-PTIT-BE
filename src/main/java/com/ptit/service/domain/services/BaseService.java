@@ -14,7 +14,6 @@ public class BaseService {
     protected ModelMapper mapper = new ModelMapper();
 
     @Autowired Gson gson;
-    @Autowired GatewayRepository gatewayRepository;
-    @Autowired NodeRepository nodeRepository;
+    @Autowired DeviceRepository deviceRepository;
     @Autowired SensorDataRepository sensorDataRepository;
 }

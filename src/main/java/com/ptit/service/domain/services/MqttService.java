@@ -1,138 +1,120 @@
 package com.ptit.service.domain.services;
 
-import com.ptit.service.domain.entities.Gateway;
-import com.ptit.service.domain.entities.Node;
-import com.ptit.service.domain.entities.SensorData;
-import com.ptit.service.domain.repositories.NodeRepository;
-import com.ptit.service.domain.repositories.SensorDataRepository;
-import lombok.RequiredArgsConstructor;
-import org.eclipse.paho.client.mqttv3.*;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ptit.service.domain.entities.Device;
+import com.ptit.service.domain.entities.SensorData;
+import org.eclipse.paho.client.mqttv3.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import javax.annotation.PostConstruct;
-import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class MqttService extends BaseService{
 
-    private final MqttClient mqttClient;
-    private final SimpMessagingTemplate messagingTemplate;
+    private static final Logger logger = LoggerFactory.getLogger(MqttService.class);
 
-    private final SensorDataService sensorDataService;
+    @Autowired
+    private MqttClient mqttClient;
+
+    @Autowired
+    private DeviceService deviceService;
+
+    @Autowired
+    private SensorDataService sensorDataService;
+    @Autowired
+    private NotificationService notificationService;
 
     @PostConstruct
     public void init() {
         try {
-            mqttClient.subscribe("mqtt/active/node", this::handleActiveNodeMessage);
-            mqttClient.subscribe("mqtt/data/gateway", this::handleGatewayDataMessage);
+            logger.info("Initializing MQTT Service...");
+            mqttClient.subscribe("iot/data", this::handleDeviceDataMessage);
+            logger.info("Subscribed to topic: iot/data");
+            // Subscribe nhận phản hồi lệnh
+            mqttClient.subscribe("iot/command-response/#", this::handleCommandResponse);
         } catch (MqttException e) {
-            e.printStackTrace();
+            logger.error("Error subscribing to MQTT topic", e);
         }
     }
 
-    private void handleActiveNodeMessage(String topic, MqttMessage message) {
+    private void handleDeviceDataMessage(String topic, MqttMessage message) {
         try {
             String payload = new String(message.getPayload());
+            logger.debug("Payload: {}", payload);
+
             ObjectMapper mapper = new ObjectMapper();
             JsonNode jsonNode = mapper.readTree(payload);
-            String nameNode = jsonNode.get("nameNode").asText();
-            boolean isActive = jsonNode.get("isActive").asBoolean();
 
-            Node node = nodeRepository.findByNodeId(nameNode).orElse(null);
-            if (node != null) {
-                if (node.isActive() == isActive) {
-                    return;
-                }
+            String deviceId = jsonNode.path("device_id").asText("N/A");
 
-                node.setActive(isActive);
-                nodeRepository.save(node);
+            Device device = deviceService.findByDeviceId(deviceId);
 
-                // Publish notification to gateway
-                MqttMessage notificationMessage = new MqttMessage(payload.getBytes());
-                mqttClient.publish("mqtt/notification/gateway", notificationMessage);
-
-                // Send WebSocket message
-                messagingTemplate.convertAndSend("/topic/activeNode", payload);
+            if (device == null) {
+                device = new Device();
+                device.setDeviceId(deviceId);
+                device.setName(jsonNode.path("device_name").asText("N/A"));
+                device.setType("device");
+                device.setLocation("Ha Noi");
+                device = deviceService.save(device);
             }
+
+            JsonNode sensorsNode = jsonNode.path("sensors");
+            float temperature = sensorsNode.path("temperature").floatValue();
+            float humidity = sensorsNode.path("humidity").floatValue();
+            float light = sensorsNode.path("light").floatValue();
+            float gas = sensorsNode.path("gas").floatValue();
+
+            SensorData sensorData = new SensorData();
+            sensorData.setDevice(device);
+            sensorData.setTemperature(temperature);
+            sensorData.setHumidity(humidity);
+            sensorData.setLight(light);
+            sensorData.setGas(gas);
+
+            JsonNode statusNode = jsonNode.path("status");
+            int led = statusNode.path("led").intValue();
+            int fan = statusNode.path("fan").intValue();
+            int alertLed = statusNode.path("alert_led").intValue();
+            int buzzer = statusNode.path("buzzer").intValue();
+            int servo = statusNode.path("servo").intValue();
+
+            sensorData.setLed(led);
+            sensorData.setFan(fan);
+            sensorData.setAlertLed(alertLed);
+            sensorData.setBuzzer(buzzer);
+            sensorData.setServo(servo);
+
+            sensorDataService.save(sensorData);
+
+            notificationService.sendRealtimeUpdate("/topic/sensorData/"+ device.getId() , sensorData);
+            logger.debug("Sending data to /topic/sensorData/{}: {}", device.getId(), sensorData);
+            System.out.printf("Published : %s\n", sensorData);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error while processing message", e);
         }
     }
 
-    private void handleGatewayDataMessage(String topic, MqttMessage message) {
+    // Xử lý phản hồi từ thiết bị
+    private void handleCommandResponse(String topic, MqttMessage message) {
         try {
-            // Chuyển đổi payload thành chuỗi
-            String payload = new String(message.getPayload());
-            ObjectMapper mapper = new ObjectMapper();
-            JsonNode jsonNode = mapper.readTree(payload);
-            // Lấy tên của Gateway
-            String nameGateway = jsonNode.get("nameGateway").asText();
-            // Lấy mảng dữ liệu của các Node
-            JsonNode dataArray = jsonNode.get("data");
+            String responsePayload = new String(message.getPayload());
+            logger.info("Received command response: {}", responsePayload);
 
-            for (JsonNode dataNode : dataArray) {
-                // Lấy tên của Node
-                String nameNode = dataNode.get("nameNode").asText();
+            // Lấy deviceId từ topic (iot/command-response/{deviceId})
+            String[] topicParts = topic.split("/");
+            if (topicParts.length >= 3) {
+                String deviceId = topicParts[2];
 
-                // Lấy dữ liệu từ Node, ví dụ: temp, hum, status
-                float temperature = dataNode.has("temp") ? dataNode.get("temp").floatValue() : 0.0f;
-                float humidity = dataNode.has("hum") ? dataNode.get("hum").floatValue() : 0.0f;
-                int led = dataNode.has("led") ? dataNode.get("led").intValue() : 0;
-                float light = dataNode.has("light") ? dataNode.get("light").floatValue() : 0.0f;
-                float gas = dataNode.has("gas") ? dataNode.get("gas").floatValue() : 0.0f;
-                float smoke = dataNode.has("smoke") ? dataNode.get("smoke").floatValue() : 0.0f;
-                float co2 = dataNode.has("co2") ? dataNode.get("co2").floatValue() : 0.0f;
-
-                Node node = nodeRepository.findByNodeId(nameNode).orElse(null);
-                if (node != null) {
-                    SensorData sensorData = new SensorData();
-                    sensorData.setNode(node);
-                    sensorData.setTemperature(temperature);
-                    sensorData.setHumidity(humidity);
-                    sensorData.setLed(led);
-                    sensorData.setLight(light);
-                    sensorData.setGas(gas);
-                    sensorData.setSmoke(smoke);
-                    sensorData.setCo2(co2);
-
-                    sensorDataService.saveSensorData(sensorData);
-
-                    // Send WebSocket message
-                    messagingTemplate.convertAndSend("/topic/sensorData/"+ node.getId(), sensorData);
-                }
+                // Gửi dữ liệu phản hồi qua WebSocket
+                notificationService.sendRealtimeUpdate("/topic/command-response/" + deviceId, responsePayload);
+                logger.info("Sent command response to WebSocket for device: {}", deviceId);
             }
         } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Scheduled(fixedRate = 10000) // Thực thi mỗi 10 giây
-    public void publishNodeStatusToGateway() {
-        try {
-            // Lấy danh sách tất cả các node từ cơ sở dữ liệu
-            List<Node> nodes = nodeRepository.findAll();
-
-            for (Node node : nodes) {
-                // Chuẩn bị payload dưới dạng JSON
-                String payload = String.format(
-                        "{\"nameNode\": \"%s\", \"isActive\": %b}",
-                        node.getNodeId(),
-                        node.isActive()
-                );
-
-                // Gửi trạng thái của node đến topic "mqtt/notification/gateway"
-                MqttMessage notificationMessage = new MqttMessage(payload.getBytes());
-                mqttClient.publish("mqtt/notification/gateway", notificationMessage);
-
-                // Log để kiểm tra
-                System.out.printf("Published node status: %s\n", payload);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error processing command response message", e);
         }
     }
 }
