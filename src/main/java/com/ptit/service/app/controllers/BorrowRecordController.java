@@ -12,7 +12,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/borrow-records")
@@ -60,11 +60,10 @@ public class BorrowRecordController {
         return borrowRecordService.createBorrowRecord(deviceId, userId, note, expiredAt);
     }
 
-    @PostMapping("/return")
-    public BorrowRecord returnDevice(
-            @RequestParam Long deviceId,
-            @RequestHeader(name = Constant.headerUserId) Long userId
+    @PostMapping("/return/{borrowRecordId}")
+    public Optional<BorrowRecord> returnDevice(
+            @PathVariable Long borrowRecordId
     ) {
-        return borrowRecordService.returnBorrowRecord(deviceId, userId);
+        return borrowRecordService.returnBorrowRecord(borrowRecordId);
     }
 }

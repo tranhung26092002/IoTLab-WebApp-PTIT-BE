@@ -16,6 +16,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -36,19 +37,19 @@ public class BorrowRecordService {
         return borrowRecordRepository.save(record);
     }
 
-    public BorrowRecord returnBorrowRecord(Long deviceId, Long userId) {
-        List<BorrowRecord> records = borrowRecordRepository.findByDeviceId(deviceId);
-        BorrowRecord activeRecord = records.stream()
-                .filter(r -> r.getStatus() == BorrowStatus.BORROWED && r.getUserId().equals(userId))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("No active borrow record found"));
+    public Optional<BorrowRecord> returnBorrowRecord(Long borrowRecordId) {
+        Optional<BorrowRecord> borrowRecord = borrowRecordRepository.findById(borrowRecordId);
+        if (!borrowRecord.isPresent()) {
+            return Optional.empty();
+        }
 
-        activeRecord.setReturnedAt(LocalDate.now());
-        activeRecord.setStatus(BorrowStatus.RETURNED);
-        borrowRecordRepository.save(activeRecord);
+        BorrowRecord record = borrowRecord.get();
+        record.setStatus(BorrowStatus.RETURNED);
+        record.setReturnedAt(LocalDate.now());
 
-        deviceService.returnDevice(deviceId);
-        return activeRecord;
+        deviceService.returnDevice(record.getDevice().getId());
+
+        return Optional.of(borrowRecordRepository.save(record));
     }
 
     public ResponsePage<BorrowRecordResponse> getBorrowHistoryByUserId(Long userId, Pageable pageable) {

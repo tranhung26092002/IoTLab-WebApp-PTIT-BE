@@ -20,4 +20,6 @@ public interface BorrowRecordRepository extends JpaRepository<BorrowRecord, Long
 
     @Query("SELECT DISTINCT br.device FROM BorrowRecord br WHERE br.userId = :userId")
     Page<Device> findDevicesBorrowedByUser(@Param("userId") Long userId, Pageable pageable);
+
+    BorrowRecord findByDeviceIdAndUserId(Long deviceId, Long userId);
 }
