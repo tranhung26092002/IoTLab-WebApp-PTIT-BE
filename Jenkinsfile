@@ -7,17 +7,6 @@ pipeline {
     }
 
     stages {
-        stage('Maven Build') {
-            steps {
-                script {
-                    // Build project using Maven
-                    sh 'mvn clean package -DskipTests'
-                    // Kiểm tra file .jar đã được tạo ra trong thư mục target
-                    sh 'ls target/*.jar'
-                }
-            }
-        }
-
         stage('Clean Old Containers') {
             steps {
                 script {
@@ -34,13 +23,52 @@ pipeline {
             }
         }
 
-        stage('Build and Deploy') {
+        stage('Fix Permissions') {
             steps {
                 script {
-                    // Kiểm tra xem file .jar có tồn tại hay không trước khi chạy Docker build
-                    sh 'ls target/*.jar'
-                    sh 'docker-compose build'
-                    sh 'docker-compose up -d'
+                    // Cấp quyền cho các tệp mvnw
+                    echo 'Fixing permissions for mvnw...'
+                    sh 'chmod +x ./mvnw'
+                }
+            }
+        }
+
+        stage('Build Application') {
+            steps {
+                script {
+                    // Build jar file
+                    echo 'Building application...'
+                    sh './mvnw clean package -DskipTests'
+                }
+            }
+        }
+
+        stage('Verify Jar Existence') {
+            steps {
+                script {
+                    // Kiểm tra sự tồn tại của eureka-service.jar trong thư mục target
+                    echo 'Verifying if .jar file exists...'
+                    sh '''
+                    if [ ! -f target/eureka-service.jar ]; then
+                        echo "No eureka-service.jar found in target directory! Exiting."
+                        exit 1
+                    fi
+                    echo ".jar file found!"
+                    '''
+                }
+            }
+        }
+
+        stage('Build and Deploy with Docker') {
+            steps {
+                script {
+                    // Xác nhận tên image và container trong Docker Compose
+                    echo 'Deploying application with Docker Compose...'
+                    sh '''
+                    docker-compose down
+                    docker container prune -f   # Xóa các container đã dừng
+                    docker-compose up -d --build
+                    '''
                 }
             }
         }
@@ -48,6 +76,8 @@ pipeline {
 
     post {
         always {
+            // Dọn dẹp các tài nguyên không cần thiết như container đã dừng và file workspace
+            echo 'Cleaning up Docker system and workspace...'
             sh 'docker system prune -f'
             cleanWs()
         }
