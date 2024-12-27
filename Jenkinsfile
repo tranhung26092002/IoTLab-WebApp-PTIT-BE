@@ -2,10 +2,22 @@ pipeline {
     agent any
 
     environment {
+        DOCKER_IMAGE = 'eureka-service:latest'
         CONTAINER_NAME = 'eureka-service'
     }
 
     stages {
+        stage('Maven Build') {
+            steps {
+                script {
+                    // Build project using Maven
+                    sh 'mvn clean package -DskipTests'
+                    // Kiểm tra file .jar đã được tạo ra trong thư mục target
+                    sh 'ls target/*.jar'
+                }
+            }
+        }
+
         stage('Clean Old Containers') {
             steps {
                 script {
@@ -25,8 +37,9 @@ pipeline {
         stage('Build and Deploy') {
             steps {
                 script {
-                    // Chạy lại Docker Compose để tạo container mới từ image đã build
-                    echo "Building and deploying the container..."
+                    // Kiểm tra xem file .jar có tồn tại hay không trước khi chạy Docker build
+                    sh 'ls target/*.jar'
+                    sh 'docker-compose build'
                     sh 'docker-compose up -d'
                 }
             }
@@ -35,8 +48,8 @@ pipeline {
 
     post {
         always {
-            sh 'docker system prune -f'  // Dọn dẹp các container, image không sử dụng
-            cleanWs()  // Dọn dẹp workspace Jenkins
+            sh 'docker system prune -f'
+            cleanWs()
         }
         success {
             echo 'Pipeline completed successfully!'
