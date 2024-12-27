@@ -26,9 +26,8 @@ pipeline {
         stage('Fix Permissions') {
             steps {
                 script {
-                    // Cấp quyền cho các tệp mvnw
                     echo 'Fixing permissions for mvnw...'
-                    sh 'chmod +x ./mvnw'
+                    sh 'chmod +x ./mvnw'  // Chắc chắn cấp quyền cho tệp mvnw
                 }
             }
         }
@@ -36,9 +35,17 @@ pipeline {
         stage('Build Application') {
             steps {
                 script {
-                    // Build jar file
                     echo 'Building application...'
-                    sh './mvnw clean package -DskipTests'
+                    sh './mvnw clean package -DskipTests'  // Build jar file
+                }
+            }
+        }
+
+        stage('List Files in Target Directory') {
+            steps {
+                script {
+                    echo 'Listing files in target directory...'
+                    sh 'ls -l target/'  // Kiểm tra các file trong thư mục target
                 }
             }
         }
@@ -46,7 +53,6 @@ pipeline {
         stage('Verify Jar Existence') {
             steps {
                 script {
-                    // Kiểm tra sự tồn tại của eureka-service.jar trong thư mục target
                     echo 'Verifying if .jar file exists...'
                     sh '''
                     if [ ! -f target/eureka-service.jar ]; then
@@ -62,11 +68,11 @@ pipeline {
         stage('Build and Deploy with Docker') {
             steps {
                 script {
-                    // Xác nhận tên image và container trong Docker Compose
                     echo 'Deploying application with Docker Compose...'
+                    // Build và deploy docker
                     sh '''
                     docker-compose down
-                    docker container prune -f   # Xóa các container đã dừng
+                    docker container prune -f  # Xóa các container đã dừng
                     docker-compose up -d --build
                     '''
                 }
@@ -76,16 +82,15 @@ pipeline {
 
     post {
         always {
-            // Dọn dẹp các tài nguyên không cần thiết như container đã dừng và file workspace
             echo 'Cleaning up Docker system and workspace...'
-            sh 'docker system prune -f'
-            cleanWs()
+            sh 'docker system prune -f'  // Dọn dẹp Docker
+            cleanWs()  // Dọn dẹp workspace
         }
         success {
-            echo 'Pipeline completed successfully!'
+            echo 'Pipeline completed successfully!'  // Thành công
         }
         failure {
-            echo 'Pipeline failed!'
+            echo 'Pipeline failed!'  // Thất bại
         }
     }
 }

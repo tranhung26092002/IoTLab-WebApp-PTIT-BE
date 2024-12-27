@@ -5,7 +5,8 @@ FROM openjdk:17-jdk-slim
 WORKDIR /app
 
 # Sao chép file JAR vào thư mục /app trong container
-COPY target/*.jar app.jar
+# Giả sử rằng file JAR được tạo ra trong thư mục target với tên tương ứng với project
+COPY target/eureka-service.jar app.jar
 
 # Mở cổng 8761 cho Eureka service
 EXPOSE 8761
