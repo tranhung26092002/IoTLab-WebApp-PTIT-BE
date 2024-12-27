@@ -1,23 +1,18 @@
-version: '2'
+version: '3.8'
 
 services:
   eureka-service:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: eureka-service
-    image: eureka-service
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "10"
-    mem_limit: 200MB
-    restart: always
+    build: .
+    image: eureka-service:latest
+    ports:
+      - "8761:8761"
+    environment:
+      - EUREKA_SERVER_ENABLED=true
+      - EUREKA_CLIENT_REGISTER_WITH_EUREKA=false
+      - EUREKA_CLIENT_FETCH_REGISTRY=false
     networks:
-      - ommanisoft
-networks:
-  ommanisoft:
-    external:
-      name: ommanisoft
+      - ptit-net
 
+networks:
+  ptit-net:
+    driver: bridge

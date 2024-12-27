@@ -1,28 +1,14 @@
-# Stage 1: Gói ứng dụng Maven
-FROM maven:3.6.1-jdk-8-alpine AS build
+# Sử dụng base image với OpenJDK 17
+FROM openjdk:17-jdk-slim
 
+# Set thư mục làm việc trong container
 WORKDIR /app
 
-# Sao chép file pom.xml vào thư mục làm việc của container
-COPY pom.xml .
+# Copy file JAR của ứng dụng vào container
+COPY target/*.jar app.jar
 
-# Tải dependencies và lưu vào layer cache
-RUN mvn dependency:go-offline
-
-# Sao chép toàn bộ mã nguồn vào thư mục làm việc của container
-COPY src ./src
-
-# Gói ứng dụng, bỏ qua các bài kiểm tra (tests)
-RUN mvn package -DskipTests
-
-# Stage 2: Chạy ứng dụng từ file JAR đã được gói
-FROM openjdk:10.0.2
-
-WORKDIR /app
-
-# Sao chép file JAR từ stage 1 vào thư mục làm việc của container
-COPY --from=build /app/target/eureka-service.jar /usr/local/lib/eureka-service.jar
-
+# Mở cổng 8761 cho Eureka service
 EXPOSE 8761
 
-ENTRYPOINT ["java", "-jar","/usr/local/lib/eureka-service.jar"]
+# Chạy ứng dụng Eureka
+ENTRYPOINT ["java", "-jar", "app.jar"]
