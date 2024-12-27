@@ -7,7 +7,6 @@ pipeline {
     }
 
     stages {
-        
         stage('Clean Old Containers') {
             steps {
                 script {
@@ -22,10 +21,20 @@ pipeline {
             }
         }
 
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    // Build Docker image từ Dockerfile
+                    echo 'Building Docker image...'
+                    sh "docker build -t ${DOCKER_IMAGE} ."
+                }
+            }
+        }
+
         stage('Create New Container') {
             steps {
                 script {
-                    // Tạo container mới từ image
+                    // Tạo container mới từ image vừa build
                     echo 'Creating new container...'
                     sh "docker run -d --name ${CONTAINER_NAME} ${DOCKER_IMAGE}"
                 }
