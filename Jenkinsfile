@@ -7,16 +7,24 @@ pipeline {
     }
 
     stages {
+        stage('Build Maven Project') {
+            steps {
+                script {
+                    bat 'mvn clean package -DskipTests'
+                }
+            }
+        }
+
         stage('Clean Old Containers') {
             steps {
                 script {
-                    bat """
-                        docker ps -aq -f name=${CONTAINER_NAME} && (
+                    bat '''
+                        FOR /f "tokens=*" %%i IN ('docker ps -aq -f name=%CONTAINER_NAME%') DO (
                             echo Stopping and removing old container...
-                            docker stop ${CONTAINER_NAME}
-                            docker rm ${CONTAINER_NAME}
+                            docker stop %%i 2>NUL || exit /b 0
+                            docker rm %%i 2>NUL || exit /b 0
                         )
-                    """
+                    '''
                 }
             }
         }
@@ -32,7 +40,7 @@ pipeline {
         stage('Deploy New Container') {
             steps {
                 script {
-                    bat 'docker-compose down'
+                    bat 'docker-compose down || exit /b 0'
                     bat 'docker-compose up -d'
                 }
             }
@@ -41,6 +49,7 @@ pipeline {
 
     post {
         always {
+            bat 'docker system prune -f'
             cleanWs()
         }
     }
