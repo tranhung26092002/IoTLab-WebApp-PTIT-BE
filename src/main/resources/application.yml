@@ -4,7 +4,7 @@ spring:
 
 server:
   port: 8761
-  address: ${ADDRESS:0.0.0.0}
+  address: 0.0.0.0
 eureka:
   client:
     registerWithEureka: false

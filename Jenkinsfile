@@ -9,7 +9,7 @@ pipeline {
     stages {
         stage('Maven Build') {
             steps {
-                bat 'mvn clean package -DskipTests'
+                sh 'mvn clean package -DskipTests'
             }
         }
 
@@ -17,11 +17,13 @@ pipeline {
             steps {
                 script {
                     echo 'Checking for existing containers...'
-                    bat '''
-                        docker ps -q -f name=%CONTAINER_NAME% && (
-                            echo Stopping containers...
+                    sh '''
+                        if docker ps -q -f name=$CONTAINER_NAME | grep -q .; then
+                            echo "Stopping containers..."
                             docker-compose down
-                        ) || echo No containers found
+                        else
+                            echo "No containers found"
+                        fi
                     '''
                 }
             }
@@ -30,8 +32,8 @@ pipeline {
         stage('Build and Deploy') {
             steps {
                 script {
-                    bat 'docker-compose build'
-                    bat 'docker-compose up -d'
+                    sh 'docker-compose build'
+                    sh 'docker-compose up -d'
                 }
             }
         }
@@ -39,7 +41,7 @@ pipeline {
 
     post {
         always {
-            bat 'docker system prune -f'
+            sh 'docker system prune -f'
             cleanWs()
         }
         success {
