@@ -38,6 +38,6 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
 		</plugins>
-		<finalName>ptit.service</finalName>
+    	<finalName>eureka-service</finalName> <!-- Đổi tên file .jar thành eureka-service.jar -->
 	</build>
 </project>
