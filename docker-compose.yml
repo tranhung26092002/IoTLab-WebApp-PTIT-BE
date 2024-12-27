@@ -4,14 +4,14 @@ services:
   eureka-service:
     build: .
     image: eureka-service:latest
+    container_name: eureka-service
     ports:
       - "8761:8761"
-    environment:
-      - EUREKA_SERVER_ENABLED=true
-      - EUREKA_CLIENT_REGISTER_WITH_EUREKA=false
-      - EUREKA_CLIENT_FETCH_REGISTRY=false
     networks:
       - ptit-net
+    restart: always
+    environment:
+      - "JAVA_OPTS=-Xmx512m -Xms256m"
 
 networks:
   ptit-net:
