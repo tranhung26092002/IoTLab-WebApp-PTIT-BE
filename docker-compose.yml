@@ -10,8 +10,6 @@ services:
     networks:
       - ptit-net
     restart: always
-    environment:
-      - "JAVA_OPTS=-Xmx512m -Xms256m"
 
 networks:
   ptit-net:
