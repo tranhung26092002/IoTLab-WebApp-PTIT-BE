@@ -3,45 +3,31 @@ pipeline {
 
     environment {
         DOCKER_IMAGE = 'eureka-service:latest'
-        CONTAINER_NAME = 'eureka-service'
+        CONTAINER_NAME = 'eureka-service-container'
     }
 
     stages {
-        stage('Build Maven Project') {
-            steps {
-                script {
-                    bat 'mvn clean package -DskipTests'
-                }
-            }
-        }
-
+        
         stage('Clean Old Containers') {
             steps {
                 script {
-                    bat '''
-                        FOR /f "tokens=*" %%i IN ('docker ps -aq -f name=%CONTAINER_NAME%') DO (
-                            echo Stopping and removing old container...
-                            docker stop %%i 2>NUL || exit /b 0
-                            docker rm %%i 2>NUL || exit /b 0
-                        )
-                    '''
+                    // Kiểm tra và xóa container cũ nếu tồn tại
+                    echo 'Checking for existing containers...'
+                    if (dockerInspect(CONTAINER_NAME)) {
+                        echo 'Stopping and removing old container...'
+                        sh "docker stop ${CONTAINER_NAME} || true"
+                        sh "docker rm ${CONTAINER_NAME} || true"
+                    }
                 }
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Create New Container') {
             steps {
                 script {
-                    bat 'docker build -t %DOCKER_IMAGE% .'
-                }
-            }
-        }
-
-        stage('Deploy New Container') {
-            steps {
-                script {
-                    bat 'docker-compose down || exit /b 0'
-                    bat 'docker-compose up -d'
+                    // Tạo container mới từ image
+                    echo 'Creating new container...'
+                    sh "docker run -d --name ${CONTAINER_NAME} ${DOCKER_IMAGE}"
                 }
             }
         }
@@ -49,8 +35,12 @@ pipeline {
 
     post {
         always {
-            bat 'docker system prune -f'
-            cleanWs()
+            echo 'Pipeline finished.'
         }
     }
+}
+
+// Hàm kiểm tra container có tồn tại hay không
+def dockerInspect(containerName) {
+    return sh(script: "docker inspect --format='{{.State.Running}}' ${containerName}", returnStatus: true) == 0
 }
