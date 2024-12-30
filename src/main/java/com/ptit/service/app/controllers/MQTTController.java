@@ -13,7 +13,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/devices")
-public class DeviceController {
+public class MQTTController {
 
     @Autowired
     private DeviceService deviceService;
