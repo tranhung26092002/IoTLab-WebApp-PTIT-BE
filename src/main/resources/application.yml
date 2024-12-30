@@ -1,5 +1,6 @@
 server:
   port: ${PORT:8083}
+  address: ${ADDRESS:0.0.0.0}
   servlet:
     context-path: /device
 spring:
@@ -9,7 +10,7 @@ spring:
     name: DEVICE-SERVICE
     environment: ${ENVIRONMENT:DEV}
   datasource:
-    url: ${POSTGRESQL_DATABASE_URL:jdbc:postgresql://localhost:5432/iot_lab}
+    url: ${POSTGRESQL_DATABASE_URL:jdbc:postgresql://192.168.1.4:5432/iot_lab}
     username: ${POSTGRESQL_USERNAME:postgres}
     password: ${POSTGRESQL_PASSWORD:hungtran}
     driver-class-name: org.postgresql.Driver
@@ -41,6 +42,13 @@ spring:
       max-request-size: 20MB
       enabled: true
       file-size-threshold: 2KB
+
+  # RabbitMQ settings
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
 telegram:
   chatId: ${TELEGRAM_CHAT_ID:-1000000000}
   apiToken: ${TELEGRAM_API_TOKEN:-0000000000:XXXXXXXXXXXXXXXXXXXXXXXX}
@@ -63,3 +71,10 @@ eureka:
 
 ptit:
   storage-service: ${STORAGE_SERVICE:http://localhost:8086}
+  # Scheduler settings
+device:
+  return:
+    notification:
+      days: 3
+    check:
+      cron: 0 0 9 * * ?

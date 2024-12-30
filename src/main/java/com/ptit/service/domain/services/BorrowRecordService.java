@@ -111,4 +111,8 @@ public class BorrowRecordService {
 
         return new ResponsePage<>(responsePage);
     }
+
+    public List<BorrowRecord> findDevicesDueForReturn() {
+        return borrowRecordRepository.findByExpiredAt(LocalDate.now());
+    }
 }

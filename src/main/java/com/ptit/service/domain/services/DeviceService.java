@@ -170,7 +170,6 @@ public class DeviceService {
             throw new RuntimeException("Error occurred while uploading file: " + e.getMessage(), e);
         }
     }
-
     // Lớp hỗ trợ để chuyển đổi MultipartFile thành Resource
     class MultipartInputStreamFileResource extends InputStreamResource {
         private final String filename;
