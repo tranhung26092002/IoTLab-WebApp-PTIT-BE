@@ -12,7 +12,8 @@ pipeline {
                 script {
                     echo 'Checking for existing containers...'
                     sh '''
-                        docker-compose down || echo "No running containers to stop"
+                        docker ps -aq --filter "name=${CONTAINER_NAME}" | xargs -I {} docker stop {} || echo "No running containers to stop"
+                        docker ps -aq --filter "name=${CONTAINER_NAME}" | xargs -I {} docker rm {} || echo "No containers to remove"
                     '''
                 }
             }
@@ -56,11 +57,10 @@ pipeline {
         stage('Build and Deploy with Docker') {
             steps {
                 script {
-                    echo 'Deploying application with Docker Compose...'
+                    echo 'Building and deploying new container...'
                     sh '''
-                    docker-compose -f docker-compose.yml down
-                    docker container prune -f
-                    docker-compose -f docker-compose.yml up -d --build
+                    docker build -t ${DOCKER_IMAGE} .
+                    docker run -d --name ${CONTAINER_NAME} ${DOCKER_IMAGE}
                     '''
                 }
             }
