@@ -1,26 +1,16 @@
-version: "3.8"
+version: '3.8'
+
 services:
   api-gateway:
     build:
-      context: ./api-gateway
-      dockerfile: Dockerfile
+      context: .  # Đảm bảo context đúng để Dockerfile được sử dụng trong cùng thư mục
     container_name: api-gateway
     ports:
       - "8088:8088"
     networks:
-      - iotlab_network
-    environment:
-      - SPRING_PROFILES_ACTIVE=prod
-      - EUREKA_URI=http://eureka-service:8761/eureka/
-
-  eureka-service:
-    image: your-dockerhub-repo/eureka-service:1.0
-    container_name: eureka-service
-    ports:
-      - "8761:8761"
-    networks:
-      - iotlab_network
+      - ptit-net
+    restart: always
 
 networks:
-  iotlab_network:
+  ptit-net:
     driver: bridge
