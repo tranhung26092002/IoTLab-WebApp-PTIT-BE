@@ -1,5 +1,6 @@
 server:
   port: 8088
+  address: ${ADDRESS:0.0.0.0}
 
 spring:
   application:

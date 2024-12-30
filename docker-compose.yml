@@ -1,26 +1,26 @@
-version: '3'
-
+version: "3.8"
 services:
-  gateway1-service:
+  api-gateway:
     build:
-      context: .
+      context: ./api-gateway
       dockerfile: Dockerfile
-    container_name: gateway1-service
-    image: gateway1-serivce
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "10"
-    deploy:
-      resources:
-        limits:
-          memory: 500M
-    restart: always
+    container_name: api-gateway
+    ports:
+      - "8088:8088"
     networks:
-      - ommanisoft
-networks:
-  ommanisoft:
-    external:
-      name: ommanisoft
+      - iotlab_network
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - EUREKA_URI=http://eureka-service:8761/eureka/
 
+  eureka-service:
+    image: your-dockerhub-repo/eureka-service:1.0
+    container_name: eureka-service
+    ports:
+      - "8761:8761"
+    networks:
+      - iotlab_network
+
+networks:
+  iotlab_network:
+    driver: bridge

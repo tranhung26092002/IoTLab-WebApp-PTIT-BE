@@ -1,28 +1,14 @@
-# Stage 1: Gói ứng dụng Maven
-FROM maven:3.6.1-jdk-8-alpine AS build
+# Use a lightweight Java image
+FROM openjdk:17-jdk-slim
 
+# Set the working directory in the container
 WORKDIR /app
 
-# Sao chép file pom.xml vào thư mục làm việc của container
-COPY pom.xml .
+# Copy the jar file to the container
+COPY target/*.jar app.jar
 
-# Tải dependencies và lưu vào layer cache
-RUN mvn dependency:go-offline
-
-# Sao chép toàn bộ mã nguồn vào thư mục làm việc của container
-COPY src ./src
-
-# Gói ứng dụng, bỏ qua các bài kiểm tra (tests)
-RUN mvn package -DskipTests
-
-# Stage 2: Chạy ứng dụng từ file JAR đã được gói
-FROM openjdk:10.0.2
-
-WORKDIR /app
-
-# Sao chép file JAR từ stage 1 vào thư mục làm việc của container
-COPY --from=build /app/target/ecomerce-service.jar /usr/local/lib/ecomerce-service.jar
-
+# Expose the port your application will run on
 EXPOSE 8088
 
-ENTRYPOINT ["java", "-jar","/usr/local/lib/ecomerce-service.jar"]
+# Define the command to run your application
+ENTRYPOINT ["java", "-jar", "app.jar"]

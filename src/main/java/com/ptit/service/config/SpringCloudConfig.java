@@ -25,9 +25,9 @@ public class SpringCloudConfig {
                         .filters(f -> f.filter(filterFactory.apply(filterConfig)))
                         .uri("lb://PRACTICE-SERVICE"))
 
-                .route("product-service", r -> r.path("/product/**")
+                .route("notification-service", r -> r.path("/notification/**")
                         .filters(f -> f.filter(filterFactory.apply(filterConfig)))
-                        .uri("lb://PRODUCT-SERVICE"))
+                        .uri("lb://NOTIFICATION-SERVICE"))
 
                 .route("report-service", r -> r.path("/report/**")
                         .filters(f -> f.filter(filterFactory.apply(filterConfig)))
@@ -44,6 +44,9 @@ public class SpringCloudConfig {
                 .route("storage-service", r -> r.path("/storage/**")
                         .filters(f -> f.filter(filterFactory.apply(filterConfig)))
                         .uri("lb://STORAGE-SERVICE"))
+
+                .route("mqtt-service", r -> r.path("/mqtt/**")  // Đảm bảo path chính xác
+                        .uri("lb://MQTT-SERVICE"))  // Dịch vụ của bạn
 
                 .build();
     }
