@@ -1,23 +1,19 @@
-version: '2'
+version: '3.8'
+
 services:
-  qr-service:
+  device-service:
     build:
-      context: .
-      dockerfile: Dockerfile
-    image: qr-service
-    env_file:
-      - /opt/global/.env
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "10"
-    container_name: farm-service
-    mem_limit: 512m
-    restart: always
+      context: .  # Đảm bảo context đúng để Dockerfile được sử dụng trong cùng thư mục
+    container_name: device-service
+    ports:
+      - "8082:8082"
     networks:
-      - iotlabptit
+      - ptit-net
+    restart: always
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+
 networks:
-  iotlabptit:
-    external:
-      name: iotlabptit
+  ptit-net:
+    driver: bridge

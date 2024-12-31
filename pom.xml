@@ -190,7 +190,7 @@
 				</configuration>
 			</plugin>
 		</plugins>
-		<finalName>ptit.service</finalName>
+		<finalName>device-service</finalName>
 	</build>
 
 </project>
