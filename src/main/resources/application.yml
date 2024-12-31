@@ -60,6 +60,20 @@ telegram:
   chatId: ${TELEGRAM_CHAT_ID:-1000000000}
   apiToken: ${TELEGRAM_API_TOKEN:-1234567890:ABCDEFGHIJKLMNOPQRSTUVWXYZ}
 
+debug: ${DEBUG:true}
+#ommani:
+#  sso-service: ${SSO_SERVICE:http://sso-service:8080}
+async:
+  config:
+    core-pool-size: ${ASYNC_CORE_POOL_SIZE:3}
+
+logging:
+  level:
+    org:
+      springframework:
+        boot:
+          autoconfigure: INFO
+          
 eureka:
   client:
     serviceUrl:
