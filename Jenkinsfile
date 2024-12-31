@@ -12,8 +12,12 @@ pipeline {
                 script {
                     echo 'Checking for existing containers...'
                     sh '''
-                        docker ps -aq --filter "name=${CONTAINER_NAME}" | xargs -I {} docker stop {} || echo "No running containers to stop"
-                        docker ps -aq --filter "name=${CONTAINER_NAME}" | xargs -I {} docker rm {} || echo "No containers to remove"
+                        if docker ps -q -f name=$CONTAINER_NAME | grep -q .; then
+                            echo "Stopping containers..."
+                            docker-compose down
+                        else
+                            echo "No containers found"
+                        fi
                     '''
                 }
             }
@@ -23,9 +27,7 @@ pipeline {
             steps {
                 script {
                     echo 'Fixing permissions for mvnw...'
-                    sh '''
-                    if [ -f ./mvnw ]; then chmod +x ./mvnw; fi
-                    '''
+                    sh 'chmod +x ./mvnw'  // Chắc chắn cấp quyền cho tệp mvnw
                 }
             }
         }
@@ -34,7 +36,16 @@ pipeline {
             steps {
                 script {
                     echo 'Building application...'
-                    sh './mvnw clean package -DskipTests'
+                    sh './mvnw clean package -DskipTests'  // Build jar file
+                }
+            }
+        }
+
+        stage('List Files in Target Directory') {
+            steps {
+                script {
+                    echo 'Listing files in target directory...'
+                    sh 'ls -l target/'  // Kiểm tra các file trong thư mục target
                 }
             }
         }
@@ -57,10 +68,12 @@ pipeline {
         stage('Build and Deploy with Docker') {
             steps {
                 script {
-                    echo 'Building and deploying new container...'
+                    echo 'Deploying application with Docker Compose...'
+                    // Build và deploy docker
                     sh '''
-                    docker build -t ${DOCKER_IMAGE} .
-                    docker run -d --name ${CONTAINER_NAME} ${DOCKER_IMAGE}
+                    docker-compose down
+                    docker container prune -f  # Xóa các container đã dừng
+                    docker-compose up -d --build
                     '''
                 }
             }
@@ -70,14 +83,14 @@ pipeline {
     post {
         always {
             echo 'Cleaning up Docker system and workspace...'
-            sh 'docker system prune -f'
-            cleanWs()
+            sh 'docker system prune -f'  // Dọn dẹp Docker
+            cleanWs()  // Dọn dẹp workspace
         }
         success {
-            echo 'Pipeline completed successfully!'
+            echo 'Pipeline completed successfully!'  // Thành công
         }
         failure {
-            echo 'Pipeline failed!'
+            echo 'Pipeline failed!'  // Thất bại
         }
     }
 }
