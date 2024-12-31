@@ -6,8 +6,8 @@ pipeline {
         CONTAINER_NAME = 'user-service'
         JWT_KEY = credentials('JWT_KEY')
         REFRESH_TOKEN_KEY = credentials('REFRESH_TOKEN_KEY')
-        POSTGRESQL_USERNAME = credentials('POSTGRESQL_USERNAME')
-        POSTGRESQL_PASSWORD = credentials('POSTGRESQL_PASSWORD')
+        POSTGRES_USER = credentials('POSTGRES_USER')
+        POSTGRES_PASSWORD = credentials('POSTGRES_PASSWORD')
         BREVO_API_KEY = credentials('BREVO_API_KEY')
     }
 
