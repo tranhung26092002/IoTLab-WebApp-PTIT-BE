@@ -10,6 +10,12 @@ services:
     networks:
       - ptit-net
     restart: always
+    environment:
+      - JWT_KEY=${JWT_KEY}
+      - REFRESH_TOKEN_KEY=${REFRESH_TOKEN_KEY}
+      - POSTGRESQL_USERNAME=${POSTGRESQL_USERNAME}
+      - POSTGRESQL_PASSWORD=${POSTGRESQL_PASSWORD}
+      - BREVO_API_KEY=${BREVO_API_KEY}
 
 networks:
   ptit-net:

@@ -4,20 +4,21 @@ pipeline {
     environment {
         DOCKER_IMAGE = 'user-service:latest'
         CONTAINER_NAME = 'user-service'
+        JWT_KEY = credentials('JWT_KEY')
+        REFRESH_TOKEN_KEY = credentials('REFRESH_TOKEN_KEY')
+        POSTGRESQL_USERNAME = credentials('POSTGRESQL_USERNAME')
+        POSTGRESQL_PASSWORD = credentials('POSTGRESQL_PASSWORD')
+        BREVO_API_KEY = credentials('BREVO_API_KEY')
     }
 
     stages {
         stage('Clean Old Containers') {
             steps {
                 script {
-                    echo 'Checking for existing containers...'
+                    echo 'Stopping and removing old containers...'
                     sh '''
-                        if docker ps -q -f name=$CONTAINER_NAME | grep -q .; then
-                            echo "Stopping containers..."
-                            docker-compose down
-                        else
-                            echo "No containers found"
-                        fi
+                        docker-compose down || true
+                        docker container prune -f || true
                     '''
                 }
             }
@@ -27,7 +28,7 @@ pipeline {
             steps {
                 script {
                     echo 'Fixing permissions for mvnw...'
-                    sh 'chmod +x ./mvnw'  // Chắc chắn cấp quyền cho tệp mvnw
+                    sh 'chmod +x ./mvnw'
                 }
             }
         }
@@ -36,16 +37,7 @@ pipeline {
             steps {
                 script {
                     echo 'Building application...'
-                    sh './mvnw clean package -DskipTests'  // Build jar file
-                }
-            }
-        }
-
-        stage('List Files in Target Directory') {
-            steps {
-                script {
-                    echo 'Listing files in target directory...'
-                    sh 'ls -l target/'  // Kiểm tra các file trong thư mục target
+                    sh './mvnw clean package -DskipTests'
                 }
             }
         }
@@ -53,13 +45,12 @@ pipeline {
         stage('Verify Jar Existence') {
             steps {
                 script {
-                    echo 'Verifying if .jar file exists...'
+                    echo 'Checking if user-service.jar exists...'
                     sh '''
                     if [ ! -f target/user-service.jar ]; then
-                        echo "No user-service.jar found in target directory! Exiting."
+                        echo "user-service.jar not found! Exiting..."
                         exit 1
                     fi
-                    echo ".jar file found!"
                     '''
                 }
             }
@@ -68,11 +59,9 @@ pipeline {
         stage('Build and Deploy with Docker') {
             steps {
                 script {
-                    echo 'Deploying application with Docker Compose...'
-                    // Build và deploy docker
+                    echo 'Building and deploying Docker containers...'
                     sh '''
-                    docker-compose down
-                    docker container prune -f  # Xóa các container đã dừng
+                    docker-compose down || true
                     docker-compose up -d --build
                     '''
                 }
@@ -82,15 +71,15 @@ pipeline {
 
     post {
         always {
-            echo 'Cleaning up Docker system and workspace...'
-            sh 'docker system prune -f'  // Dọn dẹp Docker
-            cleanWs()  // Dọn dẹp workspace
+            echo 'Cleaning up workspace and Docker resources...'
+            sh 'docker system prune -f'
+            cleanWs()
         }
         success {
-            echo 'Pipeline completed successfully!'  // Thành công
+            echo 'Pipeline executed successfully!'
         }
         failure {
-            echo 'Pipeline failed!'  // Thất bại
+            echo 'Pipeline failed.'
         }
     }
 }
