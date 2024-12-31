@@ -18,7 +18,7 @@ spring:
     name: USER-SERVICE
     environment: ${ENVIRONMENT:DEV}
   datasource:
-    url: ${POSTGRESQL_DATABASE_URL:jdbc:postgresql://localhost:5432/iot_lab}
+    url: ${POSTGRESQL_DATABASE_URL:jdbc:postgresql://postgres:5432/iot_lab}
     username: ${POSTGRES_USER:postgres}
     password: ${POSTGRES_PASSWORD:password}
     driver-class-name: org.postgresql.Driver
@@ -73,7 +73,7 @@ logging:
       springframework:
         boot:
           autoconfigure: INFO
-          
+
 eureka:
   client:
     serviceUrl:
