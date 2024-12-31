@@ -1,5 +1,7 @@
 server:
-  port: ${PORT:8085}
+  port: 8085
+  address: 0.0.0.0
+
   servlet:
     context-path: /mqtt
 spring:
@@ -9,9 +11,9 @@ spring:
     name: MQTT-SERVICE
     environment: ${ENVIRONMENT:DEV}
   datasource:
-    url: jdbc:postgresql://localhost:5432/iot_lab
-    username: postgres
-    password: hungtran
+    url: ${POSTGRESQL_DATABASE_URL:jdbc:postgresql://14.225.255.177:5432/iot_lab}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
     driver-class-name: org.postgresql.Driver
     hikari:
       connection-timeout: ${DB_CONNECTION_TIMEOUT:50000}
@@ -45,8 +47,7 @@ telegram:
   chatId: ${TELEGRAM_CHAT_ID:-100}
   apiToken: ${TELEGRAM_API_TOKEN:-}
 debug: ${DEBUG:true}
-#ommani:
-#  sso-service: ${SSO_SERVICE:http://sso-service:8080}
+
 async:
   config:
     core-pool-size: ${ASYNC_CORE_POOL_SIZE:3}
@@ -65,7 +66,7 @@ logging:
 
 mqtt:
   broker:
-    url: tcp://localhost:1883
+    url: tcp://14.225.255.177:1883
   client:
     id: mqtt-service
   topic: mqtt/#

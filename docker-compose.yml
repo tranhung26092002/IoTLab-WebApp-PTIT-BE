@@ -1,23 +1,19 @@
-version: '2'
+version: '3.8'
+
 services:
   mqtt-service:
     build:
-      context: .
-      dockerfile: Dockerfile
-    image: mqtt-service
-    env_file:
-      - /opt/global/.env
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "10"
-    container_name: ptit-service
-    mem_limit: 512m
-    restart: always
+      context: .  # Đảm bảo context đúng để Dockerfile được sử dụng trong cùng thư mục
+    container_name: mqtt-service
+    ports:
+      - "8085:8085"
     networks:
-      - iotlabptit
+      - ptit-net
+    restart: always
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+
 networks:
-  iotlabptit:
-    external:
-      name: iotlabptit
+  ptit-net:
+    driver: bridge
