@@ -1,9 +1,6 @@
 package com.ptit.service.app.controllers;
 
-import com.ptit.service.app.dtos.auth.PhoneNumberDto;
-import com.ptit.service.app.dtos.auth.ResetPasswordDto;
-import com.ptit.service.app.dtos.auth.SignInDto;
-import com.ptit.service.app.dtos.auth.SignUpDto;
+import com.ptit.service.app.dtos.auth.*;
 import com.ptit.service.app.responses.MessageResponse;
 import com.ptit.service.app.responses.auth.AuthResponse;
 import com.ptit.service.app.responses.auth.OTPResponse;
@@ -30,8 +27,8 @@ public class AuthController {
     private final OTPService otpService;
     private final RefreshTokenService refreshTokenService;
 
-    @PostMapping("/check-phone-number")
-    public ResponseEntity<OTPResponse> sendOtp(@Valid @RequestBody PhoneNumberDto request){
+    @PostMapping("/check-email")
+    public ResponseEntity<OTPResponse> sendOtp(@Valid @RequestBody EmailDto request){
         OTPResponse response = otpService.sendOTP(request);
         return ResponseEntity.ok(response);
     }
@@ -59,11 +56,16 @@ public class AuthController {
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<OTPResponse> forgotPassword(@Valid @RequestBody PhoneNumberDto request){
+    public ResponseEntity<OTPResponse> forgotPassword(@Valid @RequestBody EmailDto request){
         OTPResponse response = authService.forgotPassword(request);
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/reset-password")
+    public ResponseEntity<MessageResponse> resetPassword(@Valid @RequestBody ResetPasswordDto request){
+        MessageResponse response = authService.resetPassword(request);
+        return ResponseEntity.ok(response);
+    }
 
     @RequestMapping("/valid-token")
     public ResponseEntity validToken(

@@ -23,7 +23,7 @@ public class ApplicationConfig {
 
     @Bean
     public UserDetailsService userDetailsService(){
-        return phoneNumber -> userRepository.findByPhoneNumber(phoneNumber)
+        return email -> userRepository.findByEmail(email)
                 .orElseThrow(() ->
                         new ExceptionOm(HttpStatus.NOT_FOUND,
                                 ErrorMessage.USER_NOT_FOUND.val()));

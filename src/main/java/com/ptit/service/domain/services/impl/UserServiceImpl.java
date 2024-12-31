@@ -13,6 +13,7 @@ import com.ptit.service.domain.entities.User;
 import com.ptit.service.domain.enums.StateUser;
 import com.ptit.service.domain.exceptions.ErrorMessage;
 import com.ptit.service.domain.repositories.UserRepository;
+import com.ptit.service.domain.services.EmailService;
 import com.ptit.service.domain.services.UserService;
 import com.ptit.service.domain.utils.AddressUtil;
 import lombok.RequiredArgsConstructor;
@@ -44,7 +45,7 @@ import java.util.Map;
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-
+    private final EmailService emailService;
     private final AddressUtil addressUtil;
 
     @Value("${ptit.storage-service}")
@@ -120,8 +121,8 @@ public class UserServiceImpl implements UserService {
     public MessageResponse changePassword(ChangePasswordDto request, Authentication authentication) {
         String currentPassword = request.getCurrentPassword();
 
-        String phoneNumber = authentication.getName();
-        User user = userRepository.findByPhoneNumber(phoneNumber).orElseThrow(
+        String email = authentication.getName();
+        User user = userRepository.findByEmail(email).orElseThrow(
                 () -> new ExceptionOm(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND.val())
         );
 
@@ -224,8 +225,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public MessageResponse createUser(UserDto userDto) {
-        if (userRepository.existsByPhoneNumber(userDto.getPhoneNumber())) {
-            throw new ExceptionOm(HttpStatus.BAD_REQUEST, ErrorMessage.PHONE_NUMBER_EXISTED.val());
+        if (userRepository.existsByEmail(userDto.getEmail())) {
+            throw new ExceptionOm(HttpStatus.BAD_REQUEST, ErrorMessage.EMAIL_ALREADY_EXISTS.val());
         }
 
         User user = new User();

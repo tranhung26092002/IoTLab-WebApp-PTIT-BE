@@ -34,7 +34,7 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
         }
         final String authHeader = request.getHeader("Authorization");
         final String jwt;
-        final String phoneNumber;
+        final String email;
         final String jwtKey = jwtService.getJwtKey();
 
         // neu khong o authHeader hoac authHeader khong bat dau voi Bearer
@@ -47,9 +47,9 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
         jwt = authHeader.substring(7);
 
         try {
-            phoneNumber = jwtService.extractUserName(jwt, jwtKey);
-            if (phoneNumber != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                UserDetails userDetails = this.userDetailsService.loadUserByUsername(phoneNumber);
+            email = jwtService.extractUserName(jwt, jwtKey);
+            if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                UserDetails userDetails = this.userDetailsService.loadUserByUsername(email);
                 if (jwtService.isTokenValid(jwt, userDetails, jwtKey)) {
                     List<GrantedAuthority> authorities = jwtService.extractAuthorities(jwt, jwtKey);
                     if (authorities == null) authorities = (List<GrantedAuthority>) userDetails.getAuthorities();

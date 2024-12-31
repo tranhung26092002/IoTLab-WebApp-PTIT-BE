@@ -1,14 +1,15 @@
 server:
-  port: ${PORT:8081}
+  port: ${PORT:8081} # Lấy giá trị từ biến môi trường PORT, mặc định là 8081
   servlet:
     context-path: /user
 
 jwt:
-  key: 4dN3bu1pm4FSA0YKyEBluatqucc3UktG3fobnhXtPdZd7Iovjl
+  key: ${JWT_KEY} # Lấy từ biến môi trường JWT_KEY, giá trị mặc định là default_jwt_key
   expiration: 86400000
+
 refresh-token:
   expiration: 864000000
-  key: rU8gSVL5RZ460yJOYkWk0YbLgKTdp3ruuKOt9ddkd19wMUEVWi
+  key: ${REFRESH_TOKEN_KEY} # Lấy từ biến môi trường REFRESH_TOKEN_KEY
 
 spring:
   mvc:
@@ -19,7 +20,7 @@ spring:
   datasource:
     url: ${POSTGRESQL_DATABASE_URL:jdbc:postgresql://localhost:5432/iot_lab}
     username: ${POSTGRESQL_USERNAME:postgres}
-    password: ${POSTGRESQL_PASSWORD:hungtran}
+    password: ${POSTGRESQL_PASSWORD:password}
     driver-class-name: org.postgresql.Driver
     hikari:
       connection-timeout: ${DB_CONNECTION_TIMEOUT:30000}
@@ -49,21 +50,16 @@ spring:
       max-request-size: 20MB
       enabled: true
       file-size-threshold: 2KB
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+
 telegram:
   chatId: ${TELEGRAM_CHAT_ID:-1000000000}
   apiToken: ${TELEGRAM_API_TOKEN:-1234567890:ABCDEFGHIJKLMNOPQRSTUVWXYZ}
-debug: ${DEBUG:true}
-#ommani:
-#  sso-service: ${SSO_SERVICE:http://sso-service:8080}
-async:
-  config:
-    core-pool-size: ${ASYNC_CORE_POOL_SIZE:3}
-logging:
-  level:
-    org:
-      springframework:
-        boot:
-          autoconfigure: INFO
+
 eureka:
   client:
     serviceUrl:
@@ -71,3 +67,10 @@ eureka:
 
 ptit:
   storage-service: ${STORAGE_SERVICE:http://localhost:8086}
+
+brevo:
+  api:
+    key: ${BREVO_API_KEY}
+  sender:
+    email: hungtran01686527618@gmail.com
+    name: IoT Lab

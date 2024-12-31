@@ -1,13 +1,11 @@
 package com.ptit.service.domain.services.impl;
 
 import com.ommanisoft.common.exceptions.ExceptionOm;
+import com.ptit.service.app.dtos.auth.*;
 import com.ptit.service.domain.enums.RoleType;
 import com.ptit.service.domain.enums.StateUser;
+import com.ptit.service.domain.services.EmailService;
 import com.ptit.service.security.JwtService;
-import com.ptit.service.app.dtos.auth.PhoneNumberDto;
-import com.ptit.service.app.dtos.auth.ResetPasswordDto;
-import com.ptit.service.app.dtos.auth.SignInDto;
-import com.ptit.service.app.dtos.auth.SignUpDto;
 import com.ptit.service.app.responses.MessageResponse;
 import com.ptit.service.app.responses.auth.AuthResponse;
 import com.ptit.service.app.responses.auth.OTPResponse;
@@ -30,6 +28,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.thymeleaf.context.Context;
 
 import java.security.SecureRandom;
 import java.util.HashMap;
@@ -50,6 +49,7 @@ public class AuthServiceImpl implements AuthService {
     private static final int LENGTH_OF_RANDOM_USER_NAME = 12;
     private static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     private ModelMapper mapper;
+    private final EmailService emailService;
 
     @Override
     @Transactional
@@ -81,12 +81,12 @@ public class AuthServiceImpl implements AuthService {
     public AuthResponse signIn(SignInDto signInDto) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        signInDto.getPhoneNumber(),
+                        signInDto.getEmail(),
                         signInDto.getPassword()
                 )
         );
 
-        User user = userRepository.findByPhoneNumber(signInDto.getPhoneNumber())
+        User user = userRepository.findByEmail(signInDto.getEmail())
                 .orElseThrow(() -> new ExceptionOm(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND.val()));
 
         String accessToken = jwtService.generateToken(user, user.getId());
@@ -104,10 +104,10 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Transactional
-    public OTPResponse forgotPassword(PhoneNumberDto phoneNumberDto) {
-        String phoneNumber = phoneNumberDto.getPhoneNumber();
+    public OTPResponse forgotPassword(EmailDto emailDto) {
+        String email = emailDto.getEmail();
 
-        User user = userRepository.findByPhoneNumber(phoneNumber)
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(
                         () -> new ExceptionOm(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND)
                 );
@@ -121,6 +121,19 @@ public class AuthServiceImpl implements AuthService {
 
         passwordResetTokenRepository.markTokensAsUsedByUserId(user.getId());
         passwordResetTokenRepository.save(passwordResetToken);
+
+        try {
+            // Tạo context cho Thymeleaf template
+            Context context = new Context();
+            context.setVariable("otp", otpCode);
+
+            // Gửi email
+            emailService.sendEmail(email, "Your OTP Code", "otp-template", context);
+            log.info("OTP sent to {}", email);
+        } catch (Exception e) {
+            log.error("Failed to send OTP to email {}: {}", email, e.getMessage());
+            throw new ExceptionOm(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to send OTP email.");
+        }
 
         return OTPResponse.builder()
                 .otpCode(otpCode)
@@ -201,7 +214,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private User mapDtoToEntity(SignUpDto request){
-        String phoneNumber = request.getOtpCodeDto().getPhoneNumber();
+        String email = request.getOtpCodeDto().getEmail();
 
         String password = request.getPassword();
 
@@ -216,7 +229,7 @@ public class AuthServiceImpl implements AuthService {
         // khi dang ky tai khoan mac dinh la customer
         return User.builder()
                 .userName(userName)
-                .phoneNumber(phoneNumber)
+                .email(email)
                 .roleType(RoleType.STUDENT)
                 .password(encodedPassword)
                 .deleted(false)

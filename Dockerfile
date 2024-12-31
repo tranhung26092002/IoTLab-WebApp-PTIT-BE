@@ -1,15 +1,15 @@
-FROM maven:3.6.1-jdk-8-alpine AS build
-WORKDIR /app
-USER root
-COPY pom.xml ./pom.xml
-RUN mvn dependency:go-offline
-COPY src ./src
-RUN mvn clean package -DskipTests
+# Sử dụng base image với OpenJDK 17
+FROM openjdk:17-jdk-slim
 
-##
-## Package stage
-##
-FROM openjdk:8-jdk-alpine
-COPY --from=build /app/target/ptit.service.jar /usr/local/lib/ptit.service.jar
-EXPOSE 8080
-ENTRYPOINT ["java", "-jar","/usr/local/lib/ptit.service.jar"]
+# Set thư mục làm việc trong container
+WORKDIR /app
+
+# Sao chép file JAR vào thư mục /app trong container
+# Giả sử rằng file JAR được tạo ra trong thư mục target với tên tương ứng với project
+COPY target/user-service.jar app.jar
+
+# Mở cổng 8081 cho user service
+EXPOSE 8081
+
+# Chạy ứng dụng Eureka
+ENTRYPOINT ["java", "-jar", "app.jar"]

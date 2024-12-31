@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorator="layout">
+<head>
+    <meta charset="UTF-8">
+    <title>Xác nhận OTP</title>
+</head>
+<body style="font-family: sans-serif; background-color: #f7fafc; color: #1a202c; padding: 24px;">
+<div style="max-width: 640px; margin: 0 auto; background-color: white; padding: 24px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+    <h4 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 16px;">Kính gửi Quý khách:
+<!--        <span th:text="${recipientName}" style="font-weight: bold; color: #3182ce;">Recipient Name</span>,-->
+    </h4>
+    <p style="font-size: 1.125rem; margin-bottom: 16px;">Chúng tôi xin thông báo mã OTP để xác nhận yêu cầu của bạn là:
+        <strong th:text="${otp}" style="font-weight: bold; color: #3182ce;">OTP Code</strong>.
+    </p>
+    <p style="font-size: 1.125rem; margin-bottom: 16px;">Mã OTP này có hiệu lực trong vòng 5 phút. Vui lòng không chia sẻ mã OTP này với bất kỳ ai.</p>
+    <br/>
+    <p style="font-size: 1.125rem; margin-bottom: 16px;">Nếu bạn không yêu cầu mã OTP này, vui lòng bỏ qua email này.</p>
+    <p style="font-size: 1.125rem; font-weight: 600;">Trân trọng,</p>
+    <p style="font-size: 1.125rem;">Đội ngũ Hỗ trợ</p>
+    <p style="font-size: 1.125rem; font-weight: bold; margin-top: 16px;">IoT Lab</p>
+</div>
+</body>
+</html>

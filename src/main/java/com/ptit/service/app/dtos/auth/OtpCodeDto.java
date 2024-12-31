@@ -7,13 +7,15 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.Email;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
 public class OtpCodeDto {
-    @ValidPhoneNumber
-    private String phoneNumber;
+    @Email
+    private String email;
 
     @ValidOtp
     private String otpCode;

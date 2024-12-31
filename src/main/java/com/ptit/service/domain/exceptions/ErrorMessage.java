@@ -18,7 +18,8 @@ public enum ErrorMessage implements BaseErrorMessage {
   WARD_NOT_FOUND("Phường/xã không tồn tại"),
   UNAUTHORIZED_USER_ACCESS("Truy cập không được ủy quyền"),
   USER_UNAUTHENTICATED("Người dùng chưa xác thực"),
-  PHONE_NUMBER_EXISTED("Số điện thoại đã tồn tại");
+  PHONE_NUMBER_EXISTED("Số điện thoại đã tồn tại"),
+  EMAIL_ALREADY_EXISTS("Email đã tồn tại");
 
   public String val;
 

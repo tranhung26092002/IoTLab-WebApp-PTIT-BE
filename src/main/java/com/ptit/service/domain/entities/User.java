@@ -96,7 +96,7 @@ public class User implements UserDetails, Serializable {
 
     @Override
     public String getUsername() {
-        return phoneNumber;
+        return email;
     }
 
     public String getUserName(){
