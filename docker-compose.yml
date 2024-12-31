@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  notification-service:
+    build:
+      context: .  # Đảm bảo context đúng để Dockerfile được sử dụng trong cùng thư mục
+    container_name: notification-service
+    ports:
+      - "8087:8087"
+    networks:
+      - ptit-net
+    restart: always
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+
+networks:
+  ptit-net:
+    driver: bridge

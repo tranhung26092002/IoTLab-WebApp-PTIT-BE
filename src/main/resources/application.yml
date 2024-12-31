@@ -1,5 +1,6 @@
 server:
-  port: ${PORT:8087}
+  port: 8087
+  address: 0.0.0.0
   servlet:
     context-path: /notification
 spring:
@@ -9,9 +10,9 @@ spring:
     name: NOTIFICATION-SERVICE
     environment: ${ENVIRONMENT:DEV}
   datasource:
-    url: ${POSTGRESQL_DATABASE_URL:jdbc:postgresql://192.168.1.4:5432/iot_lab}
-    username: ${POSTGRESQL_USERNAME:postgres}
-    password: ${POSTGRESQL_PASSWORD:hungtran}
+    url: ${POSTGRESQL_DATABASE_URL:jdbc:postgresql://14.225.255.177:5432/iot_lab}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
     driver-class-name: org.postgresql.Driver
     hikari:
       connection-timeout: ${DB_CONNECTION_TIMEOUT:30000}

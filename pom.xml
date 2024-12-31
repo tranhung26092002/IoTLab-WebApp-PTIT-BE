@@ -186,7 +186,7 @@
 				</configuration>
 			</plugin>
 		</plugins>
-		<finalName>ptit.service</finalName>
+		<finalName>notification-service</finalName>
 	</build>
 
 </project>
