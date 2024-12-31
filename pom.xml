@@ -165,7 +165,7 @@
 				</configuration>
 			</plugin>
 		</plugins>
-		<finalName>ptit.service</finalName>
+		<finalName>storage-service</finalName>
 	</build>
 
 </project>

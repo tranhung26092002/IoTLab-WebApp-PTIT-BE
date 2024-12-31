@@ -1,5 +1,6 @@
 server:
-  port: ${PORT:8086}
+  port: 8086
+  address: 0.0.0.0
 
 spring:
   mvc:
@@ -15,7 +16,7 @@ spring:
       file-size-threshold: 10KB # Kích thước tối thiểu của file trước khi tạm lưu vào bộ nhớ
 
 storage:
-  location: E:/workspace/Do_An/uploads
+  location: /uploads # Sử dụng thư mục /uploads trong container
 
 logging:
   level:

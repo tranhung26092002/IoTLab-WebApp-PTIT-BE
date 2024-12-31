@@ -1,23 +1,18 @@
-version: '2'
+version: '3.8'
+
 services:
-  qr-service:
+  storage-service:
     build:
-      context: .
-      dockerfile: Dockerfile
-    image: qr-service
-    env_file:
-      - /opt/global/.env
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "10"
-    container_name: farm-service
-    mem_limit: 512m
-    restart: always
+      context: .  # Đảm bảo context đúng để Dockerfile được sử dụng trong cùng thư mục
+    container_name: storage-service
+    ports:
+      - "8086:8086"
+    volumes:
+      - /opt/storage-service/uploads:/uploads # Bind Mount
     networks:
-      - iotlabptit
+      - ptit-net
+    restart: always
+
 networks:
-  iotlabptit:
-    external:
-      name: iotlabptit
+  ptit-net:
+    driver: bridge
