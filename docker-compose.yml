@@ -5,6 +5,7 @@ services:
     build:
       context: .  # Đảm bảo context đúng để Dockerfile được sử dụng trong cùng thư mục
     container_name: storage-service
+    image: storage-service:latest
     ports:
       - "8086:8086"
     volumes:
