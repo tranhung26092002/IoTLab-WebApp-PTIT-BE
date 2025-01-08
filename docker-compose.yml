@@ -5,6 +5,7 @@ services:
     build:
       context: .  # Đảm bảo context đúng để Dockerfile được sử dụng trong cùng thư mục
     container_name: eureka-service
+    image: eureka-service:latest  # Đặt tên image duy nhất
     ports:
       - "8761:8761"
     networks:
