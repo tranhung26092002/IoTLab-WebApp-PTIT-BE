@@ -3,7 +3,7 @@ version: '3.8'
 services:
   api-gateway:
     build:
-      context: .  # Đảm bảo context đúng để Dockerfile được sử dụng trong cùng thư mục
+      context: .
     container_name: api-gateway
     ports:
       - "8088:8088"

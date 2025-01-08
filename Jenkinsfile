@@ -10,13 +10,18 @@ pipeline {
         stage('Clean Old Containers') {
             steps {
                 script {
-                    echo 'Checking for existing containers...'
+                    echo 'Checking for existing containers with the same name...'
                     sh '''
+                        # Kiểm tra container đang chạy
                         if docker ps -q -f name=$CONTAINER_NAME | grep -q .; then
-                            echo "Stopping containers..."
-                            docker-compose down
-                        else
-                            echo "No containers found"
+                            echo "Stopping and removing existing container: $CONTAINER_NAME"
+                            docker stop $CONTAINER_NAME
+                            docker rm $CONTAINER_NAME
+                        fi
+                        # Kiểm tra container đã dừng nhưng chưa xóa
+                        if docker ps -aq -f name=$CONTAINER_NAME | grep -q .; then
+                            echo "Removing stopped container: $CONTAINER_NAME"
+                            docker rm $CONTAINER_NAME
                         fi
                     '''
                 }
@@ -27,7 +32,7 @@ pipeline {
             steps {
                 script {
                     echo 'Fixing permissions for mvnw...'
-                    sh 'chmod +x ./mvnw'  // Chắc chắn cấp quyền cho tệp mvnw
+                    sh 'chmod +x ./mvnw'
                 }
             }
         }
@@ -36,16 +41,7 @@ pipeline {
             steps {
                 script {
                     echo 'Building application...'
-                    sh './mvnw clean package -DskipTests'  // Build jar file
-                }
-            }
-        }
-
-        stage('List Files in Target Directory') {
-            steps {
-                script {
-                    echo 'Listing files in target directory...'
-                    sh 'ls -l target/'  // Kiểm tra các file trong thư mục target
+                    sh './mvnw clean package -DskipTests'
                 }
             }
         }
@@ -69,10 +65,9 @@ pipeline {
             steps {
                 script {
                     echo 'Deploying application with Docker Compose...'
-                    // Build và deploy docker
                     sh '''
-                    docker-compose down
-                    docker container prune -f  # Xóa các container đã dừng
+                    docker-compose down || true
+                    docker container prune -f || true
                     docker-compose up -d --build
                     '''
                 }
@@ -83,14 +78,14 @@ pipeline {
     post {
         always {
             echo 'Cleaning up Docker system and workspace...'
-            sh 'docker system prune -f'  // Dọn dẹp Docker
-            cleanWs()  // Dọn dẹp workspace
+            sh 'docker system prune -f'
+            cleanWs()
         }
         success {
-            echo 'Pipeline completed successfully!'  // Thành công
+            echo 'Pipeline completed successfully!'
         }
         failure {
-            echo 'Pipeline failed!'  // Thất bại
+            echo 'Pipeline failed!'
         }
     }
 }
