@@ -15,7 +15,7 @@ public class CorsConfig implements WebMvcConfigurer {
       public void addCorsMappings(CorsRegistry registry) {
         registry
                 .addMapping("/**")
-                .allowedOrigins("http://14.225.255.177:3000")
+                .allowedOrigins("https://openlab.com.vn")
                 .allowedHeaders("*")
                 .allowedMethods("*")
                 .allowCredentials(true);  // Quan trọng nếu cần gửi cookies hoặc authorization headers
