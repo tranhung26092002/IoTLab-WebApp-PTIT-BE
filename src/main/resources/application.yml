@@ -78,7 +78,7 @@ logging:
 eureka:
   client:
     serviceUrl:
-      defaultZone: ${EUREKA_URI:http://14.225.255.177:8761/eureka}
+      defaultZone: ${EUREKA_URI:http://eureka-service:8761/eureka}
 
 ptit:
   storage-service: ${STORAGE_SERVICE:http://14.225.255.177:8086}
