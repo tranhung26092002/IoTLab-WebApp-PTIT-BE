@@ -12,7 +12,7 @@ public class CorsConfig {
   @Bean
   public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
-    configuration.addAllowedOrigin("https://openlab.com.vn"); // Chỉ cho phép origin này
+    configuration.addAllowedOrigin("http://14.225.255.177:3000"); // Chỉ cho phép origin này
     configuration.addAllowedMethod("*"); // Chấp nhận tất cả các phương thức
     configuration.addAllowedHeader("*"); // Chấp nhận tất cả các tiêu đề
     configuration.setAllowCredentials(true); // Cho phép credentials (cookies, authorization headers)
