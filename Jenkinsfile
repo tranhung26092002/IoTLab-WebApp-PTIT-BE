@@ -20,6 +20,15 @@ pipeline {
                         docker-compose down || true
                         docker container prune -f || true
                     '''
+                    // Dừng và xóa container postgres nếu tồn tại
+                    def postgresContainer = sh(script: 'docker ps -q -f name=postgres', returnStdout: true).trim()
+                    if (postgresContainer) {
+                        echo "Stopping and removing old postgres container..."
+                        sh "docker stop ${postgresContainer}"
+                        sh "docker rm ${postgresContainer}"
+                    } else {
+                        echo "No old postgres container to stop."
+                    }
                 }
             }
         }
