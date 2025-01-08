@@ -221,7 +221,7 @@
 				</configuration>
 			</plugin>
 		</plugins>
-		<finalName>ptit.service</finalName>
+		<finalName>mqtt-service</finalName>
 	</build>
 
 </project>
