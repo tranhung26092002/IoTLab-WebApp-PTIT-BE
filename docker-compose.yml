@@ -5,6 +5,7 @@ services:
     build:
       context: .
     container_name: api-gateway
+    image: api-gateway:latest  # Đặt tên image duy nhất
     ports:
       - "8088:8088"
     networks:
