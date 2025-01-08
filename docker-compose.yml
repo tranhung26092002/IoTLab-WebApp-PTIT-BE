@@ -21,7 +21,7 @@ services:
       - postgres
 
   postgres:
-      image: postgres:14
+      image: postgres:latest
       container_name: postgres
       environment:
         POSTGRES_USER: ${POSTGRES_USER}
