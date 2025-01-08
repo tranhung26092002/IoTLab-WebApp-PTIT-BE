@@ -11,7 +11,7 @@ spring:
     name: PRACTICE-SERVICE
     environment: ${ENVIRONMENT:DEV}
   datasource:
-    url: ${POSTGRESQL_DATABASE_URL:jdbc:postgresql://14.225.255.177:5432/iot_lab}
+    url: ${POSTGRESQL_DATABASE_URL:jdbc:postgresql://14.225.206.27:5432/iot_lab}
     username: ${POSTGRES_USER}
     password: ${POSTGRES_PASSWORD}
     driver-class-name: org.postgresql.Driver
