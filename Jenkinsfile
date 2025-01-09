@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = 'eureka-service:latest'
+        DOCKER_IMAGE = 'eureka-service'
         CONTAINER_NAME = 'eureka-service'
     }
 
