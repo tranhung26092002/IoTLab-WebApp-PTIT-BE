@@ -27,7 +27,7 @@ pipeline {
             steps {
                 script {
                     echo 'Fixing permissions for mvnw...'
-                    sh 'chmod +x ./mvnw'  // Chắc chắn cấp quyền cho tệp mvnw
+                    sh 'chmod +x ./mvnw'  // Cấp quyền cho tệp mvnw
                 }
             }
         }
@@ -36,7 +36,7 @@ pipeline {
             steps {
                 script {
                     echo 'Building application...'
-                    sh './mvnw clean package -DskipTests'  // Build jar file
+                    sh './mvnw clean package -DskipTests'  // Build file JAR
                 }
             }
         }
@@ -69,11 +69,15 @@ pipeline {
             steps {
                 script {
                     echo 'Deploying application with Docker Compose...'
-                    // Build và deploy docker
                     sh '''
+                    # Kiểm tra và tạo mạng nếu chưa tồn tại
+                    if ! docker network inspect ptit-net > /dev/null 2>&1; then
+                        echo "Network ptit-net not found. Creating it..."
+                        docker network create ptit-net
+                    fi
                     docker-compose down
                     docker container prune -f  # Xóa các container đã dừng
-                    docker-compose up -d --build
+                    docker-compose up -d --build  # Xây dựng lại và triển khai Docker container
                     '''
                 }
             }
