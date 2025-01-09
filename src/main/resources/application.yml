@@ -35,6 +35,9 @@ async:
 eureka:
   client:
     serviceUrl:
-      defaultZone: ${EUREKA_URI:http://14.225.206.27:8761/eureka}
+      defaultZone: http://eureka-service:8761/eureka
+  instance:
+    hostname: storage-service
+    prefer-ip-address: true
 
 
