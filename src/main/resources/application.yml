@@ -45,8 +45,8 @@ spring:
   rabbitmq:
     host: 14.225.206.27
     port: 5672
-    username: guest
-    password: guest
+    username: admin
+    password: hungtran
 telegram:
   chatId: ${TELEGRAM_CHAT_ID:-1000000000}
   apiToken: ${TELEGRAM_API_TOKEN:-0000000000:XXXXXXXXXXXXXXXXXXXXXXXX}
