@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = 'api-gateway:latest'
+        DOCKER_IMAGE = 'api-gateway'
         CONTAINER_NAME = 'api-gateway'
     }
 
@@ -66,9 +66,14 @@ pipeline {
                 script {
                     echo 'Deploying application with Docker Compose...'
                     sh '''
-                    docker-compose down || true
-                    docker container prune -f || true
-                    docker-compose up -d --build
+                    # Kiểm tra và tạo mạng nếu chưa tồn tại
+                    if ! docker network inspect ptit-net > /dev/null 2>&1; then
+                        echo "Network ptit-net not found. Creating it..."
+                        docker network create ptit-net
+                    fi
+                    docker-compose down
+                    docker container prune -f  # Xóa các container đã dừng
+                    docker-compose up -d --build  # Xây dựng lại và triển khai Docker container
                     '''
                 }
             }
