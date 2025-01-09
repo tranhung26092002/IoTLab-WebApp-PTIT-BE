@@ -9,10 +9,6 @@ services:
     image: api-gateway 
     ports:
       - "8088:8088"
-    environment:
-      - EUREKA_SERVER=http://eureka-service:8761/eureka  
-    depends_on:
-      - eureka-service
     deploy:
       resources:
         limits:
