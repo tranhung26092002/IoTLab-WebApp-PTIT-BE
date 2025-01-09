@@ -43,7 +43,7 @@ spring:
       enabled: true
       file-size-threshold: 2KB
   rabbitmq:
-    host: localhost
+    host: 14.225.206.27
     port: 5672
     username: guest
     password: guest
@@ -63,4 +63,4 @@ logging:
 eureka:
   client:
     serviceUrl:
-      defaultZone: ${EUREKA_URI:http://eureka-service:8761/eureka}
+      defaultZone: ${EUREKA_URI:http://14.225.206.27:8761/eureka}
