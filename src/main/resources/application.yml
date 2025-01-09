@@ -32,12 +32,8 @@ debug: ${DEBUG:true}
 async:
   config:
     core-pool-size: ${ASYNC_CORE_POOL_SIZE:3}
+
 eureka:
   client:
     serviceUrl:
-      defaultZone: http://eureka-service:8761/eureka
-  instance:
-    hostname: storage-service
-    prefer-ip-address: true
-
-
+      defaultZone: http://14.225.206.27:8761/eureka
