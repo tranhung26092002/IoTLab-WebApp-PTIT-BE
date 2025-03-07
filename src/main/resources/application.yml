@@ -11,9 +11,9 @@ spring:
     name: MQTT-SERVICE
     environment: ${ENVIRONMENT:DEV}
   datasource:
-    url: ${POSTGRESQL_DATABASE_URL:jdbc:postgresql://14.225.255.177:5432/iot_lab}
-    username: ${POSTGRES_USER}
-    password: ${POSTGRES_PASSWORD}
+    url: ${POSTGRESQL_DATABASE_URL:jdbc:postgresql://localhost:5432/iot_lab}
+    username: ${POSTGRES_USER:postgres}
+    password: ${POSTGRES_PASSWORD:hungtran}
     driver-class-name: org.postgresql.Driver
     hikari:
       connection-timeout: ${DB_CONNECTION_TIMEOUT:50000}
@@ -76,4 +76,4 @@ mqtt:
 eureka:
   client:
     serviceUrl:
-      defaultZone: ${EUREKA_URI:http://14.225.206.27:8761/eureka}
+      defaultZone: ${EUREKA_URI:http://localhost:8761/eureka}
