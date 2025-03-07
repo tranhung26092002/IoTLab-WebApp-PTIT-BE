@@ -10,9 +10,9 @@ spring:
     name: NOTIFICATION-SERVICE
     environment: ${ENVIRONMENT:DEV}
   datasource:
-    url: ${POSTGRESQL_DATABASE_URL:jdbc:postgresql://14.225.206.27:5432/iot_lab}
-    username: ${POSTGRES_USER}
-    password: ${POSTGRES_PASSWORD}
+    url: ${POSTGRESQL_DATABASE_URL:jdbc:postgresql://localhost:5432/iot_lab}
+    username: ${POSTGRES_USER:postgres}
+    password: ${POSTGRES_PASSWORD:hungtran}
     driver-class-name: org.postgresql.Driver
     hikari:
       connection-timeout: ${DB_CONNECTION_TIMEOUT:30000}
@@ -43,10 +43,10 @@ spring:
       enabled: true
       file-size-threshold: 2KB
   rabbitmq:
-    host: 14.225.206.27
+    host: localhost
     port: 5672
-    username: admin
-    password: hungtran
+    username: guest
+    password: guest
 telegram:
   chatId: ${TELEGRAM_CHAT_ID:-1000000000}
   apiToken: ${TELEGRAM_API_TOKEN:-0000000000:XXXXXXXXXXXXXXXXXXXXXXXX}
@@ -63,4 +63,4 @@ logging:
 eureka:
   client:
     serviceUrl:
-      defaultZone: ${EUREKA_URI:http://14.225.206.27:8761/eureka}
+      defaultZone: ${EUREKA_URI:http://localhost:8761/eureka}
