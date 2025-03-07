@@ -22,7 +22,7 @@ public class DeviceDataInitializer implements CommandLineRunner {
         // Kiểm tra nếu dữ liệu trong bảng rỗng
         if (deviceRepository.count() == 0) {
             ObjectMapper objectMapper = new ObjectMapper();
-            InputStream inputStream = getClass().getClassLoader().getResourceAsStream("data/devices.json");
+            InputStream inputStream = getClass().getClassLoader().getResourceAsStream("data/kit.json");
 
             if (inputStream != null) {
                 List<Device> devices = Arrays.asList(objectMapper.readValue(inputStream, Device[].class));
