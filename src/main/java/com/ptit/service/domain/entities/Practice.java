@@ -34,9 +34,6 @@ public class Practice {
     @Enumerated(EnumType.STRING)
     private PracticeStatus status;
 
-    @Column(name = "created_at", updatable = false, nullable = false, columnDefinition = "TIMESTAMP")
-    private LocalDateTime createdAt;
-
     @OneToMany
     @JsonManagedReference
     private List<PracticeVideo> practiceVideos;
@@ -48,6 +45,13 @@ public class Practice {
     @OneToMany
     @JsonManagedReference
     private List<PracticeGuide> practiceGuides;
+
+    @OneToMany
+    @JsonManagedReference
+    private List<Report> reports;
+
+    @Column(name = "created_at", updatable = false, nullable = false, columnDefinition = "TIMESTAMP")
+    private LocalDateTime createdAt;
 
     @Column(name = "updated_at", columnDefinition = "TIMESTAMP")
     private LocalDateTime updatedAt;
