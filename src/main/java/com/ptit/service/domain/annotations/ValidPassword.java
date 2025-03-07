@@ -12,12 +12,14 @@ import java.lang.annotation.Target;
 @Constraint(validatedBy = {})
 @NotBlank(message = "Password is required!")
 @Pattern(
-        regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=]).{8,}$",
-        message = "Password must be at least 8 characters long, " +
-                "contain at least one digit, " +
-                "one lowercase letter, " +
-                "one uppercase letter, " +
-                "and one special character"
+        regexp = "^(?=.*[a-zA-Z])(?=.*[0-9]|.*[@#$%^&+=]).{8,}$",
+        message = "Password must be at least 8 characters long and contain letters and numbers or special characters"
+//        regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=]).{8,}$",
+//        message = "Password must be at least 8 characters long, " +
+//                "contain at least one digit, " +
+//                "one lowercase letter, " +
+//                "one uppercase letter, " +
+//                "and one special character"
 )
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER, ElementType.ANNOTATION_TYPE })

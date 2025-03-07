@@ -3,6 +3,9 @@ package com.ptit.service.domain.entities;
 import lombok.*;
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class Address {
     private String addressDetail;
 

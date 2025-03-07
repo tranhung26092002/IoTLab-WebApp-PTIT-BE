@@ -1,6 +1,8 @@
 package com.ptit.service.domain.repositories;
 
 import com.ptit.service.domain.entities.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -24,5 +26,12 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findByEmail(String email);
 
+    Optional<User> findByUserName(String userName);
+
     boolean existsByEmail(String email);
+
+    @Query("SELECT u FROM User u WHERE u.roleType = 'TEACHER'")
+    Page<User> getAllInstructors(Pageable pageable);
+
+    boolean existsByUserName(String userName);
 }

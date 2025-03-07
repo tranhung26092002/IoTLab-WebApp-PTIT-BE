@@ -4,20 +4,26 @@ import com.ommanisoft.common.exceptions.ExceptionOm;
 import com.ommanisoft.common.utils.FnCommon;
 import com.ptit.service.app.dtos.UserDto;
 import com.ptit.service.app.dtos.auth.ChangePasswordDto;
+import com.ptit.service.app.responses.AttendanceResponse;
+import com.ptit.service.app.responses.user.InstructorReponse;
+import com.ptit.service.app.responses.user.StudentResponse;
 import com.ptit.service.app.responses.user.UserResponse;
 import com.ptit.service.app.responses.address.AddressResponse;
 import com.ptit.service.app.responses.MessageResponse;
 import com.ptit.service.app.responses.ResponsePage;
 import com.ptit.service.domain.entities.Address;
+import com.ptit.service.domain.entities.Attendance;
 import com.ptit.service.domain.entities.User;
 import com.ptit.service.domain.enums.StateUser;
 import com.ptit.service.domain.exceptions.ErrorMessage;
+import com.ptit.service.domain.repositories.AttendanceRepository;
 import com.ptit.service.domain.repositories.UserRepository;
 import com.ptit.service.domain.services.EmailService;
 import com.ptit.service.domain.services.UserService;
 import com.ptit.service.domain.utils.AddressUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
@@ -47,6 +53,8 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
     private final AddressUtil addressUtil;
+    private final AttendanceRepository attendanceRepository;
+    private final ModelMapper modelMapper;
 
     @Value("${ptit.storage-service}")
     private String storageService;
@@ -225,8 +233,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public MessageResponse createUser(UserDto userDto) {
-        if (userRepository.existsByEmail(userDto.getEmail())) {
-            throw new ExceptionOm(HttpStatus.BAD_REQUEST, ErrorMessage.EMAIL_ALREADY_EXISTS.val());
+        if (userRepository.existsByUserName(userDto.getUserName())) {
+            throw new ExceptionOm(HttpStatus.BAD_REQUEST, ErrorMessage.USER_NAME_EXISTED.val());
         }
 
         User user = new User();
@@ -239,11 +247,67 @@ public class UserServiceImpl implements UserService {
         FnCommon.coppyNonNullProperties(user, userDto);
 
         user.setPassword(passwordEncoder.encode("12345678"));
+        user.setStatus(StateUser.ACTIVE);
         user.setDeleted(false);
 
         userRepository.save(user);
 
         return MessageResponse.builder().message("Create user successful!").build();
+    }
+
+    @Override
+    public ResponsePage<User, InstructorReponse> getAllInstructors(Pageable pageable) {
+        Page<User> userPage = userRepository.getAllInstructors(pageable);
+
+        Page<InstructorReponse> instructorReponsePage = userPage.map(this::convertToInstructorReponse);
+
+        log.info("Get all instructors successful!");
+        return new ResponsePage<>(instructorReponsePage);
+    }
+
+    @Override
+    public StudentResponse getUserByUsername(String userName) {
+        User user = userRepository.findByUserName(userName).orElseThrow(
+                () -> new ExceptionOm(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND.val())
+        );
+
+        return convertToStudentResponse(user);
+    }
+
+    @Override
+    public ResponsePage<Attendance, AttendanceResponse> getAllAttendances(Pageable pageable) {
+        Page<Attendance> userPage = attendanceRepository.findAll(pageable);
+
+        Page<AttendanceResponse> responses = userPage.map(this::convertToAttendanceResponse);
+        log.info("Get all attendees successful!");
+        return new ResponsePage<>(responses);
+    }
+
+    private AttendanceResponse convertToAttendanceResponse(Attendance attendance) {
+        AttendanceResponse attendanceResponse = new AttendanceResponse();
+
+        modelMapper.map(attendance, attendanceResponse);
+
+        return attendanceResponse;
+    }
+
+    private StudentResponse convertToStudentResponse(User user) {
+        StudentResponse studentResponse = new StudentResponse();
+
+        studentResponse.setUserId(user.getId());
+        studentResponse.setName(user.getFullName());
+        studentResponse.setStudentCode(user.getUserName());
+
+        return studentResponse;
+    }
+
+    private InstructorReponse convertToInstructorReponse(User user) {
+        InstructorReponse instructorReponse = new InstructorReponse();
+
+        instructorReponse.setUserId(user.getId());
+        instructorReponse.setName(user.getFullName());
+
+        return instructorReponse;
     }
 
     private UserResponse convertToUserResponse(User user){

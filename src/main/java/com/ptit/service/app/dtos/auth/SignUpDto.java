@@ -5,26 +5,31 @@ import lombok.*;
 
 import javax.validation.constraints.AssertTrue;
 import javax.validation.constraints.NotNull;
+import java.io.Serializable;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class SignUpDto {
-    @NotNull(message = "OtpCodeDto is required!")
-    private OtpCodeDto otpCodeDto;
+public class SignUpDto implements Serializable {
+//    @NotNull(message = "OtpCodeDto is required!")
+//    private OtpCodeDto otpCodeDto;
 
-    private String username;
+    private String userName;
 
-    @ValidPassword
-    private String password;
+    private String fullName;
 
-    @ValidPassword
-    private String confirmPassword;
+    private String classCode;
 
-    @AssertTrue(message = "Password and confirm password do not match!")
-    public boolean isPasswordMatches() {
-        return password != null && password.equals(confirmPassword);
-    }
+//    @ValidPassword
+//    private String password;
+//
+//    @ValidPassword
+//    private String confirmPassword;
+//
+//    @AssertTrue(message = "Password and confirm password do not match!")
+//    public boolean isPasswordMatches() {
+//        return password != null && password.equals(confirmPassword);
+//    }
 }

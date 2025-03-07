@@ -19,6 +19,7 @@ public enum ErrorMessage implements BaseErrorMessage {
   UNAUTHORIZED_USER_ACCESS("Truy cập không được ủy quyền"),
   USER_UNAUTHENTICATED("Người dùng chưa xác thực"),
   PHONE_NUMBER_EXISTED("Số điện thoại đã tồn tại"),
+  USER_NAME_EXISTED("Tên người dùng đã tồn tại"),
   EMAIL_ALREADY_EXISTS("Email đã tồn tại");
 
   public String val;

@@ -1,13 +1,16 @@
 package com.ptit.service.app.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.ptit.service.app.dtos.UserDto;
 import com.ptit.service.app.dtos.auth.ChangePasswordDto;
+import com.ptit.service.app.responses.AttendanceResponse;
 import com.ptit.service.app.responses.MessageResponse;
 import com.ptit.service.app.responses.ResponsePage;
+import com.ptit.service.app.responses.user.InstructorReponse;
+import com.ptit.service.app.responses.user.StudentResponse;
 import com.ptit.service.app.responses.user.UserResponse;
+import com.ptit.service.domain.entities.Attendance;
 import com.ptit.service.domain.entities.User;
 import com.ptit.service.domain.enums.StateUser;
 import com.ptit.service.domain.services.UserService;
@@ -36,6 +39,12 @@ public class UserController {
         return userService.getUserById(userId);
     }
 
+    // Get list of users with role admin
+    @GetMapping("/instructors")
+    public ResponsePage<User, InstructorReponse> getAllInstructors(Pageable pageable){
+        return userService.getAllInstructors(pageable);
+    }
+
     @PutMapping("/me")
     public UserResponse updateMe(
             @RequestHeader(name = Constant.headerUserId) Long userId,
@@ -54,7 +63,13 @@ public class UserController {
         return userService.updateMe(userId, user, file);
     }
 
-//    @PreAuthorize("hasRole('ADMIN')")
+    // Get list of attendees
+    @GetMapping("/attendances")
+    public ResponsePage<Attendance, AttendanceResponse> getAllAttendances(Pageable pageable){
+        return userService.getAllAttendances(pageable);
+    }
+
+    //@PreAuthorize("hasRole('ADMIN')")
     @GetMapping()
     public ResponsePage<User, UserResponse> getAllUser(Pageable pageable){
         return userService.getALlUser(pageable);
@@ -68,6 +83,12 @@ public class UserController {
     @GetMapping("/{id}")
     public UserResponse getUserById(@PathVariable Long id) {
         return userService.getUserById(id);
+    }
+
+    // Get user by username
+    @GetMapping("/username/{userName}")
+    public StudentResponse getUserByUsername(@PathVariable String userName) {
+        return userService.getUserByUsername(userName);
     }
 
     @PostMapping("/send-notification")

@@ -22,6 +22,8 @@ public class UserResponse extends BaseResponse {
 
     private String fullName;
 
+    private String classCode;
+
     private String phoneNumber;
 
     private String email;

@@ -43,6 +43,9 @@ public class User implements UserDetails, Serializable {
     @Column(name = "full_name", length = 100)
     private String fullName;
 
+    @Column(name = "class_code", length = 50)
+    private String classCode;
+
     @Column(name = "phone_number")
     private String phoneNumber;
 
@@ -71,7 +74,7 @@ public class User implements UserDetails, Serializable {
     private Address address;
 
     @Column(name = "deleted")
-    private Boolean deleted;
+    private Boolean deleted = false;
 
     @Column(name = "role")
     @Enumerated(EnumType.STRING)
@@ -87,6 +90,22 @@ public class User implements UserDetails, Serializable {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updatedAt;
 
+    public User(String admin, String admin1, String ioTLab, String number, String password, String mail, String s, Gender gender, LocalDate dob, StateUser stateUser, Address address, boolean b, RoleType roleType) {
+        this.userName = admin;
+        this.fullName = admin1;
+        this.classCode = ioTLab;
+        this.phoneNumber = number;
+        this.password = password;
+        this.email = mail;
+        this.avatarUrl = s;
+        this.gender = gender;
+        this.dateOfBirth = dob;
+        this.status = stateUser;
+        this.address = address;
+        this.deleted = b;
+        this.roleType = roleType;
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         List<SimpleGrantedAuthority> authorities = new ArrayList<>();
@@ -96,7 +115,7 @@ public class User implements UserDetails, Serializable {
 
     @Override
     public String getUsername() {
-        return email;
+        return userName;
     }
 
     public String getUserName(){

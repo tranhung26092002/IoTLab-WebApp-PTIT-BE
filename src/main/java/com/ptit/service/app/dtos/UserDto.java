@@ -25,6 +25,8 @@ public class UserDto {
 
     private String phoneNumber;
 
+    private String classCode;
+
     private String avatarUrl;
 
     private String email;

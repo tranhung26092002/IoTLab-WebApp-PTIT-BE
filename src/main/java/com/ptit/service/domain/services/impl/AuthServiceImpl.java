@@ -4,7 +4,7 @@ import com.ommanisoft.common.exceptions.ExceptionOm;
 import com.ptit.service.app.dtos.auth.*;
 import com.ptit.service.domain.enums.RoleType;
 import com.ptit.service.domain.enums.StateUser;
-import com.ptit.service.domain.services.EmailService;
+import com.ptit.service.domain.services.*;
 import com.ptit.service.security.JwtService;
 import com.ptit.service.app.responses.MessageResponse;
 import com.ptit.service.app.responses.auth.AuthResponse;
@@ -15,9 +15,6 @@ import com.ptit.service.domain.enums.TokenType;
 import com.ptit.service.domain.exceptions.ErrorMessage;
 import com.ptit.service.domain.repositories.PasswordResetTokenRepository;
 import com.ptit.service.domain.repositories.UserRepository;
-import com.ptit.service.domain.services.AuthService;
-import com.ptit.service.domain.services.OTPService;
-import com.ptit.service.domain.services.RefreshTokenService;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -50,24 +47,22 @@ public class AuthServiceImpl implements AuthService {
     private static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     private ModelMapper mapper;
     private final EmailService emailService;
+    private final AttendanceService attendanceService;
 
     @Override
     @Transactional
     public AuthResponse signUp(SignUpDto signUpDto) {
-        boolean isVerifiedOtp = otpService.verifyOTP(signUpDto.getOtpCodeDto());
-        if (!isVerifiedOtp) {
-            throw new ExceptionOm(HttpStatus.BAD_REQUEST, ErrorMessage.OTP_IS_INVALID.val());
-        }
+//        boolean isVerifiedOtp = otpService.verifyOTP(signUpDto.getOtpCodeDto());
+//        if (!isVerifiedOtp) {
+//            throw new ExceptionOm(HttpStatus.BAD_REQUEST, ErrorMessage.OTP_IS_INVALID.val());
+//        }
 
         User user = userRepository.save(mapDtoToEntity(signUpDto));
-
-        log.info("{}",user);
 
         String accessToken = jwtService.generateToken(user, user.getId());
         String refreshToken = jwtService.generateRefreshToken(user);
 
         refreshTokenService.saveUserToken(user,refreshToken);
-
 
         return AuthResponse.builder()
                 .accessToken(accessToken)
@@ -81,12 +76,12 @@ public class AuthServiceImpl implements AuthService {
     public AuthResponse signIn(SignInDto signInDto) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        signInDto.getEmail(),
+                        signInDto.getUserName(),
                         signInDto.getPassword()
                 )
         );
 
-        User user = userRepository.findByEmail(signInDto.getEmail())
+        User user = userRepository.findByUserName(signInDto.getUserName())
                 .orElseThrow(() -> new ExceptionOm(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND.val()));
 
         String accessToken = jwtService.generateToken(user, user.getId());
@@ -95,10 +90,15 @@ public class AuthServiceImpl implements AuthService {
         refreshTokenService.revokeAllUserToken(user);
         refreshTokenService.saveUserToken(user, refreshToken);
 
+        // Kiểm tra và điểm danh
+        boolean checkInSuccess = attendanceService.checkAndMarkAttendance(user);
+        String message = checkInSuccess ? "Đăng nhập & điểm danh thành công!" : "Đăng nhập thành công, đã điểm danh trước đó.";
+
         return AuthResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .tokenType(TokenType.BEARER)
+                .message(message) // Gửi thông báo để hiển thị trên UI
                 .build();
     }
 
@@ -214,26 +214,25 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private User mapDtoToEntity(SignUpDto request){
-        String email = request.getOtpCodeDto().getEmail();
-
-        String password = request.getPassword();
-
-        if (request.getUsername() == null || request.getUsername().isEmpty()) {
-            request.setUsername(randomUserName());
+        // check user name da ton tai chua
+        if(userRepository.existsByUserName(request.getUserName())){
+            throw new ExceptionOm(HttpStatus.BAD_REQUEST, ErrorMessage.USER_NAME_EXISTED.val());
         }
-        String userName = request.getUsername();
+        String userName = request.getUserName();
 
         // encode password before save in database
+        String password = request.getUserName();
         String encodedPassword = passwordEncoder.encode(password);
 
         // khi dang ky tai khoan mac dinh la customer
         return User.builder()
                 .userName(userName)
-                .email(email)
+                .fullName(request.getFullName())
+                .classCode(request.getClassCode())
                 .roleType(RoleType.STUDENT)
                 .password(encodedPassword)
-                .deleted(false)
                 .status(StateUser.ACTIVE)
+                .deleted(false)
                 .build();
     }
 }
