@@ -85,7 +85,7 @@ public class DeviceService {
     public ResponsePage<Device> getDeviceFilter(DeviceFilterDto deviceFilterDto, Pageable pageable) {
         Sort.Direction direction = Sort.Direction.ASC;
 
-        if (deviceFilterDto.getSortType() != null && deviceFilterDto.getSortType().equalsIgnoreCase("desc")) {
+        if (deviceFilterDto.getSortOrder() != null && deviceFilterDto.getSortOrder().equalsIgnoreCase("desc")) {
             direction = Sort.Direction.DESC;
         }
         Sort sort = Sort.by(direction, deviceFilterDto.getSortField());

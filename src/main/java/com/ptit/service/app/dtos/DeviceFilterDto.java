@@ -8,6 +8,7 @@ public class DeviceFilterDto {
     private String name;
     private String type;
     private DeviceStatus status;
+
     private String sortField;
-    private String sortType;
+    private String sortOrder;
 }
