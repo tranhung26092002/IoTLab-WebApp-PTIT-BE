@@ -24,6 +24,5 @@ public class Attendance {
     private String classCode;
     private LocalDateTime checkInTime;
     private String shift;
-
 }
 

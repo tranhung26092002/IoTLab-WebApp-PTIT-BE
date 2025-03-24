@@ -3,6 +3,7 @@ package com.ptit.service.domain.services.impl;
 import com.ommanisoft.common.exceptions.ExceptionOm;
 import com.ommanisoft.common.utils.FnCommon;
 import com.ptit.service.app.dtos.UserDto;
+import com.ptit.service.app.dtos.UserFilter;
 import com.ptit.service.app.dtos.auth.ChangePasswordDto;
 import com.ptit.service.app.responses.AttendanceResponse;
 import com.ptit.service.app.responses.user.InstructorReponse;
@@ -20,14 +21,16 @@ import com.ptit.service.domain.repositories.AttendanceRepository;
 import com.ptit.service.domain.repositories.UserRepository;
 import com.ptit.service.domain.services.EmailService;
 import com.ptit.service.domain.services.UserService;
-import com.ptit.service.domain.utils.AddressUtil;
+ import com.ptit.service.domain.utils.AddressUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -41,6 +44,9 @@ import org.thymeleaf.context.Context;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -275,12 +281,34 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ResponsePage<Attendance, AttendanceResponse> getAllAttendances(Pageable pageable) {
-        Page<Attendance> userPage = attendanceRepository.findAll(pageable);
+    public ResponsePage<Attendance, AttendanceResponse> getAllAttendances(LocalDate date, Pageable pageable) {
+// Xác định khoảng thời gian từ 00:00 đến 23:59 trong ngày đó
+        LocalDateTime startOfDay = date.atStartOfDay(); // YYYY-MM-DD 00:00:00
+        LocalDateTime endOfDay = date.atTime(LocalTime.MAX); // YYYY-MM-DD 23:59:59.999999999
 
-        Page<AttendanceResponse> responses = userPage.map(this::convertToAttendanceResponse);
-        log.info("Get all attendees successful!");
+        // Lấy dữ liệu theo khoảng thời gian
+        Page<Attendance> attendancePage = attendanceRepository.findByCheckInTimeBetween(startOfDay, endOfDay, pageable);
+
+        Page<AttendanceResponse> responses = attendancePage.map(this::convertToAttendanceResponse);
         return new ResponsePage<>(responses);
+    }
+
+    @Override
+    public ResponsePage<User, UserResponse> searchUser(UserFilter filter, Pageable pageable) {
+        Sort.Direction direction = Sort.Direction.ASC;
+
+        if (filter.getSortOrder() != null && filter.getSortOrder().equalsIgnoreCase("desc")) {
+            direction = Sort.Direction.DESC;
+        }
+        Sort sort = Sort.by(direction, filter.getSortField());
+        PageRequest pageRequest = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
+        Page<User> userPages = userRepository.filterUsers(
+                filter,
+                pageRequest);
+
+        Page<UserResponse> userResponses = userPages.map(this::convertToUserResponse);
+
+        return new ResponsePage<>(userResponses);
     }
 
     private AttendanceResponse convertToAttendanceResponse(Attendance attendance) {

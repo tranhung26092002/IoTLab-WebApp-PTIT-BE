@@ -3,6 +3,7 @@ package com.ptit.service.app.controllers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.ptit.service.app.dtos.UserDto;
+import com.ptit.service.app.dtos.UserFilter;
 import com.ptit.service.app.dtos.auth.ChangePasswordDto;
 import com.ptit.service.app.responses.AttendanceResponse;
 import com.ptit.service.app.responses.MessageResponse;
@@ -16,7 +17,10 @@ import com.ptit.service.domain.enums.StateUser;
 import com.ptit.service.domain.services.UserService;
 import com.ptit.service.util.Constant;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
@@ -26,6 +30,9 @@ import org.springframework.web.multipart.MultipartFile;
 import org.thymeleaf.context.Context;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -65,14 +72,31 @@ public class UserController {
 
     // Get list of attendees
     @GetMapping("/attendances")
-    public ResponsePage<Attendance, AttendanceResponse> getAllAttendances(Pageable pageable){
-        return userService.getAllAttendances(pageable);
+    public ResponsePage<Attendance, AttendanceResponse> getAllAttendances(
+            @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            Pageable pageable
+    ) {
+        if (date == null) {
+            date = LocalDate.now(); // hoặc một giá trị mặc định khác
+        }
+        return userService.getAllAttendances(date, pageable);
     }
 
     //@PreAuthorize("hasRole('ADMIN')")
     @GetMapping()
     public ResponsePage<User, UserResponse> getAllUser(Pageable pageable){
         return userService.getALlUser(pageable);
+    }
+
+    @GetMapping("/filter")
+    public ResponsePage<User, UserResponse> searchUser(@ModelAttribute UserFilter userFilter, Pageable pageable) {
+        List<String> allowedFields = Arrays.asList(
+                "id", "userName", "fullName", "classCode");
+
+        if (!allowedFields.contains(userFilter.getSortField())) {
+            userFilter.setSortField("id");
+        }
+        return userService.searchUser(userFilter, pageable);
     }
 
     @PostMapping()

@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 
 @Repository
 public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
+    boolean existsByUserIdAndShiftAndCheckInTimeBetween(Long userId, String shift, LocalDateTime checkInTimeAfter, LocalDateTime checkInTimeAfter1);
 
-    boolean existsByUserIdAndShift(Long userId, String shift);
+    Page<Attendance> findByCheckInTimeBetween(LocalDateTime startOfDay, LocalDateTime endOfDay, Pageable pageable);
 }

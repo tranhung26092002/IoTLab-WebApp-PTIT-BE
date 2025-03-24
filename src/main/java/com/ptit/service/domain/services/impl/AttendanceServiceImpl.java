@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Service
 @RequiredArgsConstructor
@@ -36,8 +37,16 @@ public class AttendanceServiceImpl implements AttendanceService {
         }
 
         // Kiểm tra xem đã điểm danh trong ca chưa
-        boolean alreadyCheckedIn = attendanceRepository.existsByUserIdAndShift(user.getId(), shift);
-        if (alreadyCheckedIn) return false;
+        LocalDateTime startOfDay = LocalDate.now().atStartOfDay(); // 00:00:00 hôm nay
+        LocalDateTime endOfDay = LocalDate.now().atTime(LocalTime.MAX); // 23:59:59 hôm nay
+
+        boolean alreadyCheckedInToday = attendanceRepository.existsByUserIdAndShiftAndCheckInTimeBetween(
+                user.getId(), shift, startOfDay, endOfDay
+        );
+
+        if (alreadyCheckedInToday) {
+            return false; // Đã điểm danh hôm nay rồi, không cho điểm danh nữa
+        }
 
         // Ghi nhận điểm danh mới
         Attendance attendance = new Attendance( null, user.getId(), user.getUserName(), user.getFullName(), user.getClassCode(), now, shift);

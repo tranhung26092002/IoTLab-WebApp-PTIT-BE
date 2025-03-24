@@ -1,6 +1,7 @@
 package com.ptit.service.domain.services;
 
 import com.ptit.service.app.dtos.UserDto;
+import com.ptit.service.app.dtos.UserFilter;
 import com.ptit.service.app.dtos.auth.ChangePasswordDto;
 import com.ptit.service.app.responses.AttendanceResponse;
 import com.ptit.service.app.responses.MessageResponse;
@@ -16,6 +17,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.thymeleaf.context.Context;
+
+import java.time.LocalDate;
 
 @Service
 public interface UserService {
@@ -43,5 +46,7 @@ public interface UserService {
 
     StudentResponse getUserByUsername(String userName);
 
-    ResponsePage<Attendance, AttendanceResponse> getAllAttendances(Pageable pageable);
+    ResponsePage<Attendance, AttendanceResponse> getAllAttendances(LocalDate date, Pageable pageable);
+
+    ResponsePage<User, UserResponse> searchUser(UserFilter userFilter, Pageable pageable);
 }
