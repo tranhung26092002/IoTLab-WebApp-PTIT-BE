@@ -2,6 +2,7 @@ package com.ptit.service.app.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.ptit.service.app.dtos.PraticeFilterDTO;
 import com.ptit.service.app.responses.MessageResponse;
 import com.ptit.service.app.responses.PracticeResponse;
 import com.ptit.service.app.responses.ResponsePage;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,8 +34,22 @@ public class PracticeController {
 
     @GetMapping
     public ResponsePage<Practice, PracticeResponse> getAllPractices(Pageable pageable) {
-
         return practiceService.getAllPractices( pageable);
+    }
+
+    @GetMapping("/filter")
+    public ResponsePage<Practice, PracticeResponse> getPracticeFilter(
+            @ModelAttribute PraticeFilterDTO praticeFilterDTO,
+            Pageable pageable
+    ) {
+        List<String> allowedFields = Arrays.asList(
+                "id", "title", "status");
+
+        if (!allowedFields.contains(praticeFilterDTO.getSortField())) {
+            praticeFilterDTO.setSortField("id");
+        }
+
+        return practiceService.getPracticeFilter(praticeFilterDTO, pageable);
     }
 
     @GetMapping("/{id}")

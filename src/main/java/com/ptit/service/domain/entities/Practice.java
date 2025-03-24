@@ -50,19 +50,9 @@ public class Practice {
     @JsonManagedReference
     private List<Report> reports;
 
-    @Column(name = "created_at", updatable = false, nullable = false, columnDefinition = "TIMESTAMP")
-    private LocalDateTime createdAt;
+    @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP")
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     @Column(name = "updated_at", columnDefinition = "TIMESTAMP")
     private LocalDateTime updatedAt;
-
-    @PrePersist
-    public void prePersist() {
-        createdAt = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    public void preUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
 }

@@ -2,6 +2,7 @@ package com.ptit.service.domain.services;
 
 import com.ommanisoft.common.exceptions.ExceptionOm;
 import com.ommanisoft.common.utils.FnCommon;
+import com.ptit.service.app.dtos.PraticeFilterDTO;
 import com.ptit.service.app.responses.MessageResponse;
 import com.ptit.service.app.responses.PracticeResponse;
 import com.ptit.service.app.responses.ResponsePage;
@@ -44,4 +45,6 @@ public interface PracticeService {
     MessageResponse deleteGuide(Long guideId);
     ResponsePage<Practice, PracticeResponse> searchPractices(PracticeStatus status, Pageable pageable);
     Optional<PracticeGuide> updateGuide(Long guideId, PracticeGuide guide);
+
+    ResponsePage<Practice, PracticeResponse> getPracticeFilter(PraticeFilterDTO praticeFilterDTO, Pageable pageable);
 }

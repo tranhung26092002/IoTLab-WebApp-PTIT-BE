@@ -1,6 +1,7 @@
 package com.ptit.service.domain.services;
 
 import com.ptit.service.app.dtos.ReportDTO;
+import com.ptit.service.app.dtos.ReportFilterDTO;
 import com.ptit.service.app.responses.MessageResponse;
 import com.ptit.service.app.responses.ReportResponse;
 import com.ptit.service.app.responses.ResponsePage;
@@ -30,4 +31,6 @@ public interface ReportService {
     ReportResponse updateEvaluation(Long contentId, Double evaluation);
 
     ResponsePage<Report, ReportResponse> getReportsByStudentId(Long studentId, Pageable pageable);
+
+    ResponsePage<Report, ReportResponse> getReportsFilter(ReportFilterDTO reportFilterDTO, Pageable pageable);
 }

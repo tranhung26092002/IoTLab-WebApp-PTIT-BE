@@ -1,6 +1,7 @@
 package com.ptit.service.domain.services.Impl;
 
 import com.ommanisoft.common.utils.FnCommon;
+import com.ptit.service.app.dtos.PraticeFilterDTO;
 import com.ptit.service.app.responses.MessageResponse;
 import com.ptit.service.app.responses.PracticeResponse;
 import com.ptit.service.app.responses.ResponsePage;
@@ -14,7 +15,9 @@ import com.ptit.service.domain.services.PracticeService;
 import com.ptit.service.domain.services.FileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -260,5 +263,29 @@ public class PracticeServiceImpl implements PracticeService {
         FnCommon.coppyNonNullProperties(practiceGuide, guide);
 
         return Optional.of(practiceGuideRepository.save(practiceGuide));
+    }
+
+    @Override
+    public ResponsePage<Practice, PracticeResponse> getPracticeFilter(PraticeFilterDTO praticeFilterDTO, Pageable pageable) {
+        Sort.Direction direction = Sort.Direction.ASC;
+
+        if (praticeFilterDTO.getSortOrder() != null && praticeFilterDTO.getSortOrder().equalsIgnoreCase("desc")) {
+            direction = Sort.Direction.DESC;
+        }
+        Sort sort = Sort.by(direction, praticeFilterDTO.getSortField());
+        PageRequest pageRequest = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
+
+        Page<Practice> practices = practiceRepository.getPracticeFilter(praticeFilterDTO, pageRequest);
+
+        Page<PracticeResponse> practiceResponses = practices.map(practice -> {
+            PracticeResponse practiceResponse = new PracticeResponse();
+            FnCommon.coppyNonNullProperties(practiceResponse, practice);
+            practiceResponse.setPracticeVideos(practiceVideoRepository.findAllByPracticeIdOrderByIdAsc(practice.getId()));
+            practiceResponse.setPracticeFiles(practiceFileRepository.findAllByPracticeIdOrderByIdAsc(practice.getId()));
+            practiceResponse.setPracticeGuides(practiceGuideRepository.findAllByPracticeIdOrderByIdAsc(practice.getId()));
+            return practiceResponse;
+        });
+
+        return new ResponsePage<>(practiceResponses);
     }
 }

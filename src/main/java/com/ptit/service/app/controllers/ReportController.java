@@ -1,18 +1,25 @@
 package com.ptit.service.app.controllers;
 
 import com.ptit.service.app.dtos.ReportDTO;
+import com.ptit.service.app.dtos.ReportFilterDTO;
 import com.ptit.service.app.responses.MessageResponse;
 import com.ptit.service.app.responses.ReportResponse;
 import com.ptit.service.app.responses.ResponsePage;
 import com.ptit.service.domain.entities.Report;
 import com.ptit.service.domain.enums.ReportStatus;
 import com.ptit.service.domain.services.ReportService;
+import com.ptit.service.domain.utils.Constant;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -23,6 +30,53 @@ public class ReportController {
     @GetMapping()
     public ResponsePage<Report, ReportResponse> getReports(Pageable pageable) {
         return reportService.getReports(pageable);
+    }
+
+    @GetMapping("/filter")
+    public ResponsePage<Report, ReportResponse> getReportsByFilter(
+            @ModelAttribute ReportFilterDTO reportFilterDTO,
+            Pageable pageable)
+    {
+        // Danh sách các trường hợp cho phép sắp xếp
+        List<String> allowedFields = Arrays.asList(
+                "id", "title", "classGroup", "className", "shift", "status");
+
+        if (!allowedFields.contains(reportFilterDTO.getSortField())) {
+            reportFilterDTO.setSortField("id");
+        }
+
+        // Chuyển đổi ngày tháng
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+        reportFilterDTO.setStartDate(parseDate(reportFilterDTO.getStartDate(), formatter));
+        reportFilterDTO.setEndDate(parseDate(reportFilterDTO.getEndDate(), formatter));
+
+        return reportService.getReportsFilter(reportFilterDTO, pageable);
+    }
+
+    @GetMapping("/me")
+    public ResponsePage<Report, ReportResponse> getReportsOfMe(
+            @RequestHeader(name = Constant.headerUserId) Long userId,
+            @ModelAttribute ReportFilterDTO reportFilterDTO,
+            Pageable pageable)
+    {
+        // Danh sách các trường hợp cho phép sắp xếp
+        List<String> allowedFields = Arrays.asList(
+                "id", "title", "classGroup", "className", "shift", "status");
+
+        if (!allowedFields.contains(reportFilterDTO.getSortField())) {
+            reportFilterDTO.setSortField("id");
+        }
+
+        reportFilterDTO.setId(userId);
+
+        // Chuyển đổi ngày tháng
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+        reportFilterDTO.setStartDate(parseDate(reportFilterDTO.getStartDate(), formatter));
+        reportFilterDTO.setEndDate(parseDate(reportFilterDTO.getEndDate(), formatter));
+
+        return reportService.getReportsFilter(reportFilterDTO, pageable);
     }
 
     // get all reports by student id
@@ -81,5 +135,17 @@ public class ReportController {
     @PostMapping("/upload")
     public ResponseEntity<String> uploadImage(@RequestParam("file") MultipartFile file) {
         return ResponseEntity.ok(reportService.uploadImage(file));
+    }
+
+    // Hàm chuyển đổi String -> LocalDateTime (trả về null nếu sai format)
+    private String parseDate(String dateStr, DateTimeFormatter formatter) {
+        if (dateStr == null || dateStr.isEmpty()) {
+            return null;
+        }
+        try {
+            return LocalDateTime.parse(dateStr, formatter).toString(); // Trả về dạng chuẩn ISO 8601
+        } catch (Exception e) {
+            return null; // Bỏ qua nếu sai format
+        }
     }
 }

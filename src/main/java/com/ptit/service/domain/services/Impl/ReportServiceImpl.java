@@ -1,9 +1,6 @@
 package com.ptit.service.domain.services.Impl;
 
-import com.ptit.service.app.dtos.InstructorDTO;
-import com.ptit.service.app.dtos.ReportContentDTO;
-import com.ptit.service.app.dtos.ReportDTO;
-import com.ptit.service.app.dtos.StudentDTO;
+import com.ptit.service.app.dtos.*;
 import com.ptit.service.app.responses.MessageResponse;
 import com.ptit.service.app.responses.ReportResponse;
 import com.ptit.service.app.responses.ResponsePage;
@@ -21,6 +18,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -210,6 +208,24 @@ public class ReportServiceImpl implements ReportService {
         Page<Report> reports = reportRepository.findByStudentsId(studentId, pageable);
 
         Page<ReportResponse> response = reports.map(this::convertToResponse);
+
+        return new ResponsePage<>(response);
+    }
+
+    @Override
+    public ResponsePage<Report, ReportResponse> getReportsFilter(ReportFilterDTO reportFilterDTO, Pageable pageable) {
+        Sort.Direction direction = Sort.Direction.ASC;
+
+        if (reportFilterDTO.getSortOrder() != null && reportFilterDTO.getSortOrder().equalsIgnoreCase("desc")) {
+            direction = Sort.Direction.DESC;
+        }
+        Sort sort = Sort.by(direction, reportFilterDTO.getSortField());
+        PageRequest pageRequest = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
+        Page<Report> reportPage = reportRepository.filterDevices(
+                reportFilterDTO,
+                pageRequest);
+
+        Page<ReportResponse> response = reportPage.map(this::convertToResponse);
 
         return new ResponsePage<>(response);
     }
