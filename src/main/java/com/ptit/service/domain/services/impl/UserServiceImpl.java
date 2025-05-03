@@ -9,7 +9,6 @@ import com.ptit.service.app.responses.AttendanceResponse;
 import com.ptit.service.app.responses.user.InstructorReponse;
 import com.ptit.service.app.responses.user.StudentResponse;
 import com.ptit.service.app.responses.user.UserResponse;
-import com.ptit.service.app.responses.address.AddressResponse;
 import com.ptit.service.app.responses.MessageResponse;
 import com.ptit.service.app.responses.ResponsePage;
 import com.ptit.service.domain.entities.Address;
@@ -21,7 +20,8 @@ import com.ptit.service.domain.repositories.AttendanceRepository;
 import com.ptit.service.domain.repositories.UserRepository;
 import com.ptit.service.domain.services.EmailService;
 import com.ptit.service.domain.services.UserService;
- import com.ptit.service.domain.utils.AddressUtil;
+import com.ptit.service.domain.services.UserNotificationService;
+import com.ptit.service.domain.utils.AddressUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -61,6 +61,7 @@ public class UserServiceImpl implements UserService {
     private final AddressUtil addressUtil;
     private final AttendanceRepository attendanceRepository;
     private final ModelMapper modelMapper;
+    private final UserNotificationService userNotificationService;
 
     @Value("${ptit.storage-service}")
     private String storageService;
@@ -83,8 +84,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponse getUserById(Long id) {
         User user = userRepository.findById(id).orElseThrow(
-                () -> new ExceptionOm(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND.val())
-        );
+                () -> new ExceptionOm(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND.val()));
 
         log.info("Get user with id: {} successful!", id);
         return convertToUserResponse(user);
@@ -99,7 +99,7 @@ public class UserServiceImpl implements UserService {
         List<Map<String, Object>> personalizedContexts = new ArrayList<>();
         for (User user : users) {
             // Tạo một context mới cho mỗi người dùng
-            Context userContext = new Context();  // Tạo context mới
+            Context userContext = new Context(); // Tạo context mới
 
             // Cung cấp tên của từng người dùng vào context
             userContext.setVariable("name", user.getUserName());
@@ -112,17 +112,19 @@ public class UserServiceImpl implements UserService {
             userContext.setVariable("supportEmail", "support@company.com");
 
             // Thêm thông tin vào danh sách personalizedContexts
-//            personalizedContexts.add(Map.of("email", user.getEmail(), "context", userContext));
+            // personalizedContexts.add(Map.of("email", user.getEmail(), "context",
+            // userContext));
         }
 
         // Gửi email theo từng nhóm để tránh quá tải
-        int batchSize = 50;  // Bạn có thể điều chỉnh kích thước nhóm
+        int batchSize = 50; // Bạn có thể điều chỉnh kích thước nhóm
         for (int i = 0; i < personalizedContexts.size(); i += batchSize) {
             // Lấy nhóm nhỏ từ danh sách personalizedContexts
-            List<Map<String, Object>> batch = personalizedContexts.subList(i, Math.min(i + batchSize, personalizedContexts.size()));
+            List<Map<String, Object>> batch = personalizedContexts.subList(i,
+                    Math.min(i + batchSize, personalizedContexts.size()));
 
             // Gửi email cho nhóm hiện tại
-//            emailService.sendEmails(batch, subject, "notificationTemplate");
+            // emailService.sendEmails(batch, subject, "notificationTemplate");
         }
 
         log.info("Send notification to all users successfully!");
@@ -137,11 +139,10 @@ public class UserServiceImpl implements UserService {
 
         String email = authentication.getName();
         User user = userRepository.findByEmail(email).orElseThrow(
-                () -> new ExceptionOm(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND.val())
-        );
+                () -> new ExceptionOm(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND.val()));
 
-        if(!passwordEncoder.matches(currentPassword,user.getPassword())){
-            throw new ExceptionOm(HttpStatus.BAD_REQUEST,ErrorMessage.CURRENT_PASSWORD_INCORRECT.val());
+        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+            throw new ExceptionOm(HttpStatus.BAD_REQUEST, ErrorMessage.CURRENT_PASSWORD_INCORRECT.val());
         }
 
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
@@ -158,8 +159,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public MessageResponse changeStatusAccount(Long id, StateUser status) {
         User user = userRepository.findById(id).orElseThrow(
-                () -> new ExceptionOm(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND.val())
-        );
+                () -> new ExceptionOm(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND.val()));
 
         user.setStatus(status);
         userRepository.save(user);
@@ -174,8 +174,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponse updateMe(Long id, UserDto userDto, MultipartFile file) {
         User user = userRepository.findById(id).orElseThrow(
-                () -> new ExceptionOm(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND.val())
-        );
+                () -> new ExceptionOm(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND.val()));
 
         if (userDto.getAddress() != null) {
             Address address = addressUtil.generateAddress(userDto.getAddress());
@@ -208,8 +207,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponse updateUser(Long id, UserDto userDto) {
         User user = userRepository.findById(id).orElseThrow(
-                () -> new ExceptionOm(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND.val())
-        );
+                () -> new ExceptionOm(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND.val()));
 
         if (userDto.getAddress() != null) {
             Address address = addressUtil.generateAddress(userDto.getAddress());
@@ -228,8 +226,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public MessageResponse deleteUser(Long id) {
         User user = userRepository.findById(id).orElseThrow(
-                () -> new ExceptionOm(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND.val())
-        );
+                () -> new ExceptionOm(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND.val()));
 
         user.setDeleted(true);
         userRepository.save(user);
@@ -256,7 +253,11 @@ public class UserServiceImpl implements UserService {
         user.setStatus(StateUser.ACTIVE);
         user.setDeleted(false);
 
-        userRepository.save(user);
+        user = userRepository.save(user);
+
+        // Gửi thông báo khi tạo user mới
+        log.info("Gửi thông báo khi tạo user mới: {}", user);
+        userNotificationService.sendUserCreatedNotification(user);
 
         return MessageResponse.builder().message("Create user successful!").build();
     }
@@ -274,15 +275,14 @@ public class UserServiceImpl implements UserService {
     @Override
     public StudentResponse getUserByUsername(String userName) {
         User user = userRepository.findByUserName(userName).orElseThrow(
-                () -> new ExceptionOm(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND.val())
-        );
+                () -> new ExceptionOm(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND.val()));
 
         return convertToStudentResponse(user);
     }
 
     @Override
     public ResponsePage<Attendance, AttendanceResponse> getAllAttendances(LocalDate date, Pageable pageable) {
-// Xác định khoảng thời gian từ 00:00 đến 23:59 trong ngày đó
+        // Xác định khoảng thời gian từ 00:00 đến 23:59 trong ngày đó
         LocalDateTime startOfDay = date.atStartOfDay(); // YYYY-MM-DD 00:00:00
         LocalDateTime endOfDay = date.atTime(LocalTime.MAX); // YYYY-MM-DD 23:59:59.999999999
 
@@ -338,7 +338,7 @@ public class UserServiceImpl implements UserService {
         return instructorReponse;
     }
 
-    private UserResponse convertToUserResponse(User user){
+    private UserResponse convertToUserResponse(User user) {
         UserResponse userResponse = new UserResponse();
 
         FnCommon.coppyNonNullProperties(userResponse, user);

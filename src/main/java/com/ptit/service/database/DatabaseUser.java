@@ -1,4 +1,4 @@
-package com.ptit.service.Database;
+package com.ptit.service.database;
 
 import com.ptit.service.domain.entities.Address;
 import com.ptit.service.domain.entities.User;

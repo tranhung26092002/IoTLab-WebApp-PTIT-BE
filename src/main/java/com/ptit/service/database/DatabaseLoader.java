@@ -1,10 +1,6 @@
-package com.ptit.service.Database;
+package com.ptit.service.database;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ptit.service.domain.entities.District;
-import com.ptit.service.domain.entities.Province;
-import com.ptit.service.domain.entities.Ward;
 import com.ptit.service.domain.repositories.DistrictRepository;
 import com.ptit.service.domain.repositories.ProvinceRepository;
 import com.ptit.service.domain.repositories.WardRepository;
@@ -12,8 +8,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
-
-import java.io.InputStream;
 
 @Component
 @Order(1)

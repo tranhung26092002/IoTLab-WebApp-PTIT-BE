@@ -57,6 +57,19 @@ spring:
     username: guest
     password: guest
 
+# User Service RabbitMQ Configuration
+user:
+  exchange: user.exchange
+  created:
+    queue: user.created.queue
+    routing:
+      key: user.created
+  login:
+    exchange: user.login.exchange
+    queue: user.login.queue
+    routing:
+      key: user.login.routing.key
+
 telegram:
   chatId: ${TELEGRAM_CHAT_ID:-1000000000}
   apiToken: ${TELEGRAM_API_TOKEN:-1234567890:ABCDEFGHIJKLMNOPQRSTUVWXYZ}

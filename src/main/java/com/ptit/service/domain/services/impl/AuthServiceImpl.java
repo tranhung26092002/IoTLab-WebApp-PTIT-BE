@@ -48,21 +48,23 @@ public class AuthServiceImpl implements AuthService {
     private ModelMapper mapper;
     private final EmailService emailService;
     private final AttendanceService attendanceService;
+    private final UserLoginNotificationService userLoginNotificationService;
 
     @Override
     @Transactional
     public AuthResponse signUp(SignUpDto signUpDto) {
-//        boolean isVerifiedOtp = otpService.verifyOTP(signUpDto.getOtpCodeDto());
-//        if (!isVerifiedOtp) {
-//            throw new ExceptionOm(HttpStatus.BAD_REQUEST, ErrorMessage.OTP_IS_INVALID.val());
-//        }
+        // boolean isVerifiedOtp = otpService.verifyOTP(signUpDto.getOtpCodeDto());
+        // if (!isVerifiedOtp) {
+        // throw new ExceptionOm(HttpStatus.BAD_REQUEST,
+        // ErrorMessage.OTP_IS_INVALID.val());
+        // }
 
         User user = userRepository.save(mapDtoToEntity(signUpDto));
 
         String accessToken = jwtService.generateToken(user, user.getId());
         String refreshToken = jwtService.generateRefreshToken(user);
 
-        refreshTokenService.saveUserToken(user,refreshToken);
+        refreshTokenService.saveUserToken(user, refreshToken);
 
         return AuthResponse.builder()
                 .accessToken(accessToken)
@@ -77,9 +79,7 @@ public class AuthServiceImpl implements AuthService {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         signInDto.getUserName(),
-                        signInDto.getPassword()
-                )
-        );
+                        signInDto.getPassword()));
 
         User user = userRepository.findByUserName(signInDto.getUserName())
                 .orElseThrow(() -> new ExceptionOm(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND.val()));
@@ -92,7 +92,14 @@ public class AuthServiceImpl implements AuthService {
 
         // Kiểm tra và điểm danh
         boolean checkInSuccess = attendanceService.checkAndMarkAttendance(user);
-        String message = checkInSuccess ? "Đăng nhập & điểm danh thành công!" : "Đăng nhập thành công, đã điểm danh trước đó.";
+        String message = checkInSuccess ? "Đăng nhập & điểm danh thành công!"
+                : "Đăng nhập thành công, đã điểm danh trước đó.";
+
+        // Gửi thông báo khi sinh viên đăng nhập
+        if (user.getRoleType() == RoleType.STUDENT) {
+            log.info("Gửi thông báo khi sinh viên đăng nhập: {}", user);
+            userLoginNotificationService.sendUserLoginNotification(user);
+        }
 
         return AuthResponse.builder()
                 .accessToken(accessToken)
@@ -109,8 +116,7 @@ public class AuthServiceImpl implements AuthService {
 
         User user = userRepository.findByEmail(email)
                 .orElseThrow(
-                        () -> new ExceptionOm(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND)
-                );
+                        () -> new ExceptionOm(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND));
 
         String otpCode = otpService.generateOTP();
 
@@ -148,18 +154,16 @@ public class AuthServiceImpl implements AuthService {
         PasswordResetToken passwordResetToken = passwordResetTokenRepository
                 .findByToken(token)
                 .orElseThrow(
-                        () -> new ExceptionOm(HttpStatus.NOT_FOUND, ErrorMessage.PASSWORD_RESET_TOKEN_NOT_FOUND.val())
-                );
+                        () -> new ExceptionOm(HttpStatus.NOT_FOUND, ErrorMessage.PASSWORD_RESET_TOKEN_NOT_FOUND.val()));
 
         log.info("{}", passwordResetToken.getToken());
 
         // check mat khau moi khong trung mat khau cu
         User user = userRepository.findByPasswordToken(token).orElseThrow(
-                () -> new ExceptionOm(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND.val())
-        );
+                () -> new ExceptionOm(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND.val()));
 
         String currentPassword = user.getPassword();
-        if(passwordEncoder.matches(resetPasswordDto.getNewPassword(), currentPassword)){
+        if (passwordEncoder.matches(resetPasswordDto.getNewPassword(), currentPassword)) {
             throw new ExceptionOm(HttpStatus.BAD_REQUEST, ErrorMessage.CURRENT_PASSWORD_SAME_NEW_PASSWORD);
         }
 
@@ -202,7 +206,7 @@ public class AuthServiceImpl implements AuthService {
         }
     }
 
-    private String randomUserName(){
+    private String randomUserName() {
         Random random = new SecureRandom();
         StringBuilder userName = new StringBuilder(LENGTH_OF_RANDOM_USER_NAME);
 
@@ -213,9 +217,9 @@ public class AuthServiceImpl implements AuthService {
         return userName.toString();
     }
 
-    private User mapDtoToEntity(SignUpDto request){
+    private User mapDtoToEntity(SignUpDto request) {
         // check user name da ton tai chua
-        if(userRepository.existsByUserName(request.getUserName())){
+        if (userRepository.existsByUserName(request.getUserName())) {
             throw new ExceptionOm(HttpStatus.BAD_REQUEST, ErrorMessage.USER_NAME_EXISTED.val());
         }
         String userName = request.getUserName();
