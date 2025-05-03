@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -30,25 +31,32 @@ public class Practice {
     @Column(name = "image_url")
     private String imageUrl;
 
+    @Column(name = "practice_order")
+    private Integer practiceOrder;
+
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private PracticeStatus status;
 
-    @OneToMany
+    @OneToMany(mappedBy = "practice", fetch = FetchType.LAZY)
     @JsonManagedReference
-    private List<PracticeVideo> practiceVideos;
+    private List<PracticeVideo> practiceVideos = new ArrayList<>();
 
-    @OneToMany
+    @OneToMany(mappedBy = "practice", fetch = FetchType.LAZY)
     @JsonManagedReference
-    private List<PracticeFile> practiceFiles;
+    private List<PracticeFile> practiceFiles = new ArrayList<>();
 
-    @OneToMany
+    @OneToMany(mappedBy = "practice", fetch = FetchType.LAZY)
     @JsonManagedReference
-    private List<PracticeGuide> practiceGuides;
+    private List<PracticeGuide> practiceGuides = new ArrayList<>();
 
-    @OneToMany
+    @OneToMany(mappedBy = "practice", fetch = FetchType.LAZY)
     @JsonManagedReference
-    private List<Report> reports;
+    private List<Report> reports = new ArrayList<>();
+
+    @OneToMany(mappedBy = "practice", fetch = FetchType.LAZY)
+    @JsonManagedReference
+    private List<StudentProgress> studentProgresses = new ArrayList<>();
 
     @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP")
     private LocalDateTime createdAt = LocalDateTime.now();

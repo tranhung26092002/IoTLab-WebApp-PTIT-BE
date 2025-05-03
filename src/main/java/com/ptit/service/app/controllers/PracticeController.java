@@ -6,14 +6,14 @@ import com.ptit.service.app.dtos.PraticeFilterDTO;
 import com.ptit.service.app.responses.MessageResponse;
 import com.ptit.service.app.responses.PracticeResponse;
 import com.ptit.service.app.responses.ResponsePage;
+import com.ptit.service.app.dtos.PracticeCreateDTO;
 import com.ptit.service.domain.entities.Practice;
 import com.ptit.service.domain.entities.PracticeFile;
 import com.ptit.service.domain.entities.PracticeGuide;
 import com.ptit.service.domain.entities.PracticeVideo;
 import com.ptit.service.domain.enums.PracticeStatus;
-import com.ptit.service.domain.services.PracticeService;
+import com.ptit.service.domain.service.PracticeService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,14 +34,13 @@ public class PracticeController {
 
     @GetMapping
     public ResponsePage<Practice, PracticeResponse> getAllPractices(Pageable pageable) {
-        return practiceService.getAllPractices( pageable);
+        return practiceService.getAllPractices(pageable);
     }
 
     @GetMapping("/filter")
     public ResponsePage<Practice, PracticeResponse> getPracticeFilter(
             @ModelAttribute PraticeFilterDTO praticeFilterDTO,
-            Pageable pageable
-    ) {
+            Pageable pageable) {
         List<String> allowedFields = Arrays.asList(
                 "id", "title", "status");
 
@@ -66,16 +65,22 @@ public class PracticeController {
     @PostMapping()
     public ResponseEntity<Practice> createPractice(
             @RequestParam(value = "practice", required = false) String practiceJson,
-            @RequestParam(value = "file", required = false) MultipartFile file
-    ) throws IOException {
-        // Chuyển đổi JSON thành đối tượng Device
+            @RequestParam(value = "file", required = false) MultipartFile file) throws IOException {
+        // Chuyển đổi JSON thành đối tượng PracticeCreateDTO
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
 
-        Practice practice = null;
+        PracticeCreateDTO practiceDTO = null;
 
         if (practiceJson != null) {
-            practice = objectMapper.readValue(practiceJson, Practice.class);
+            practiceDTO = objectMapper.readValue(practiceJson, PracticeCreateDTO.class);
+        }
+
+        // Chuyển đổi DTO thành entity Practice
+        Practice practice = new Practice();
+        if (practiceDTO != null) {
+            practice.setTitle(practiceDTO.getTitle());
+            practice.setDescription(practiceDTO.getDescription());
         }
 
         Practice createPractice = practiceService.createPractice(practice, file);
@@ -87,16 +92,25 @@ public class PracticeController {
     public ResponseEntity<Practice> updatePractice(
             @PathVariable Long id,
             @RequestParam(value = "practice", required = false) String practiceJson,
-            @RequestParam(value = "file", required = false) MultipartFile file
-    ) throws IOException {
+            @RequestParam(value = "file", required = false) MultipartFile file) throws IOException {
         // Chuyển đổi JSON thành đối tượng Device
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
 
-        Practice practice = null;
+        PracticeCreateDTO practiceDTO = null;
 
         if (practiceJson != null) {
-            practice = objectMapper.readValue(practiceJson, Practice.class);
+            practiceDTO = objectMapper.readValue(practiceJson, PracticeCreateDTO.class);
+        }
+
+        // Chuyển đổi DTO thành entity Practice
+        Practice practice = new Practice();
+        if (practiceDTO != null) {
+            practice.setTitle(practiceDTO.getTitle());
+            practice.setDescription(practiceDTO.getDescription());
+            practice.setImageUrl(practiceDTO.getImageUrl());
+            practice.setPracticeOrder(practiceDTO.getPracticeOrder());
+            practice.setStatus(practiceDTO.getStatus());
         }
 
         Optional<Practice> updatedPractice = practiceService.updatePractice(id, practice, file);
@@ -118,8 +132,7 @@ public class PracticeController {
     public ResponseEntity<PracticeVideo> addVideoToPractice(
             @PathVariable Long id,
             @RequestParam(value = "video", required = false) MultipartFile video,
-            @RequestParam(value = "videoName", required = false) String videoName
-    ) {
+            @RequestParam(value = "videoName", required = false) String videoName) {
         Optional<PracticeVideo> createdVideo = practiceService.addVideoToPractice(id, video, videoName);
         return createdVideo.map(v -> new ResponseEntity<>(v, HttpStatus.CREATED))
                 .orElseGet(() -> ResponseEntity.notFound().build());
@@ -130,8 +143,7 @@ public class PracticeController {
     public ResponseEntity<PracticeFile> addFileToPractice(
             @PathVariable Long id,
             @RequestParam(value = "file", required = false) MultipartFile file,
-            @RequestParam(value = "fileName", required = false) String fileName
-    ) {
+            @RequestParam(value = "fileName", required = false) String fileName) {
         Optional<PracticeFile> createdFile = practiceService.addFileToPractice(id, file, fileName);
         return createdFile.map(f -> new ResponseEntity<>(f, HttpStatus.CREATED))
                 .orElseGet(() -> ResponseEntity.notFound().build());

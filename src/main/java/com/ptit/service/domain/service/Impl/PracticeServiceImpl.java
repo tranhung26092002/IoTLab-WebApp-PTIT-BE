@@ -1,4 +1,4 @@
-package com.ptit.service.domain.services.Impl;
+package com.ptit.service.domain.service.Impl;
 
 import com.ommanisoft.common.utils.FnCommon;
 import com.ptit.service.app.dtos.PraticeFilterDTO;
@@ -9,18 +9,23 @@ import com.ptit.service.domain.entities.Practice;
 import com.ptit.service.domain.entities.PracticeFile;
 import com.ptit.service.domain.entities.PracticeGuide;
 import com.ptit.service.domain.entities.PracticeVideo;
+import com.ptit.service.domain.entities.Student;
+import com.ptit.service.domain.entities.StudentProgress;
+import com.ptit.service.domain.enums.PracticeProgressStatus;
 import com.ptit.service.domain.enums.PracticeStatus;
-import com.ptit.service.domain.repositories.*;
-import com.ptit.service.domain.services.PracticeService;
-import com.ptit.service.domain.services.FileService;
+import com.ptit.service.domain.repository.*;
+import com.ptit.service.domain.service.PracticeService;
+import com.ptit.service.domain.service.FileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -32,6 +37,8 @@ public class PracticeServiceImpl implements PracticeService {
     private final PracticeFileRepository practiceFileRepository;
     private final PracticeStudentRepository practiceStudentRepository;
     private final FileService fileService;
+    private final StudentProgressRepository studentProgressRepository;
+    private final StudentRepository studentRepository;
 
     // Example method to get all practices
     public ResponsePage<Practice, PracticeResponse> getAllPractices(Pageable pageable) {
@@ -40,9 +47,11 @@ public class PracticeServiceImpl implements PracticeService {
         Page<PracticeResponse> practiceResponses = practices.map(practice -> {
             PracticeResponse practiceResponse = new PracticeResponse();
             FnCommon.coppyNonNullProperties(practiceResponse, practice);
-            practiceResponse.setPracticeVideos(practiceVideoRepository.findAllByPracticeIdOrderByIdAsc(practice.getId()));
+            practiceResponse
+                    .setPracticeVideos(practiceVideoRepository.findAllByPracticeIdOrderByIdAsc(practice.getId()));
             practiceResponse.setPracticeFiles(practiceFileRepository.findAllByPracticeIdOrderByIdAsc(practice.getId()));
-            practiceResponse.setPracticeGuides(practiceGuideRepository.findAllByPracticeIdOrderByIdAsc(practice.getId()));
+            practiceResponse
+                    .setPracticeGuides(practiceGuideRepository.findAllByPracticeIdOrderByIdAsc(practice.getId()));
             return practiceResponse;
         });
         return new ResponsePage<>(practiceResponses);
@@ -63,8 +72,9 @@ public class PracticeServiceImpl implements PracticeService {
         return practiceResponse;
     }
 
+    @Override
+    @Transactional
     public Practice createPractice(Practice practice, MultipartFile file) {
-
         Practice newPractice = new Practice();
 
         // Nếu có file ảnh, lưu ảnh và cập nhật đường dẫn ảnh
@@ -84,7 +94,55 @@ public class PracticeServiceImpl implements PracticeService {
         FnCommon.coppyNonNullProperties(newPractice, practice);
         newPractice.setStatus(PracticeStatus.DRAFT);
 
-        return practiceRepository.save(newPractice);
+        newPractice = practiceRepository.save(newPractice);
+
+        // Kiểm tra xem đây có phải là bài thực hành đầu tiên không
+        boolean isFirstPractice = practiceRepository.count() == 1;
+
+        // Tạo tiến trình cho tất cả sinh viên hiện có
+        List<Student> students = studentRepository.findAll();
+        for (Student student : students) {
+            // Kiểm tra xem sinh viên đã có tiến trình cho bài này chưa
+            if (student != null && student.getId() != null && newPractice.getId() != null &&
+                    !studentProgressRepository.existsByStudentIdAndPracticeId(student.getId(), newPractice.getId())) {
+                StudentProgress progress = new StudentProgress();
+                progress.setStudent(student);
+                progress.setPractice(newPractice);
+
+                // Nếu là bài đầu tiên hoặc không có bài thực hành trước đó, mở khóa bài mới
+                if (isFirstPractice) {
+                    progress.setStatus(PracticeProgressStatus.UNLOCKED);
+                } else {
+                    // Tìm bài thực hành có order lớn nhất còn tồn tại và nhỏ hơn bài mới
+                    Optional<Practice> previousPracticeOpt = practiceRepository
+                            .findTopByPracticeOrderLessThanOrderByPracticeOrderDesc(
+                                    newPractice.getPracticeOrder());
+
+                    if (previousPracticeOpt.isEmpty()) {
+                        // Nếu không có bài thực hành trước đó, mở khóa bài mới
+                        progress.setStatus(PracticeProgressStatus.UNLOCKED);
+                    } else {
+                        Practice previousPractice = previousPracticeOpt.get();
+                        // Kiểm tra trạng thái của bài thực hành trước đó
+                        Optional<StudentProgress> previousProgressOpt = studentProgressRepository
+                                .findByStudentIdAndPracticeId(student.getId(), previousPractice.getId());
+
+                        if (previousProgressOpt.isPresent() &&
+                                previousProgressOpt.get().getStatus() == PracticeProgressStatus.COMPLETED) {
+                            // Nếu bài trước đã hoàn thành, mở khóa bài mới
+                            progress.setStatus(PracticeProgressStatus.UNLOCKED);
+                        } else {
+                            // Nếu bài trước chưa hoàn thành, khóa bài mới
+                            progress.setStatus(PracticeProgressStatus.LOCKED);
+                        }
+                    }
+                }
+
+                studentProgressRepository.save(progress);
+            }
+        }
+
+        return newPractice;
     }
 
     public Optional<Practice> updatePractice(Long id, Practice practiceDetails, MultipartFile file) {
@@ -165,7 +223,8 @@ public class PracticeServiceImpl implements PracticeService {
                     String contentType = file.getContentType();
                     if (contentType == null || !contentType.startsWith("application/pdf") &&
                             !contentType.startsWith("application/msword") &&
-                            !contentType.startsWith("application/vnd.openxmlformats-officedocument.wordprocessingml.document")) {
+                            !contentType.startsWith(
+                                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document")) {
                         throw new RuntimeException("File type is not supported.");
                     }
 
@@ -187,7 +246,8 @@ public class PracticeServiceImpl implements PracticeService {
     }
 
     private String mapContentTypeToShortType(String contentType) {
-        if (contentType == null) return "unknown";
+        if (contentType == null)
+            return "unknown";
 
         switch (contentType) {
             case "application/pdf":
@@ -217,7 +277,7 @@ public class PracticeServiceImpl implements PracticeService {
         return Optional.of(practiceGuideRepository.save(newGuide));
     }
 
-    public MessageResponse deleteVideo (Long videoId) {
+    public MessageResponse deleteVideo(Long videoId) {
         PracticeVideo video = practiceVideoRepository.findById(videoId)
                 .orElseThrow(() -> new RuntimeException("Video not found"));
         fileService.deleteFileStorage(video.getVideoUrl());
@@ -248,9 +308,11 @@ public class PracticeServiceImpl implements PracticeService {
         Page<PracticeResponse> practiceResponses = practices.map(practice -> {
             PracticeResponse practiceResponse = new PracticeResponse();
             FnCommon.coppyNonNullProperties(practiceResponse, practice);
-            practiceResponse.setPracticeVideos(practiceVideoRepository.findAllByPracticeIdOrderByIdAsc(practice.getId()));
+            practiceResponse
+                    .setPracticeVideos(practiceVideoRepository.findAllByPracticeIdOrderByIdAsc(practice.getId()));
             practiceResponse.setPracticeFiles(practiceFileRepository.findAllByPracticeIdOrderByIdAsc(practice.getId()));
-            practiceResponse.setPracticeGuides(practiceGuideRepository.findAllByPracticeIdOrderByIdAsc(practice.getId()));
+            practiceResponse
+                    .setPracticeGuides(practiceGuideRepository.findAllByPracticeIdOrderByIdAsc(practice.getId()));
             return practiceResponse;
         });
         return new ResponsePage<>(practiceResponses);
@@ -266,7 +328,8 @@ public class PracticeServiceImpl implements PracticeService {
     }
 
     @Override
-    public ResponsePage<Practice, PracticeResponse> getPracticeFilter(PraticeFilterDTO praticeFilterDTO, Pageable pageable) {
+    public ResponsePage<Practice, PracticeResponse> getPracticeFilter(PraticeFilterDTO praticeFilterDTO,
+            Pageable pageable) {
         Sort.Direction direction = Sort.Direction.ASC;
 
         if (praticeFilterDTO.getSortOrder() != null && praticeFilterDTO.getSortOrder().equalsIgnoreCase("desc")) {
@@ -280,9 +343,11 @@ public class PracticeServiceImpl implements PracticeService {
         Page<PracticeResponse> practiceResponses = practices.map(practice -> {
             PracticeResponse practiceResponse = new PracticeResponse();
             FnCommon.coppyNonNullProperties(practiceResponse, practice);
-            practiceResponse.setPracticeVideos(practiceVideoRepository.findAllByPracticeIdOrderByIdAsc(practice.getId()));
+            practiceResponse
+                    .setPracticeVideos(practiceVideoRepository.findAllByPracticeIdOrderByIdAsc(practice.getId()));
             practiceResponse.setPracticeFiles(practiceFileRepository.findAllByPracticeIdOrderByIdAsc(practice.getId()));
-            practiceResponse.setPracticeGuides(practiceGuideRepository.findAllByPracticeIdOrderByIdAsc(practice.getId()));
+            practiceResponse
+                    .setPracticeGuides(practiceGuideRepository.findAllByPracticeIdOrderByIdAsc(practice.getId()));
             return practiceResponse;
         });
 

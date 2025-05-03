@@ -1,4 +1,4 @@
-package com.ptit.service.domain.services;
+package com.ptit.service.domain.service;
 
 import com.ptit.service.app.dtos.ReportDTO;
 import com.ptit.service.app.dtos.ReportFilterDTO;
@@ -7,7 +7,6 @@ import com.ptit.service.app.responses.ReportResponse;
 import com.ptit.service.app.responses.ResponsePage;
 import com.ptit.service.domain.entities.Report;
 import com.ptit.service.domain.enums.ReportStatus;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;

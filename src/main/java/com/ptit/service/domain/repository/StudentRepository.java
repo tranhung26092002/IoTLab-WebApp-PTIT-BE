@@ -1,15 +1,18 @@
-package com.ptit.service.domain.repositories;
+package com.ptit.service.domain.repository;
 
 import com.ptit.service.domain.entities.Student;
 import org.springframework.stereotype.Repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
+import java.util.Optional;
 
 @Repository
 public interface StudentRepository extends JpaRepository<Student, Long> {
 
-
     List<Student> findByUserIdIn(Set<Long> userIds);
+
+    boolean existsByUserId(Long userId);
+
+    Optional<Student> findByUserId(Long userId);
 }

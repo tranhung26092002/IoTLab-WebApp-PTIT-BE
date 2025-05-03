@@ -1,7 +1,6 @@
 package com.ptit.service.domain.entities;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.ptit.service.domain.enums.FileType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,9 +19,9 @@ public class PracticeFile {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JsonBackReference
-    @JoinColumn(name = "practice_id")
+    @JoinColumn(name = "practice_id", referencedColumnName = "id")
     private Practice practice;
 
     @Column(name = "file_name")

@@ -1,4 +1,4 @@
-package com.ptit.service.domain.services;
+package com.ptit.service.domain.service;
 
 import com.ommanisoft.common.exceptions.ExceptionOm;
 import com.ptit.service.app.responses.MessageResponse;

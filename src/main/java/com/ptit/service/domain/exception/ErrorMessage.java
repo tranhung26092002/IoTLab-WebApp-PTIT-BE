@@ -1,4 +1,4 @@
-package com.ptit.service.domain.exceptions;
+package com.ptit.service.domain.exception;
 
 import com.ommanisoft.common.exceptions.BaseErrorMessage;
 

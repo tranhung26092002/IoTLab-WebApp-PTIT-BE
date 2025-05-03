@@ -1,13 +1,12 @@
 package com.ptit.service.domain.entities;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Entity
 @Table(name = "students")
@@ -27,5 +26,8 @@ public class Student {
 
     @Column(name = "student_code")
     private String studentCode;
-}
 
+    @OneToMany(mappedBy = "student", fetch = FetchType.LAZY)
+    @JsonManagedReference
+    private List<StudentProgress> studentProgresses = new ArrayList<>();
+}

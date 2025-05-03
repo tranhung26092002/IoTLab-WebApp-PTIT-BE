@@ -1,4 +1,4 @@
-package com.ptit.service.domain.repositories;
+package com.ptit.service.domain.repository;
 
 import com.ptit.service.domain.entities.PracticeGuide;
 import org.springframework.data.jpa.repository.JpaRepository;

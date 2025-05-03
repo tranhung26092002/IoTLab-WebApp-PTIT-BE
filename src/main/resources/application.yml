@@ -43,6 +43,12 @@ spring:
       max-request-size: 200MB
       enabled: true
       file-size-threshold: 10KB
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+
 telegram:
   chatId: ${TELEGRAM_CHAT_ID:-1000000000}
   apiToken: ${TELEGRAM_API_TOKEN:-0000000000:XXXXXXXXXXXXXXXXXXXXXXXX}
@@ -64,3 +70,16 @@ eureka:
 
 ptit:
   storage-service: ${STORAGE_SERVICE:http://localhost:8086}
+
+# User Service RabbitMQ Configuration
+user:
+  exchange: user.exchange
+  created:
+    queue: user.created.queue
+    routing:
+      key: user.created
+  login:
+    exchange: user.login.exchange
+    queue: user.login.queue
+    routing:
+      key: user.login.routing.key

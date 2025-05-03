@@ -1,9 +1,9 @@
-package com.ptit.service.domain.repositories;
+package com.ptit.service.domain.repository;
 
 import com.ptit.service.domain.entities.Instructor;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import java.util.List;
+
 import java.util.Optional;
 
 @Repository

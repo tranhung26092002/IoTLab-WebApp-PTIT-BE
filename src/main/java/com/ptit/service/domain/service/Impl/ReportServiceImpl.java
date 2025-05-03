@@ -1,4 +1,4 @@
-package com.ptit.service.domain.services.Impl;
+package com.ptit.service.domain.service.Impl;
 
 import com.ptit.service.app.dtos.*;
 import com.ptit.service.app.responses.MessageResponse;
@@ -8,10 +8,12 @@ import com.ptit.service.domain.entities.Instructor;
 import com.ptit.service.domain.entities.Report;
 import com.ptit.service.domain.entities.ReportContent;
 import com.ptit.service.domain.entities.Student;
+import com.ptit.service.domain.entities.StudentProgress;
+import com.ptit.service.domain.enums.PracticeProgressStatus;
 import com.ptit.service.domain.enums.ReportStatus;
-import com.ptit.service.domain.repositories.*;
-import com.ptit.service.domain.services.ReportService;
-import com.ptit.service.domain.services.FileService;
+import com.ptit.service.domain.repository.*;
+import com.ptit.service.domain.service.ReportService;
+import com.ptit.service.domain.service.FileService;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.common.errors.ResourceNotFoundException;
 import org.modelmapper.ModelMapper;
@@ -38,6 +40,7 @@ public class ReportServiceImpl implements ReportService {
     private final InstructorRepository instructorRepository;
     private final ReportContentRepository reportContentRepository;
     private final PracticeRepository practiceRepository;
+    private final StudentProgressRepository studentProgressRepository;
 
     @Override
     public ResponsePage<Report, ReportResponse> getReports(Pageable pageable) {
@@ -51,10 +54,13 @@ public class ReportServiceImpl implements ReportService {
     private ReportResponse convertToResponse(Report report) {
         ReportResponse response = mapper.map(report, ReportResponse.class);
         response.setStudents(report.getStudents().stream()
-                .map(student -> new StudentDTO( student.getId(), student.getUserId(), student.getName(), student.getStudentCode()))
+                .map(student -> new StudentDTO(student.getId(), student.getUserId(), student.getName(),
+                        student.getStudentCode()))
                 .collect(Collectors.toList()));
         response.setReportContents(report.getPracticeContents().stream()
-                .map(reportContent -> new ReportContentDTO( reportContent.getId(), reportContent.getUserId(), reportContent.getContent(), reportContent.getPerformer(), reportContent.getImageUrl(), reportContent.getEvaluation()))
+                .map(reportContent -> new ReportContentDTO(reportContent.getId(), reportContent.getUserId(),
+                        reportContent.getContent(), reportContent.getPerformer(), reportContent.getImageUrl(),
+                        reportContent.getEvaluation()))
                 .collect(Collectors.toList()));
 
         return response;
@@ -111,16 +117,28 @@ public class ReportServiceImpl implements ReportService {
         report.setStudents(students);
 
         // Lưu báo cáo
-        report = reportRepository.save(report);
+        final Report savedReport = reportRepository.save(report);
+
+        // Tạo StudentProgress cho mỗi sinh viên nếu chưa có
+        for (Student student : students) {
+            studentProgressRepository.findByStudentIdAndPracticeId(student.getId(), savedReport.getPractice().getId())
+                    .orElseGet(() -> {
+                        StudentProgress progress = new StudentProgress();
+                        progress.setStudent(student);
+                        progress.setPractice(savedReport.getPractice());
+                        // Nếu là bài đầu tiên thì mở khóa, ngược lại thì khóa
+                        progress.setStatus(savedReport.getPractice().getPracticeOrder() == 1 ? PracticeProgressStatus.UNLOCKED
+                                : PracticeProgressStatus.LOCKED);
+                        return studentProgressRepository.save(progress);
+                    });
+        }
 
         // Lưu danh sách sinh viên thực hiện báo cáo
-        Report finalReport = report;
-
         List<ReportContent> reportContents = reportDTO.getReportContents()
                 .stream()
                 .map(reportContentDTO -> {
                     ReportContent reportContent = new ReportContent();
-                    reportContent.setReport(finalReport);
+                    reportContent.setReport(savedReport);
                     reportContent.setUserId(reportContentDTO.getUserId());
                     reportContent.setContent(reportContentDTO.getContent());
                     reportContent.setPerformer(reportContentDTO.getPerformer());
@@ -132,7 +150,7 @@ public class ReportServiceImpl implements ReportService {
 
         reportContentRepository.saveAll(reportContents);
 
-        return convertToResponse(report, students, reportContents);
+        return convertToResponse(savedReport, students, reportContents);
     }
 
     @Override
@@ -230,13 +248,17 @@ public class ReportServiceImpl implements ReportService {
         return new ResponsePage<>(response);
     }
 
-    private ReportResponse convertToResponse(Report report, List<Student> students, List<ReportContent> reportContents) {
+    private ReportResponse convertToResponse(Report report, List<Student> students,
+            List<ReportContent> reportContents) {
         ReportResponse response = mapper.map(report, ReportResponse.class);
         response.setStudents(students.stream()
-                .map(student -> new StudentDTO( student.getId(), student.getUserId(), student.getName(), student.getStudentCode()))
+                .map(student -> new StudentDTO(student.getId(), student.getUserId(), student.getName(),
+                        student.getStudentCode()))
                 .collect(Collectors.toList()));
         response.setReportContents(reportContents.stream()
-                .map(reportContent -> new ReportContentDTO( reportContent.getId(), reportContent.getUserId(), reportContent.getContent(), reportContent.getPerformer(), reportContent.getImageUrl(), reportContent.getEvaluation()))
+                .map(reportContent -> new ReportContentDTO(reportContent.getId(), reportContent.getUserId(),
+                        reportContent.getContent(), reportContent.getPerformer(), reportContent.getImageUrl(),
+                        reportContent.getEvaluation()))
                 .collect(Collectors.toList()));
 
         return response;

@@ -19,9 +19,9 @@ public class PracticeVideo {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JsonBackReference
-    @JoinColumn(name = "practice_id")
+    @JoinColumn(name = "practice_id", referencedColumnName = "id")
     private Practice practice;
 
     @Column(name = "video_name")
