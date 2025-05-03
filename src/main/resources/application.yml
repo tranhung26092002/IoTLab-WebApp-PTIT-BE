@@ -16,7 +16,7 @@ spring:
       file-size-threshold: 10KB # Kích thước tối thiểu của file trước khi tạm lưu vào bộ nhớ
 
 storage:
-  location: /uploads # Sử dụng thư mục /uploads trong container
+  location: D:/Workspaces/IoTLab-WebApp-PTIT-BE/uploads # Sử dụng thư mục /uploads trong container
 
 logging:
   level:
@@ -36,4 +36,4 @@ async:
 eureka:
   client:
     serviceUrl:
-      defaultZone: http://14.225.206.27:8761/eureka
+      defaultZone: http://localhost:8761/eureka

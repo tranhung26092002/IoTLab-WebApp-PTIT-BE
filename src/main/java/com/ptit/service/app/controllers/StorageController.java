@@ -30,15 +30,53 @@ public class StorageController {
                 return "Invalid file name.";
             }
 
+            // Xử lý tên file
+            String processedFileName = processFileName(originalFileName);
+
             // Tạo tên file mới với timestamp
             String timestamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
-            String newFileName = timestamp + "_" + originalFileName;
+            String newFileName = timestamp + "_" + processedFileName;
 
             // Lưu file với tên mới
             return storageService.store(file, newFileName);
         } catch (IOException e) {
             return "File upload failed: " + e.getMessage();
         }
+    }
+
+    private String processFileName(String fileName) {
+        // Lấy phần mở rộng của file
+        String extension = "";
+        int lastDotIndex = fileName.lastIndexOf('.');
+        if (lastDotIndex > 0) {
+            extension = fileName.substring(lastDotIndex);
+            fileName = fileName.substring(0, lastDotIndex);
+        }
+
+        // Loại bỏ dấu tiếng Việt và chuyển thành chữ thường
+        fileName = removeAccent(fileName);
+
+        // Thay thế khoảng trắng và các ký tự đặc biệt bằng dấu gạch dưới
+        fileName = fileName.replaceAll("[^a-zA-Z0-9]", "_");
+
+        // Loại bỏ các dấu gạch dưới liên tiếp
+        fileName = fileName.replaceAll("_+", "_");
+
+        // Loại bỏ dấu gạch dưới ở đầu và cuối
+        fileName = fileName.replaceAll("^_|_$", "");
+
+        // Giới hạn độ dài tên file (không tính phần mở rộng)
+        if (fileName.length() > 50) {
+            fileName = fileName.substring(0, 50);
+        }
+
+        return fileName + extension;
+    }
+
+    private String removeAccent(String s) {
+        String temp = java.text.Normalizer.normalize(s, java.text.Normalizer.Form.NFD);
+        temp = temp.replaceAll("[\\p{InCombiningDiacriticalMarks}]", "");
+        return temp;
     }
 
     // Tải tệp xuống
