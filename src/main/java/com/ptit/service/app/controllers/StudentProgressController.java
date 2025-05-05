@@ -2,8 +2,10 @@ package com.ptit.service.app.controllers;
 
 import com.ptit.service.app.dtos.StudentProgressDTO;
 import com.ptit.service.app.responses.ResponsePage;
+import com.ptit.service.domain.entities.Student;
 import com.ptit.service.domain.entities.StudentProgress;
 import com.ptit.service.domain.service.StudentProgressService;
+import com.ptit.service.domain.service.StudentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -19,10 +21,18 @@ import java.util.stream.Collectors;
 public class StudentProgressController {
 
     private final StudentProgressService studentProgressService;
+    private final StudentService studentService;
 
-    @GetMapping("/student/{studentId}")
+    private Long getStudentIdFromUserId(Long userId) {
+        return studentService.findByUserId(userId)
+                .map(Student::getId)
+                .orElseThrow(() -> new RuntimeException("Student not found for userId: " + userId));
+    }
+
+    @GetMapping("/student/{userId}")
     public ResponseEntity<List<StudentProgressDTO>> getStudentProgress(
-            @PathVariable Long studentId) {
+            @PathVariable Long userId) {
+        Long studentId = getStudentIdFromUserId(userId);
         List<StudentProgress> progressList = studentProgressService.getStudentProgress(studentId);
         List<StudentProgressDTO> progressDTOList = progressList.stream()
                 .map(this::convertToDTO)
@@ -30,60 +40,67 @@ public class StudentProgressController {
         return ResponseEntity.ok(progressDTOList);
     }
 
-    @GetMapping("/student/{studentId}/practice/{practiceId}")
+    @GetMapping("/student/{userId}/practice/{practiceId}")
     public ResponseEntity<StudentProgressDTO> getPracticeProgress(
-            @PathVariable Long studentId,
+            @PathVariable Long userId,
             @PathVariable Long practiceId) {
+        Long studentId = getStudentIdFromUserId(userId);
         StudentProgress progress = studentProgressService.getPracticeProgress(studentId, practiceId);
         return ResponseEntity.ok(convertToDTO(progress));
     }
 
-    @PostMapping("/student/{studentId}/practice/{practiceId}/start")
+    @PostMapping("/student/{userId}/practice/{practiceId}/start")
     public ResponseEntity<StudentProgressDTO> startPractice(
-            @PathVariable Long studentId,
+            @PathVariable Long userId,
             @PathVariable Long practiceId) {
+        Long studentId = getStudentIdFromUserId(userId);
         StudentProgress progress = studentProgressService.startPractice(studentId, practiceId);
         return ResponseEntity.ok(convertToDTO(progress));
     }
 
-    @PostMapping("/student/{studentId}/practice/{practiceId}/complete")
+    @PostMapping("/student/{userId}/practice/{practiceId}/complete")
     public ResponseEntity<StudentProgressDTO> completePractice(
-            @PathVariable Long studentId,
+            @PathVariable Long userId,
             @PathVariable Long practiceId,
             @RequestParam(required = false) Double score,
             @RequestParam(required = false) String comment) {
+        Long studentId = getStudentIdFromUserId(userId);
         StudentProgress progress = studentProgressService.completePractice(studentId, practiceId, score, comment);
         return ResponseEntity.ok(convertToDTO(progress));
     }
 
-    @PutMapping("/student/{studentId}/practice/{practiceId}/score")
+    @PutMapping("/student/{userId}/practice/{practiceId}/score")
     public ResponseEntity<StudentProgressDTO> updatePracticeScore(
-            @PathVariable Long studentId,
+            @PathVariable Long userId,
             @PathVariable Long practiceId,
             @RequestParam Double score,
             @RequestParam(required = false) String comment) {
+        Long studentId = getStudentIdFromUserId(userId);
         StudentProgress progress = studentProgressService.updatePracticeScore(studentId, practiceId, score, comment);
         return ResponseEntity.ok(convertToDTO(progress));
     }
 
-    @GetMapping("/student/{studentId}/practice/{practiceId}/can-start")
+    @GetMapping("/student/{userId}/practice/{practiceId}/can-start")
     public ResponseEntity<Boolean> canStartPractice(
-            @PathVariable Long studentId,
+            @PathVariable Long userId,
             @PathVariable Long practiceId) {
+        Long studentId = getStudentIdFromUserId(userId);
         boolean canStart = studentProgressService.canStartPractice(studentId, practiceId);
         return ResponseEntity.ok(canStart);
     }
 
-    @GetMapping("/student/{studentId}/completed-all")
+    @GetMapping("/student/{userId}/completed-all")
     public ResponseEntity<Boolean> hasCompletedAllPractices(
-            @PathVariable Long studentId) {
+            @PathVariable Long userId) {
+        Long studentId = getStudentIdFromUserId(userId);
         boolean completed = studentProgressService.hasCompletedAllPractices(studentId);
         return ResponseEntity.ok(completed);
     }
 
-    @GetMapping("/student/{studentId}/completion-rate")
+    @GetMapping("/student/{userId}/completion-rate")
     public ResponseEntity<Double> getCompletionRate(
-            @PathVariable Long studentId) {
+            @PathVariable Long userId) {
+        Long studentId = getStudentIdFromUserId(userId);
         double rate = studentProgressService.calculateCompletionRate(studentId);
         return ResponseEntity.ok(rate);
     }

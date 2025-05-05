@@ -81,6 +81,9 @@ public class PracticeController {
         if (practiceDTO != null) {
             practice.setTitle(practiceDTO.getTitle());
             practice.setDescription(practiceDTO.getDescription());
+            practice.setImageUrl(practiceDTO.getImageUrl());
+            practice.setPracticeOrder(practiceDTO.getPracticeOrder());
+            practice.setStatus(practiceDTO.getStatus());
         }
 
         Practice createPractice = practiceService.createPractice(practice, file);

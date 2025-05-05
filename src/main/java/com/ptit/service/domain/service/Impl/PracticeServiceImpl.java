@@ -80,9 +80,9 @@ public class PracticeServiceImpl implements PracticeService {
         // Nếu có file ảnh, lưu ảnh và cập nhật đường dẫn ảnh
         if (file != null && !file.isEmpty()) {
             try {
-                String fileName = fileService.uploadFile(file); // Lưu file và nhận tên ảnh
+                String fileName = fileService.uploadFile(file);
                 if (fileName != null && !fileName.isEmpty()) {
-                    newPractice.setImageUrl(fileName); // Cập nhật đường dẫn ảnh
+                    newPractice.setImageUrl(fileName);
                 } else {
                     throw new RuntimeException("Failed to upload file.");
                 }
@@ -91,55 +91,57 @@ public class PracticeServiceImpl implements PracticeService {
             }
         }
 
+        // Copy các thuộc tính từ practice vào newPractice
         FnCommon.coppyNonNullProperties(newPractice, practice);
-        newPractice.setStatus(PracticeStatus.DRAFT);
+        newPractice.setStatus(PracticeStatus.PUBLISHED);
 
+        // Lấy practiceOrder lớn nhất hiện tại và set cho bài mới
+        Integer maxOrder = practiceRepository.findMaxPracticeOrder();
+        if (maxOrder == null) {
+            maxOrder = 0;
+        }
+        newPractice.setPracticeOrder(maxOrder + 1);
+
+        // Lưu bài thực hành mới
         newPractice = practiceRepository.save(newPractice);
-
-        // Kiểm tra xem đây có phải là bài thực hành đầu tiên không
-        boolean isFirstPractice = practiceRepository.count() == 1;
 
         // Tạo tiến trình cho tất cả sinh viên hiện có
         List<Student> students = studentRepository.findAll();
+        Integer practiceOrder = newPractice.getPracticeOrder();
         for (Student student : students) {
-            // Kiểm tra xem sinh viên đã có tiến trình cho bài này chưa
-            if (student != null && student.getId() != null && newPractice.getId() != null &&
-                    !studentProgressRepository.existsByStudentIdAndPracticeId(student.getId(), newPractice.getId())) {
-                StudentProgress progress = new StudentProgress();
-                progress.setStudent(student);
-                progress.setPractice(newPractice);
+            StudentProgress progress = new StudentProgress();
+            progress.setStudent(student);
+            progress.setPractice(newPractice);
+            progress.setStatus(PracticeProgressStatus.LOCKED);
+            progress.setScore(0.0);
+            progress.setComment("");
+            progress.setStartedAt(null);
+            progress.setCompletedAt(null);
 
-                // Nếu là bài đầu tiên hoặc không có bài thực hành trước đó, mở khóa bài mới
-                if (isFirstPractice) {
-                    progress.setStatus(PracticeProgressStatus.UNLOCKED);
-                } else {
-                    // Tìm bài thực hành có order lớn nhất còn tồn tại và nhỏ hơn bài mới
-                    Optional<Practice> previousPracticeOpt = practiceRepository
-                            .findTopByPracticeOrderLessThanOrderByPracticeOrderDesc(
-                                    newPractice.getPracticeOrder());
+            if (practiceOrder != null) {
+                Optional<Practice> previousPracticeOpt = practiceRepository
+                        .findTopByPracticeOrderLessThanOrderByPracticeOrderDesc(practiceOrder);
 
-                    if (previousPracticeOpt.isEmpty()) {
-                        // Nếu không có bài thực hành trước đó, mở khóa bài mới
+                if (previousPracticeOpt.isPresent()) {
+                    Practice previousPractice = previousPracticeOpt.get();
+                    // Kiểm tra xem sinh viên đã hoàn thành bài thực hành trước đó chưa
+                    Optional<StudentProgress> previousProgressOpt = studentProgressRepository
+                            .findByStudentIdAndPracticeId(student.getId(), previousPractice.getId());
+
+                    if (previousProgressOpt.isPresent() &&
+                            previousProgressOpt.get().getStatus() == PracticeProgressStatus.COMPLETED) {
                         progress.setStatus(PracticeProgressStatus.UNLOCKED);
-                    } else {
-                        Practice previousPractice = previousPracticeOpt.get();
-                        // Kiểm tra trạng thái của bài thực hành trước đó
-                        Optional<StudentProgress> previousProgressOpt = studentProgressRepository
-                                .findByStudentIdAndPracticeId(student.getId(), previousPractice.getId());
-
-                        if (previousProgressOpt.isPresent() &&
-                                previousProgressOpt.get().getStatus() == PracticeProgressStatus.COMPLETED) {
-                            // Nếu bài trước đã hoàn thành, mở khóa bài mới
-                            progress.setStatus(PracticeProgressStatus.UNLOCKED);
-                        } else {
-                            // Nếu bài trước chưa hoàn thành, khóa bài mới
-                            progress.setStatus(PracticeProgressStatus.LOCKED);
-                        }
                     }
+                } else {
+                    // Không có bài trước đó, mở khóa
+                    progress.setStatus(PracticeProgressStatus.UNLOCKED);
                 }
-
-                studentProgressRepository.save(progress);
+            } else {
+                // Nếu không có practiceOrder, mặc định mở khóa
+                progress.setStatus(PracticeProgressStatus.UNLOCKED);
             }
+
+            studentProgressRepository.save(progress);
         }
 
         return newPractice;

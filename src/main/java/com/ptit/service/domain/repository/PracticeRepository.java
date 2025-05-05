@@ -38,4 +38,9 @@ public interface PracticeRepository extends JpaRepository<Practice, Long> {
 
         Optional<Practice> findTopByPracticeOrderLessThanOrderByPracticeOrderDesc(
                         Integer practiceOrder);
+
+        Optional<Practice> findByPracticeOrder(Integer practiceOrder);
+
+        @Query("SELECT COALESCE(MAX(p.practiceOrder), 0) FROM Practice p")
+        Integer findMaxPracticeOrder();
 }

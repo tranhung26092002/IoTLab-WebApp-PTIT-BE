@@ -2,8 +2,9 @@ package com.ptit.service.domain.entities;
 
 import com.ptit.service.domain.enums.PracticeProgressStatus;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -13,9 +14,10 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "student_progress")
-@Data
-@AllArgsConstructor
+@Getter
+@Setter
 @NoArgsConstructor
+@AllArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 public class StudentProgress {
 
@@ -54,4 +56,20 @@ public class StudentProgress {
     @LastModifiedDate
     @Column(name = "updated_at", columnDefinition = "TIMESTAMP")
     private LocalDateTime updatedAt;
+
+    @Override
+    public String toString() {
+        return "StudentProgress{" +
+                "id=" + id +
+                ", studentId=" + (student != null ? student.getId() : null) +
+                ", practiceId=" + (practice != null ? practice.getId() : null) +
+                ", status=" + status +
+                ", score=" + score +
+                ", comment='" + comment + '\'' +
+                ", startedAt=" + startedAt +
+                ", completedAt=" + completedAt +
+                ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
+                '}';
+    }
 }

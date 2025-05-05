@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -127,10 +128,44 @@ public class ReportServiceImpl implements ReportService {
                         progress.setStudent(student);
                         progress.setPractice(savedReport.getPractice());
                         // Nếu là bài đầu tiên thì mở khóa, ngược lại thì khóa
-                        progress.setStatus(savedReport.getPractice().getPracticeOrder() == 1 ? PracticeProgressStatus.UNLOCKED
-                                : PracticeProgressStatus.LOCKED);
+                        progress.setStatus(
+                                savedReport.getPractice().getPracticeOrder() == 1 ? PracticeProgressStatus.UNLOCKED
+                                        : PracticeProgressStatus.LOCKED);
                         return studentProgressRepository.save(progress);
                     });
+        }
+
+        // Nếu báo cáo được tạo với trạng thái SUBMITTED, cập nhật trạng thái tiến trình
+        // thực hành
+        if (report.getStatus() == ReportStatus.SUBMITTED) {
+            for (Student student : students) {
+                studentProgressRepository
+                        .findByStudentIdAndPracticeId(student.getId(), savedReport.getPractice().getId())
+                        .ifPresent(progress -> {
+                            progress.setStatus(PracticeProgressStatus.COMPLETED);
+                            progress.setCompletedAt(LocalDateTime.now());
+                            studentProgressRepository.save(progress);
+
+                            // Mở khóa bài thực hành tiếp theo
+                            practiceRepository.findByPracticeOrder(savedReport.getPractice().getPracticeOrder() + 1)
+                                    .ifPresent(nextPractice -> {
+                                        studentProgressRepository
+                                                .findByStudentIdAndPracticeId(student.getId(), nextPractice.getId())
+                                                .ifPresentOrElse(
+                                                        nextProgress -> {
+                                                            nextProgress.setStatus(PracticeProgressStatus.UNLOCKED);
+                                                            studentProgressRepository.save(nextProgress);
+                                                        },
+                                                        () -> {
+                                                            StudentProgress nextProgress = new StudentProgress();
+                                                            nextProgress.setStudent(student);
+                                                            nextProgress.setPractice(nextPractice);
+                                                            nextProgress.setStatus(PracticeProgressStatus.UNLOCKED);
+                                                            studentProgressRepository.save(nextProgress);
+                                                        });
+                                    });
+                        });
+            }
         }
 
         // Lưu danh sách sinh viên thực hiện báo cáo
@@ -189,7 +224,41 @@ public class ReportServiceImpl implements ReportService {
         }
 
         report.setStatus(newStatus);
-        return mapper.map(reportRepository.save(report), ReportResponse.class);
+        Report savedReport = reportRepository.save(report);
+
+        // Nếu báo cáo được nộp (SUBMITTED), cập nhật trạng thái tiến trình thực hành
+        // của sinh viên
+        if (newStatus == ReportStatus.SUBMITTED) {
+            for (Student student : report.getStudents()) {
+                studentProgressRepository.findByStudentIdAndPracticeId(student.getId(), report.getPractice().getId())
+                        .ifPresent(progress -> {
+                            progress.setStatus(PracticeProgressStatus.COMPLETED);
+                            progress.setCompletedAt(LocalDateTime.now());
+                            studentProgressRepository.save(progress);
+
+                            // Mở khóa bài thực hành tiếp theo
+                            practiceRepository.findByPracticeOrder(report.getPractice().getPracticeOrder() + 1)
+                                    .ifPresent(nextPractice -> {
+                                        studentProgressRepository
+                                                .findByStudentIdAndPracticeId(student.getId(), nextPractice.getId())
+                                                .ifPresentOrElse(
+                                                        nextProgress -> {
+                                                            nextProgress.setStatus(PracticeProgressStatus.UNLOCKED);
+                                                            studentProgressRepository.save(nextProgress);
+                                                        },
+                                                        () -> {
+                                                            StudentProgress nextProgress = new StudentProgress();
+                                                            nextProgress.setStudent(student);
+                                                            nextProgress.setPractice(nextPractice);
+                                                            nextProgress.setStatus(PracticeProgressStatus.UNLOCKED);
+                                                            studentProgressRepository.save(nextProgress);
+                                                        });
+                                    });
+                        });
+            }
+        }
+
+        return mapper.map(savedReport, ReportResponse.class);
     }
 
     /**
