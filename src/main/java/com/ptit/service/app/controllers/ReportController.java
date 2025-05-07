@@ -31,11 +31,7 @@ public class ReportController {
         return reportService.getReports(pageable);
     }
 
-    @GetMapping("/filter")
-    public ResponsePage<Report, ReportResponse> getReportsByFilter(
-            @ModelAttribute ReportFilterDTO reportFilterDTO,
-            Pageable pageable)
-    {
+    private void processFilter(ReportFilterDTO reportFilterDTO) {
         // Danh sách các trường hợp cho phép sắp xếp
         List<String> allowedFields = Arrays.asList(
                 "id", "title", "classGroup", "className", "shift", "status");
@@ -49,7 +45,13 @@ public class ReportController {
 
         reportFilterDTO.setStartDate(parseDate(reportFilterDTO.getStartDate(), formatter));
         reportFilterDTO.setEndDate(parseDate(reportFilterDTO.getEndDate(), formatter));
+    }
 
+    @GetMapping("/filter")
+    public ResponsePage<Report, ReportResponse> getReportsByFilter(
+            @ModelAttribute ReportFilterDTO reportFilterDTO,
+            Pageable pageable) {
+        processFilter(reportFilterDTO);
         return reportService.getReportsFilter(reportFilterDTO, pageable);
     }
 
@@ -57,24 +59,9 @@ public class ReportController {
     public ResponsePage<Report, ReportResponse> getReportsOfMe(
             @RequestHeader(name = Constant.headerUserId) Long userId,
             @ModelAttribute ReportFilterDTO reportFilterDTO,
-            Pageable pageable)
-    {
-        // Danh sách các trường hợp cho phép sắp xếp
-        List<String> allowedFields = Arrays.asList(
-                "id", "title", "classGroup", "className", "shift", "status");
-
-        if (!allowedFields.contains(reportFilterDTO.getSortField())) {
-            reportFilterDTO.setSortField("id");
-        }
-
-        reportFilterDTO.setId(userId);
-
-        // Chuyển đổi ngày tháng
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-
-        reportFilterDTO.setStartDate(parseDate(reportFilterDTO.getStartDate(), formatter));
-        reportFilterDTO.setEndDate(parseDate(reportFilterDTO.getEndDate(), formatter));
-
+            Pageable pageable) {
+        processFilter(reportFilterDTO);
+        reportFilterDTO.setUserId(userId); // Lọc theo userId của sinh viên
         return reportService.getReportsFilter(reportFilterDTO, pageable);
     }
 

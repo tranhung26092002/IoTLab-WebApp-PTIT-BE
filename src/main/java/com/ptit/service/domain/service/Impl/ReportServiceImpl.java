@@ -308,7 +308,7 @@ public class ReportServiceImpl implements ReportService {
         }
         Sort sort = Sort.by(direction, reportFilterDTO.getSortField());
         PageRequest pageRequest = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
-        Page<Report> reportPage = reportRepository.filterDevices(
+        Page<Report> reportPage = reportRepository.filterReports(
                 reportFilterDTO,
                 pageRequest);
 

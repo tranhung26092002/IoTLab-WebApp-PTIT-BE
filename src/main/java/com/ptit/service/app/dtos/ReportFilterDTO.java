@@ -7,6 +7,7 @@ import lombok.Data;
 @Data
 public class ReportFilterDTO {
     private Long id;
+    private Long userId;
     private String title;
     private String classGroup;
     private String className;

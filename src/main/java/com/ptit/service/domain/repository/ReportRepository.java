@@ -19,6 +19,8 @@ public interface ReportRepository extends JpaRepository<Report, Long> {
 
         @Query("SELECT r FROM Report r WHERE " +
                         "(:#{#filter.id} IS NULL OR r.id = :#{#filter.id}) AND " +
+                        "(:#{#filter.userId} IS NULL OR EXISTS (SELECT s FROM r.students s WHERE s.userId = :#{#filter.userId})) AND "
+                        +
                         "(:#{#filter.title} IS NULL OR r.title LIKE %:#{#filter.title}%) AND " +
                         "(:#{#filter.className} IS NULL OR r.className LIKE %:#{#filter.className}%) AND " +
                         "(:#{#filter.classGroup} IS NULL OR r.classGroup LIKE %:#{#filter.classGroup}%) AND " +
@@ -26,7 +28,7 @@ public interface ReportRepository extends JpaRepository<Report, Long> {
                         "(:#{#filter.status} IS NULL OR r.status = :#{#filter.status}) AND" +
                         "(:#{#filter.startDate} IS NULL OR r.createdAt >= :#{#filter.startDate}) AND " +
                         "(:#{#filter.endDate} IS NULL OR r.createdAt <= :#{#filter.endDate})")
-        Page<Report> filterDevices(
+        Page<Report> filterReports(
                         @Param("filter") ReportFilterDTO reportFilterDTO,
                         Pageable pageRequest);
 
