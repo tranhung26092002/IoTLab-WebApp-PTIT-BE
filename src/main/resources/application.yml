@@ -9,18 +9,18 @@ spring:
     dispatch-options-request: true
   application:
     name: PRACTICE-SERVICE
-    environment: ${ENVIRONMENT:DEV}
+    environment: ${ENVIRONMENT}
   datasource:
-    url: ${POSTGRESQL_DATABASE_URL:jdbc:postgresql://localhost:5432/iot_lab}
-    username: ${POSTGRES_USER:postgres}
-    password: ${POSTGRES_PASSWORD:hungtran}
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
     driver-class-name: org.postgresql.Driver
     hikari:
-      connection-timeout: ${DB_CONNECTION_TIMEOUT:30000}
-      maximum-pool-size: ${DB_MAX_POOL_SIZE:10}
-      max-lifetime: ${DB_MAX_LIFETIME:1000000}
+      connection-timeout: ${DB_CONNECTION_TIMEOUT}
+      maximum-pool-size: ${DB_MAX_POOL_SIZE}
+      max-lifetime: ${DB_MAX_LIFETIME}
   jpa:
-    show-sql: ${DEBUG:true}
+    show-sql: ${DEBUG}
     open-in-view: false
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
@@ -34,7 +34,7 @@ spring:
           lob:
             non_contextual_creation: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
-        show_sql: ${DEBUG:true}
+        show_sql: ${DEBUG}
   main:
     allow-bean-definition-overriding: true
   servlet:
@@ -44,19 +44,19 @@ spring:
       enabled: true
       file-size-threshold: 10KB
   rabbitmq:
-    host: localhost
-    port: 5672
-    username: guest
-    password: guest
+    host: ${RABBITMQ_HOST}
+    port: ${RABBITMQ_PORT}
+    username: ${RABBITMQ_USERNAME}
+    password: ${RABBITMQ_PASSWORD}
 
 telegram:
-  chatId: ${TELEGRAM_CHAT_ID:-1000000000}
-  apiToken: ${TELEGRAM_API_TOKEN:-0000000000:XXXXXXXXXXXXXXXXXXXXXXXX}
-debug: ${DEBUG:true}
+  chatId: ${TELEGRAM_CHAT_ID}
+  apiToken: ${TELEGRAM_API_TOKEN}
+debug: ${DEBUG}
 
 async:
   config:
-    core-pool-size: ${ASYNC_CORE_POOL_SIZE:3}
+    core-pool-size: ${ASYNC_CORE_POOL_SIZE}
 logging:
   level:
     org:
@@ -66,10 +66,10 @@ logging:
 eureka:
   client:
     serviceUrl:
-      defaultZone: ${EUREKA_URI:http://localhost:8761/eureka}
+      defaultZone: ${EUREKA_URI}
 
 ptit:
-  storage-service: ${STORAGE_SERVICE:http://localhost:8086}
+  storage-service: ${STORAGE_SERVICE}
 
 # User Service RabbitMQ Configuration
 user:
