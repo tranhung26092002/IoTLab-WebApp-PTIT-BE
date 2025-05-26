@@ -7,16 +7,16 @@ spring:
     dispatch-options-request: true
   application:
     name: STORAGE-SERVICE
-    environment: ${ENVIRONMENT:DEV}
+    environment: ${ENVIRONMENT}
   servlet:
     multipart:
       enabled: true
-      max-file-size: 200MB    # Giới hạn dung lượng file đơn lẻ
-      max-request-size: 200MB  # Giới hạn dung lượng toàn bộ yêu cầu (bao gồm tất cả các tệp)
-      file-size-threshold: 10KB # Kích thước tối thiểu của file trước khi tạm lưu vào bộ nhớ
+      max-file-size: 200MB
+      max-request-size: 200MB
+      file-size-threshold: 10KB
 
 storage:
-  location: D:/Workspaces/IoTLab-WebApp-PTIT-BE/uploads # Sử dụng thư mục /uploads trong container
+  location: ${STORAGE_LOCATION}
 
 logging:
   level:
@@ -26,14 +26,17 @@ logging:
           autoconfigure: INFO
 
 telegram:
-  chatId: ${TELEGRAM_CHAT_ID:-1000000000}
-  apiToken: ${TELEGRAM_API_TOKEN:-0000000000:XXXXXXXXXXXXXXXXXXXXXXXX}
-debug: ${DEBUG:true}
+  chatId: ${TELEGRAM_CHAT_ID}
+  apiToken: ${TELEGRAM_API_TOKEN}
+debug: ${DEBUG}
 async:
   config:
-    core-pool-size: ${ASYNC_CORE_POOL_SIZE:3}
+    core-pool-size: ${ASYNC_CORE_POOL_SIZE}
 
 eureka:
   client:
     serviceUrl:
-      defaultZone: http://localhost:8761/eureka
+      defaultZone: ${EUREKA_URI}
+
+ptit:
+  storage-service: ${STORAGE_SERVICE}
