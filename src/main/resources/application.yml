@@ -10,7 +10,10 @@ spring:
           globalcors:
             add-to-simple-url-handler-mapping: true
 
+gateway:
+  valid-token-url: ${VALID_TOKEN_URL}
+
 eureka:
   client:
     serviceUrl:
-      defaultZone: http://localhost:8761/eureka
+      defaultZone: ${EUREKA_URI}

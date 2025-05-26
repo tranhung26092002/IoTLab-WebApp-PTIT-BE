@@ -1,19 +1,24 @@
 package com.ptit.service.config;
 
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Map;
-
 @Component
 public class TokenDecodeGatewayFilterFactory extends AbstractGatewayFilterFactory<TokenDecodeGatewayFilterFactory.Config> {
-//    private static final String VALID_TOKEN_URL = "lb://USER-SERVICE/user/auth/valid-token";
 
-    private static final String VALID_TOKEN_URL = "http://localhost:8081/user/auth/valid-token";
+    @Value("${gateway.valid-token-url}")
+    private String VALID_TOKEN_URL;
 
     public TokenDecodeGatewayFilterFactory() {
         super(Config.class);
