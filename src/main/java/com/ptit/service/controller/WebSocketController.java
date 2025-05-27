@@ -1,11 +1,9 @@
-package com.ptit.service.app.controllers;
+package com.ptit.service.controller;
 
-import com.ptit.service.domain.entities.Notification;
+import com.ptit.service.entity.Notification;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.ptit.service.app.dtos.NotificationDTO;
 
 @RestController
 public class WebSocketController {

@@ -1,6 +1,6 @@
-package com.ptit.service.domain.services;
+package com.ptit.service.service;
 
-import com.ptit.service.app.dtos.NotificationDTO;
+import com.ptit.service.dto.NotificationDTO;
 import com.ptit.service.config.RabbitMQConfig;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;

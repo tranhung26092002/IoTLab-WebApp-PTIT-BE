@@ -1,9 +1,9 @@
-package com.ptit.service.domain.services;
+package com.ptit.service.service;
 
-import com.ptit.service.app.controllers.WebSocketController;
-import com.ptit.service.app.dtos.NotificationDTO;
+import com.ptit.service.controller.WebSocketController;
+import com.ptit.service.dto.NotificationDTO;
 import com.ptit.service.config.RabbitMQConfig;
-import com.ptit.service.domain.entities.Notification;
+import com.ptit.service.entity.Notification;
 import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Service;

@@ -1,9 +1,9 @@
-package com.ptit.service.domain.services;
+package com.ptit.service.service;
 
-import com.ptit.service.app.dtos.NotificationDTO;
-import com.ptit.service.app.responses.NotificationResponse;
-import com.ptit.service.domain.entities.Notification;
-import com.ptit.service.domain.repositoties.NotificationRepository;
+import com.ptit.service.dto.NotificationDTO;
+import com.ptit.service.response.NotificationResponse;
+import com.ptit.service.entity.Notification;
+import com.ptit.service.repository.NotificationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

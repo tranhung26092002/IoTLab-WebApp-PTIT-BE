@@ -1,4 +1,4 @@
-package com.ptit.service.app.dtos;
+package com.ptit.service.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

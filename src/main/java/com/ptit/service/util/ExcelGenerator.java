@@ -1,4 +1,4 @@
-package com.ptit.service.domain.utils;
+package com.ptit.service.util;
 
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;

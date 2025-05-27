@@ -1,11 +1,10 @@
-package com.ptit.service.domain.repositoties;
+package com.ptit.service.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.ptit.service.domain.entities.Notification;
+import com.ptit.service.entity.Notification;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 

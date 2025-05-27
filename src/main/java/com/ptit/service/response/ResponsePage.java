@@ -1,4 +1,4 @@
-package com.ptit.service.app.responses;
+package com.ptit.service.response;
 
 import lombok.Data;
 import org.springframework.data.domain.Page;

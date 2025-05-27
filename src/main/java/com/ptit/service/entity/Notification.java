@@ -1,4 +1,4 @@
-package com.ptit.service.domain.entities;
+package com.ptit.service.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -1,8 +1,7 @@
-package com.ptit.service.app.controllers;
+package com.ptit.service.controller;
 
-import com.ptit.service.app.responses.NotificationResponse;
-import com.ptit.service.domain.services.NotificationService;
-import com.ptit.service.app.dtos.NotificationDTO;
+import com.ptit.service.response.NotificationResponse;
+import com.ptit.service.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
