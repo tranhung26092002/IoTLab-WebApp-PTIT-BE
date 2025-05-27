@@ -1,4 +1,4 @@
-package com.ptit.service.domain.utils;
+package com.ptit.service.util;
 
 import com.ommanisoft.common.exceptions.ExceptionOm;
 import java.io.File;

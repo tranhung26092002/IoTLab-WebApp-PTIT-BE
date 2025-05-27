@@ -1,6 +1,6 @@
-package com.ptit.service.app.controllers;
+package com.ptit.service.controller;
 
-import com.ptit.service.domain.services.StorageService;
+import com.ptit.service.service.StorageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;

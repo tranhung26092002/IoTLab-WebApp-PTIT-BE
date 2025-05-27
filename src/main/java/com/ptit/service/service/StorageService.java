@@ -1,4 +1,4 @@
-package com.ptit.service.domain.services;
+package com.ptit.service.service;
 
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Value;
