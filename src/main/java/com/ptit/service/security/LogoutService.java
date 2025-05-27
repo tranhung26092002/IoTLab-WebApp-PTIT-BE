@@ -1,12 +1,11 @@
 package com.ptit.service.security;
 
 import com.ommanisoft.common.exceptions.ExceptionOm;
-import com.ptit.service.domain.entities.RefreshToken;
-import com.ptit.service.domain.exceptions.ErrorMessage;
-import com.ptit.service.domain.repositories.RefreshTokenRepository;
+import com.ptit.service.entity.RefreshToken;
+import com.ptit.service.exception.ErrorMessage;
+import com.ptit.service.repository.RefreshTokenRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import lombok.var;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.logout.LogoutHandler;

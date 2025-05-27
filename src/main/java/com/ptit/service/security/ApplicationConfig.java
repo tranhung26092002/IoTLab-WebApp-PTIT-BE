@@ -1,8 +1,8 @@
 package com.ptit.service.security;
 
 import com.ommanisoft.common.exceptions.ExceptionOm;
-import com.ptit.service.domain.exceptions.ErrorMessage;
-import com.ptit.service.domain.repositories.UserRepository;
+import com.ptit.service.exception.ErrorMessage;
+import com.ptit.service.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -1,6 +1,5 @@
 package com.ptit.service.security;
 
-import com.ptit.service.domain.entities.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;

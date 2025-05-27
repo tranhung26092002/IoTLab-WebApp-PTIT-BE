@@ -1,9 +1,9 @@
 package com.ptit.service.database;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ptit.service.domain.repositories.DistrictRepository;
-import com.ptit.service.domain.repositories.ProvinceRepository;
-import com.ptit.service.domain.repositories.WardRepository;
+import com.ptit.service.repository.DistrictRepository;
+import com.ptit.service.repository.ProvinceRepository;
+import com.ptit.service.repository.WardRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;

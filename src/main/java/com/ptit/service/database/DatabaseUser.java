@@ -1,11 +1,11 @@
 package com.ptit.service.database;
 
-import com.ptit.service.domain.entities.Address;
-import com.ptit.service.domain.entities.User;
-import com.ptit.service.domain.enums.Gender;
-import com.ptit.service.domain.enums.RoleType;
-import com.ptit.service.domain.enums.StateUser;
-import com.ptit.service.domain.repositories.UserRepository;
+import com.ptit.service.entity.Address;
+import com.ptit.service.entity.User;
+import com.ptit.service.entity.enums.Gender;
+import com.ptit.service.entity.enums.RoleType;
+import com.ptit.service.entity.enums.StateUser;
+import com.ptit.service.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
