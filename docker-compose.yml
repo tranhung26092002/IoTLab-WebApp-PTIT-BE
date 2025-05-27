@@ -1,0 +1,93 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    env_file:
+      - .env
+
+  eureka-service:
+    image: tranvanhung26092002/eureka-service:latest
+    ports:
+      - "8761:8761"
+    env_file:
+      - .env
+
+  api-gateway:
+    image: tranvanhung26092002/api-gateway:latest
+    ports:
+      - "8080:8088"
+    depends_on:
+      - eureka-service
+    env_file:
+      - .env
+
+  device-service:
+    image: tranvanhung26092002/device-service:latest
+    ports:
+      - "8082:8082"
+    depends_on:
+      - eureka-service
+    env_file:
+      - .env
+
+  user-service:
+    image: tranvanhung26092002/user-service:latest
+    ports:
+      - "8081:8081"
+    depends_on:
+      - eureka-service
+    env_file:
+      - .env
+
+  notification-service:
+    image: tranvanhung26092002/notification-service:latest
+    ports:
+      - "8087:8087"
+    depends_on:
+      - eureka-service
+    env_file:
+      - .env
+
+  mqtt-service:
+    image: tranvanhung26092002/mqtt-service:latest
+    ports:
+      - "8085:8085"
+    env_file:
+      - .env
+
+  practice-service:
+    image: tranvanhung26092002/practice-service:latest
+    ports:
+      - "8084:8084"
+    depends_on:
+      - eureka-service
+    env_file:
+      - .env
+
+  storage-service:
+    image: tranvanhung26092002/storage-service:latest
+    ports:
+      - "8086:8086"
+    depends_on:
+      - eureka-service
+    env_file:
+      - .env
+
+volumes:
+  postgres_data:

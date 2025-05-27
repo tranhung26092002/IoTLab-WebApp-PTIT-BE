@@ -1,0 +1,42 @@
+server:
+  port: 8086
+  address: 0.0.0.0
+
+spring:
+  mvc:
+    dispatch-options-request: true
+  application:
+    name: STORAGE-SERVICE
+    environment: ${ENVIRONMENT}
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 200MB
+      max-request-size: 200MB
+      file-size-threshold: 10KB
+
+storage:
+  location: ${STORAGE_LOCATION}
+
+logging:
+  level:
+    org:
+      springframework:
+        boot:
+          autoconfigure: INFO
+
+telegram:
+  chatId: ${TELEGRAM_CHAT_ID}
+  apiToken: ${TELEGRAM_API_TOKEN}
+debug: ${DEBUG}
+async:
+  config:
+    core-pool-size: ${ASYNC_CORE_POOL_SIZE}
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: ${EUREKA_URI}
+
+ptit:
+  storage-service: ${STORAGE_SERVICE}
