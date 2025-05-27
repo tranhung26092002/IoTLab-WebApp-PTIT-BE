@@ -52,6 +52,15 @@ public class SensorData {
     @Column(name = "servo")
     private int servo;
 
+    @Column(name = "topic")
+    private String topic;
+
+    @Column(name = "payload")
+    private String payload;
+
+    @Column(name = "broker")
+    private String broker;
+
     @Column(name = "created_at", updatable = false, columnDefinition = "TIMESTAMP")
     private LocalDateTime createdAt = LocalDateTime.now();
 }

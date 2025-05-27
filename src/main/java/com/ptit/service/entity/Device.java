@@ -32,6 +32,12 @@ public class Device implements Serializable {
     @Column(name = "device_location")
     private String location;
 
+    @Column(name = "device_wifi")
+    private String wifi;
+
+    @Column(name = "device_ip")
+    private String ip;
+
     @Column(name = "created_at", updatable = false, columnDefinition = "TIMESTAMP")
     private LocalDateTime createdAt = LocalDateTime.now();
 

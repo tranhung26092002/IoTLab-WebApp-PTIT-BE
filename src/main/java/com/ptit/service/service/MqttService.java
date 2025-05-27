@@ -49,16 +49,23 @@ public class MqttService extends BaseService{
             ObjectMapper mapper = new ObjectMapper();
             JsonNode jsonNode = mapper.readTree(payload);
 
-            String deviceId = jsonNode.path("device_id").asText("N/A");
+            String deviceId = jsonNode.path("id").asText("N/A");
+            String deviceName = jsonNode.path("name").asText("N/A");
+            String deviceWifi = jsonNode.path("w").asText("N/A");
+            String deviceIp = jsonNode.path("i").asText("N/A");
+            String deviceBroker = jsonNode.path("b").asText("N/A");
+            String deviceTopic = jsonNode.path("t").asText("N/A");
 
             Device device = deviceService.findByDeviceId(deviceId);
 
             if (device == null) {
                 device = new Device();
                 device.setDeviceId(deviceId);
-                device.setName(jsonNode.path("device_name").asText("N/A"));
-                device.setType("device");
-                device.setLocation("Ha Noi");
+                device.setName(deviceName);
+                device.setType("node");
+                device.setLocation("IoT Lab");
+                device.setWifi(deviceWifi);
+                device.setIp(deviceIp);
                 device = deviceService.save(device);
             }
 
@@ -87,6 +94,10 @@ public class MqttService extends BaseService{
             sensorData.setAlertLed(alertLed);
             sensorData.setBuzzer(buzzer);
             sensorData.setServo(servo);
+
+            sensorData.setBroker(deviceBroker);
+            sensorData.setTopic(deviceTopic);
+            sensorData.setPayload(payload);
 
             sensorDataService.save(sensorData);
 
