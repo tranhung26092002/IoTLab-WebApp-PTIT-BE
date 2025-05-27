@@ -4,14 +4,14 @@ docker login -u tranvanhung26092002
 
 # Danh sách các service
 services=(
+    "eureka-service"
+    "api-gateway"
     "user-service"
     "storage-service"
     "practice-service"
     "notification-service"
     "mqtt-service"
-    "eureka-service"
     "device-service"
-    "api-gateway"
 )
 
 for service in "${services[@]}"; do

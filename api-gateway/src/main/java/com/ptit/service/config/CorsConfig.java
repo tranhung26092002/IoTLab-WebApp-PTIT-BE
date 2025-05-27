@@ -14,6 +14,7 @@ public class CorsConfig {
     CorsConfiguration configuration = new CorsConfiguration();
     configuration.addAllowedOrigin("http://192.168.1.222:3000"); // Chỉ cho phép origin này
     configuration.addAllowedOrigin("http://localhost:3000"); // Chỉ cho phép origin này
+    configuration.addAllowedOrigin("http://localhost"); // Chỉ cho phép origin này
     configuration.addAllowedMethod("*"); // Chấp nhận tất cả các phương thức
     configuration.addAllowedHeader("*"); // Chấp nhận tất cả các tiêu đề
     configuration.setAllowCredentials(true); // Cho phép credentials (cookies, authorization headers)

@@ -1,5 +1,5 @@
 server:
-  port: 8088
+  port: 8080
   address: 0.0.0.0
 
 spring:
@@ -17,3 +17,14 @@ eureka:
   client:
     serviceUrl:
       defaultZone: ${EUREKA_URI}
+
+# Cho phép endpoint health được truy cập
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
