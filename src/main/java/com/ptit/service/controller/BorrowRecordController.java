@@ -1,0 +1,69 @@
+package com.ptit.service.controller;
+
+import com.ptit.service.response.BorrowRecordResponse;
+import com.ptit.service.response.ResponsePage;
+import com.ptit.service.entity.BorrowRecord;
+import com.ptit.service.entity.Device;
+import com.ptit.service.service.BorrowRecordService;
+import com.ptit.service.util.Constant;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
+import java.util.Optional;
+
+@RestController
+@RequestMapping("/borrow-records")
+@RequiredArgsConstructor
+public class BorrowRecordController {
+    private final BorrowRecordService borrowRecordService;
+
+    @GetMapping("/history-of-user")
+    public ResponsePage<BorrowRecordResponse> getBorrowHistoryOfUser(
+            @RequestHeader(name = Constant.headerUserId) Long userId,
+            Pageable pageable) {
+        return borrowRecordService.getBorrowHistoryByUserId(userId, pageable);
+    }
+
+    @GetMapping("/devices-of-user")
+    public ResponsePage<Device> getDevicesBorrowedByUser(
+            @RequestHeader(name = Constant.headerUserId) Long userId,
+            Pageable pageable
+    ) {
+        return borrowRecordService.getDevicesBorrowedByUser(userId, pageable);
+    }
+
+    @GetMapping("/history-of-device")
+    public ResponsePage<BorrowRecord> getBorrowHistoryOfDevice(
+            @RequestParam Long deviceId,
+            Pageable pageable
+    ) {
+        return borrowRecordService.getBorrowHistoryByDeviceId(deviceId, pageable);
+    }
+
+    @GetMapping("/history")
+    public ResponsePage<BorrowRecordResponse> getBorrowHistory(
+            Pageable pageable
+    ) {
+        return borrowRecordService.getBorrowHistory(pageable);
+    }
+
+    @PostMapping("/borrow")
+    public BorrowRecord borrowDevice(
+            @RequestParam Long deviceId,
+            @RequestHeader(name = Constant.headerUserId) Long userId,
+            @RequestParam String note,
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate expiredAt
+    ) {
+        return borrowRecordService.createBorrowRecord(deviceId, userId, note, expiredAt);
+    }
+
+    @PostMapping("/return/{borrowRecordId}")
+    public Optional<BorrowRecord> returnDevice(
+            @PathVariable Long borrowRecordId
+    ) {
+        return borrowRecordService.returnBorrowRecord(borrowRecordId);
+    }
+}

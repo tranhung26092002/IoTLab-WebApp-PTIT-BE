@@ -1,8 +1,8 @@
 package com.ptit.service.database;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ptit.service.domain.entities.Device;
-import com.ptit.service.domain.repositories.DeviceRepository;
+import com.ptit.service.entity.Device;
+import com.ptit.service.repository.DeviceRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
