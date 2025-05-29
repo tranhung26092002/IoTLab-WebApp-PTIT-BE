@@ -1,8 +1,11 @@
 package com.ptit.service.entity;
 
+import com.ptit.service.entity.enums.ExamStatus;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @Entity
@@ -12,8 +15,9 @@ public class StudentExam {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "student_id")
-    private Long studentId;
+    @ManyToOne
+    @JoinColumn(name = "student_id")
+    private Student student;
 
     @ManyToOne
     @JoinColumn(name = "exam_id")
@@ -29,4 +33,7 @@ public class StudentExam {
     private ExamStatus status;
 
     private Double score;
+
+    @OneToMany(mappedBy = "studentExam", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<StudentAnswer> answers = new ArrayList<>();
 }

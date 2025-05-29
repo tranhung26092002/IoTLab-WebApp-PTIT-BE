@@ -1,5 +1,6 @@
 package com.ptit.service.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -13,12 +14,15 @@ public class MultipleChoiceOption {
 
     @ManyToOne
     @JoinColumn(name = "question_id")
+    @JsonBackReference
     private Question question;
 
-    private String option; // A, B, C, D
+    @Column(name = "option")
+    private String option;
 
     @Column(columnDefinition = "TEXT")
     private String content;
 
+    @Column(name = "is_correct")
     private boolean isCorrect;
 }

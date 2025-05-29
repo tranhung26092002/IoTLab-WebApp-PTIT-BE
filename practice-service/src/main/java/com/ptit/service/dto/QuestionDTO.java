@@ -1,6 +1,6 @@
 package com.ptit.service.dto;
 
-import com.ptit.service.entity.QuestionType;
+import com.ptit.service.entity.enums.QuestionType;
 import lombok.Data;
 import java.util.List;
 
@@ -10,5 +10,4 @@ public class QuestionDTO {
     private QuestionType type;
     private String content;
     private List<MultipleChoiceOptionDTO> options;
-    private EssayAnswerDTO essayAnswer;
 }

@@ -1,9 +1,11 @@
 package com.ptit.service.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDateTime;
 import java.util.List;
+import com.ptit.service.entity.enums.ExamStatus;
 
 @Data
 @Entity
@@ -19,6 +21,7 @@ public class Exam {
     private String description;
 
     @OneToMany(mappedBy = "exam", cascade = CascadeType.ALL)
+    @JsonManagedReference
     private List<ExamQuestion> questions;
 
     @Column(name = "created_at")

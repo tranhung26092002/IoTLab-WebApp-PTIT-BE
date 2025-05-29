@@ -1,5 +1,7 @@
 package com.ptit.service.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.ptit.service.entity.enums.QuestionType;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDateTime;
@@ -19,11 +21,12 @@ public class Question {
     @Column(columnDefinition = "TEXT")
     private String content;
 
-    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<MultipleChoiceOption> options;
 
-    @OneToOne(mappedBy = "question", cascade = CascadeType.ALL)
-    private EssayAnswer essayAnswer;
+    @Column(name = "score")
+    private Double score;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

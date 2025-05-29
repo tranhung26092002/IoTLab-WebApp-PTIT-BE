@@ -1,21 +1,20 @@
 package com.ptit.service.controller;
 
+import com.ptit.service.dto.ExamDTO;
 import com.ptit.service.entity.Exam;
 import com.ptit.service.service.ExamService;
-import com.ptit.service.service.ExamCreationService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/exams")
+@RequestMapping("/exams")
 @RequiredArgsConstructor
 public class ExamController {
     private final ExamService examService;
-    private final ExamCreationService examCreationService;
 
     @GetMapping
     public ResponseEntity<List<Exam>> getAllExams() {
@@ -28,16 +27,16 @@ public class ExamController {
     }
 
     @PostMapping
-    public ResponseEntity<Exam> createExam(@Valid @RequestBody Exam exam) {
-        return ResponseEntity.ok(examCreationService.createExam(
+    public ResponseEntity<Exam> createExam(@Valid @RequestBody ExamDTO exam) {
+        return ResponseEntity.ok(examService.createExam(
                 exam.getTitle(),
                 exam.getDescription()));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Exam> updateExam(@PathVariable Long id, @Valid @RequestBody Exam exam) {
+    public ResponseEntity<Exam> updateExam(@PathVariable Long id, @Valid @RequestBody ExamDTO exam) {
         exam.setId(id);
-        return ResponseEntity.ok(examService.save(exam));
+        return ResponseEntity.ok(examService.updateExam(exam));
     }
 
     @DeleteMapping("/{id}")

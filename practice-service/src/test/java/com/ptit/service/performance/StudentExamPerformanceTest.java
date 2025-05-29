@@ -49,7 +49,7 @@ class StudentExamPerformanceTest {
     void findByStudentId_ShouldCompleteWithin300ms() {
         long startTime = System.nanoTime();
         
-        List<StudentExam> result = studentExamService.findByStudentId("SV001");
+        List<StudentExam> result = studentExamService.findByStudentId(1L);
         
         long endTime = System.nanoTime();
         long duration = TimeUnit.NANOSECONDS.toMillis(endTime - startTime);

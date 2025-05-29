@@ -2,22 +2,22 @@ package com.ptit.service.controller;
 
 import com.ptit.service.dto.QuestionDTO;
 import com.ptit.service.entity.Question;
-import com.ptit.service.entity.QuestionType;
+import com.ptit.service.entity.enums.QuestionType;
 import com.ptit.service.service.QuestionService;
-import com.ptit.service.service.QuestionCreationService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
 import java.util.List;
 
-import javax.validation.Valid;
-
 @RestController
-@RequestMapping("/api/questions")
+@RequestMapping("/questions")
 @RequiredArgsConstructor
 public class QuestionController {
     private final QuestionService questionService;
-    private final QuestionCreationService questionCreationService;
 
     @GetMapping
     public ResponseEntity<List<Question>> getAllQuestions() {
@@ -34,26 +34,44 @@ public class QuestionController {
         return ResponseEntity.ok(questionService.findByType(type));
     }
 
-    @PostMapping("/multiple-choice")
+    @PostMapping(value = "/multiple-choice", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Question> createMultipleChoiceQuestion(@Valid @RequestBody QuestionDTO dto) {
-        return ResponseEntity.ok(questionCreationService.createMultipleChoiceQuestion(dto));
+        return ResponseEntity.ok(questionService.createMultipleChoiceQuestion(dto));
     }
 
-    @PostMapping("/essay")
+    @PostMapping(value = "/essay", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Question> createEssayQuestion(@Valid @RequestBody QuestionDTO dto) {
-        return ResponseEntity.ok(questionCreationService.createEssayQuestion(dto));
+        return ResponseEntity.ok(questionService.createEssayQuestion(dto));
     }
 
-    @PutMapping("/{id}")
+    @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Question> updateQuestion(@PathVariable Long id,
             @Valid @RequestBody Question question) {
         question.setId(id);
-        return ResponseEntity.ok(questionService.save(question));
+        return ResponseEntity.ok(questionService.updateQuestion(question));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteQuestion(@PathVariable Long id) {
         questionService.delete(id);
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping(value = "/import", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<String> importQuestionsFromExcel(@RequestParam("file") MultipartFile file) {
+        if (file.isEmpty()) {
+            return ResponseEntity.badRequest().body("Please select a file to upload");
+        }
+
+        if (!file.getOriginalFilename().endsWith(".xlsx")) {
+            return ResponseEntity.badRequest().body("Only Excel (.xlsx) files are supported");
+        }
+
+        try {
+            int importedCount = questionService.importQuestionsFromExcel(file);
+            return ResponseEntity.ok("Successfully imported " + importedCount + " questions");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error importing questions: " + e.getMessage());
+        }
     }
 }

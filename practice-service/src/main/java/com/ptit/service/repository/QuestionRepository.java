@@ -1,7 +1,7 @@
 package com.ptit.service.repository;
 
 import com.ptit.service.entity.Question;
-import com.ptit.service.entity.QuestionType;
+import com.ptit.service.entity.enums.QuestionType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

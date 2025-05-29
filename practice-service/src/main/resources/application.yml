@@ -7,6 +7,8 @@ server:
 spring:
   mvc:
     dispatch-options-request: true
+    pathmatch:
+      matching-strategy: ant_path_matcher
   application:
     name: PRACTICE-SERVICE
     environment: ${ENVIRONMENT}
@@ -48,6 +50,15 @@ spring:
     port: ${RABBITMQ_PORT}
     username: ${RABBITMQ_USERNAME}
     password: ${RABBITMQ_PASSWORD}
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+  packages-to-scan: com.ptit.service.controller
 
 telegram:
   chatId: ${TELEGRAM_CHAT_ID}

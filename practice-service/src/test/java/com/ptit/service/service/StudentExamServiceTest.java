@@ -2,7 +2,6 @@ package com.ptit.service.service;
 
 import com.ptit.service.entity.StudentExam;
 import com.ptit.service.entity.StudentAnswer;
-import com.ptit.service.entity.ExamStatus;
 import com.ptit.service.repository.StudentExamRepository;
 import com.ptit.service.repository.StudentAnswerRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -48,7 +47,7 @@ class StudentExamServiceTest {
 
     @Test
     void findByStudentId_ShouldReturnStudentExams() {
-        String studentId = "SV001";
+        Long studentId = 1L;
         List<StudentExam> expectedExams = Arrays.asList(new StudentExam());
         when(studentExamRepository.findByStudentId(studentId)).thenReturn(expectedExams);
 

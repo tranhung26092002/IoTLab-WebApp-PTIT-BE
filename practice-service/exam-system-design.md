@@ -2,26 +2,34 @@
 
 ## 1. Yêu Cầu Hệ Thống
 
-### 1.1. Cấu Trúc Bài Kiểm Tra
-
-- Mỗi bài kiểm tra gồm 2 phần:
-  - Phần trắc nghiệm: 20 câu hỏi (mỗi câu 4 đáp án)
-  - Phần tự luận: 1 câu hỏi lý thuyết
-    - Yêu cầu trả lời bằng đoạn văn bản
-    - Kèm theo tối đa 3 hình ảnh
-
-### 1.2. Ngân Hàng Câu Hỏi
+### 1.1. Ngân Hàng Câu Hỏi
 
 - Hai loại câu hỏi:
   1. Trắc nghiệm:
-     - 1 câu hỏi
+     - Nội dung câu hỏi
      - 4 đáp án (A, B, C, D)
      - 1 đáp án đúng
   2. Tự luận:
-     - 1 câu hỏi lý thuyết
-     - Đáp án gồm:
-       - 1 đoạn văn bản
-       - Tối đa 3 hình ảnh
+     - Chỉ có nội dung câu hỏi
+
+### 1.2. Cấu Trúc Bài Kiểm Tra
+
+- Mỗi bài kiểm tra gồm:
+  - 20 câu hỏi trắc nghiệm
+  - 1 câu hỏi tự luận
+- Mỗi sinh viên được phân một mã đề riêng
+
+### 1.3. Quy Trình Làm Bài
+
+1. Sinh viên nhận mã đề
+2. Trả lời câu hỏi:
+   - Trắc nghiệm: Chọn 1 đáp án đúng nhất
+   - Tự luận: 
+     - Trả lời bằng văn bản
+     - Tối đa 3 ảnh kèm theo
+3. Nộp bài (Submit):
+   - Hiển thị đáp án phần trắc nghiệm ngay
+   - Phần tự luận chờ giáo viên chấm
 
 ## 2. Thiết Kế Kỹ Thuật
 
@@ -30,7 +38,6 @@
 - **Backend Framework**: Spring Boot
 - **Database**: PostgreSQL
 - **ORM**: JPA/Hibernate
-- **JDBC**: Cho các truy vấn phức tạp
 - **Spring Data JPA**: Cho các thao tác CRUD cơ bản
 - **Spring Security**: Xác thực và phân quyền
 - **Spring Validation**: Kiểm tra dữ liệu đầu vào
@@ -48,16 +55,13 @@ public class Question {
     private Long id;
 
     @Enumerated(EnumType.STRING)
-    private QuestionType type; // TRAC_NGHIEM/TU_LUAN
+    private QuestionType type; // MULTIPLE_CHOICE/ESSAY
 
     @Column(columnDefinition = "TEXT")
     private String content;
 
-    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MultipleChoiceOption> options;
-
-    @OneToOne(mappedBy = "question", cascade = CascadeType.ALL)
-    private EssayAnswer essayAnswer;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
@@ -90,25 +94,39 @@ public class MultipleChoiceOption {
 }
 ```
 
-#### EssayAnswer (Đáp án tự luận)
+#### StudentAnswer (Câu trả lời của sinh viên)
 
 ```java
 @Entity
-@Table(name = "essay_answer")
-public class EssayAnswer {
+@Table(name = "student_answer")
+public class StudentAnswer {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne
+    @ManyToOne
+    @JoinColumn(name = "student_exam_id")
+    private StudentExam studentExam;
+
+    @ManyToOne
     @JoinColumn(name = "question_id")
     private Question question;
 
     @Column(columnDefinition = "TEXT")
-    private String answerText;
+    private String answer; // Cho câu tự luận
 
-    @Column(columnDefinition = "jsonb")
-    private List<String> imageUrls;
+    private String selectedOption; // Cho câu trắc nghiệm (A, B, C, D)
+
+    @Column(name = "image_urls", columnDefinition = "jsonb")
+    private String imageUrls; // JSON array của URLs ảnh cho câu tự luận
+
+    private Double score;
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 }
 ```
 
@@ -152,42 +170,12 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
 }
 ```
 
-#### ExamRepository
+#### StudentAnswerRepository
 
 ```java
 @Repository
-public interface ExamRepository extends JpaRepository<Exam, Long> {
-    List<Exam> findByStatus(ExamStatus status);
-}
-```
-
-### 2.4. JDBC Template cho Truy Vấn Phức Tạp
-
-```java
-@Repository
-public class ExamCustomRepository {
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
-
-    public List<StudentExamResult> getStudentExamResults(Long examId) {
-        String sql = """
-            SELECT se.id, se.student_id, se.score,
-                   COUNT(CASE WHEN sa.score > 0 THEN 1 END) as correct_answers
-            FROM student_exam se
-            LEFT JOIN student_answer sa ON se.id = sa.student_exam_id
-            WHERE se.exam_id = ?
-            GROUP BY se.id, se.student_id, se.score
-            """;
-
-        return jdbcTemplate.query(sql, new Object[]{examId}, (rs, rowNum) ->
-            new StudentExamResult(
-                rs.getLong("id"),
-                rs.getLong("student_id"),
-                rs.getDouble("score"),
-                rs.getInt("correct_answers")
-            )
-        );
-    }
+public interface StudentAnswerRepository extends JpaRepository<StudentAnswer, Long> {
+    List<StudentAnswer> findByStudentExamId(Long studentExamId);
 }
 ```
 
@@ -195,7 +183,8 @@ public class ExamCustomRepository {
 
 ### 3.1. Quản Lý Ngân Hàng Câu Hỏi
 
-- `POST /api/questions`: Tạo câu hỏi mới
+- `POST /api/questions/multiple-choice`: Tạo câu hỏi trắc nghiệm
+- `POST /api/questions/essay`: Tạo câu hỏi tự luận
 - `GET /api/questions`: Lấy danh sách câu hỏi
 - `GET /api/questions/{id}`: Lấy chi tiết câu hỏi
 - `PUT /api/questions/{id}`: Cập nhật câu hỏi
@@ -206,16 +195,17 @@ public class ExamCustomRepository {
 - `POST /api/exams`: Tạo bài kiểm tra mới
 - `GET /api/exams`: Lấy danh sách bài kiểm tra
 - `GET /api/exams/{id}`: Lấy chi tiết bài kiểm tra
-- `PUT /api/exams/{id}`: Cập nhật bài kiểm tra
-- `DELETE /api/exams/{id}`: Xóa bài kiểm tra
+- `GET /api/exams/{id}/student`: Lấy mã đề cho sinh viên
 
 ### 3.3. Quản Lý Bài Làm Của Sinh Viên
 
-- `POST /api/student-exams`: Bắt đầu làm bài
-- `GET /api/student-exams/{id}`: Lấy thông tin bài làm
-- `PUT /api/student-exams/{id}/submit`: Nộp bài
-- `GET /api/student-exams/{id}/answers`: Lấy câu trả lời
 - `POST /api/student-exams/{id}/answers`: Lưu câu trả lời
+  - Trắc nghiệm: `selectedOption`
+  - Tự luận: `answer` và `images`
+- `POST /api/student-exams/{id}/submit`: Nộp bài
+- `GET /api/student-exams/{id}/results`: Xem kết quả
+  - Hiển thị đáp án trắc nghiệm
+  - Hiển thị trạng thái chấm điểm tự luận
 
 ## 4. Quy Trình Hoạt Động
 
@@ -223,18 +213,30 @@ public class ExamCustomRepository {
 
 1. Tạo câu hỏi trong ngân hàng câu hỏi
 2. Tạo bài kiểm tra mới
-3. Chọn ngẫu nhiên 20 câu trắc nghiệm và 1 câu tự luận từ ngân hàng câu hỏi
-4. Lưu thông tin bài kiểm tra và các câu hỏi được chọn
+3. Hệ thống tự động chọn:
+   - 20 câu trắc nghiệm ngẫu nhiên
+   - 1 câu tự luận ngẫu nhiên
+4. Lưu thông tin bài kiểm tra
 
 ### 4.2. Quy Trình Làm Bài Của Sinh Viên
 
-1. Sinh viên bắt đầu làm bài
-2. Hệ thống tạo bản ghi Student Exam
-3. Sinh viên trả lời từng câu hỏi
-4. Hệ thống lưu câu trả lời vào Student Answer
-5. Sinh viên nộp bài
-6. Hệ thống chấm điểm tự động cho phần trắc nghiệm
-7. Giáo viên chấm điểm phần tự luận
+1. Sinh viên nhận mã đề
+2. Trả lời từng câu hỏi:
+   - Trắc nghiệm: Chọn 1 đáp án
+   - Tự luận: Nhập câu trả lời và upload ảnh (tối đa 3 ảnh)
+3. Nộp bài:
+   - Hệ thống chấm điểm tự động phần trắc nghiệm
+   - Hiển thị đáp án trắc nghiệm
+   - Phần tự luận chờ giáo viên chấm
+
+### 4.3. Quy Trình Chấm Điểm
+
+1. Phần trắc nghiệm:
+   - Chấm tự động khi nộp bài
+   - Hiển thị đáp án ngay
+2. Phần tự luận:
+   - Giáo viên chấm điểm
+   - Cập nhật tổng điểm bài thi
 
 ## 5. Tiến Độ Triển Khai
 

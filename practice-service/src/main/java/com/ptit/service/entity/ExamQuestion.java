@@ -1,5 +1,6 @@
 package com.ptit.service.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -13,6 +14,7 @@ public class ExamQuestion {
 
     @ManyToOne
     @JoinColumn(name = "exam_id")
+    @JsonBackReference
     private Exam exam;
 
     @ManyToOne

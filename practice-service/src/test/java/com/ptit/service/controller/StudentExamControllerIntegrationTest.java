@@ -1,10 +1,8 @@
 package com.ptit.service.controller;
 
 import com.ptit.service.entity.StudentExam;
-import com.ptit.service.entity.ExamStatus;
 import com.ptit.service.entity.StudentAnswer;
 import com.ptit.service.service.StudentExamService;
-import com.ptit.service.service.ExamGradingService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -57,7 +55,7 @@ class StudentExamControllerIntegrationTest {
     @Test
     void getStudentExamsByStudentId_ShouldReturnList() throws Exception {
         List<StudentExam> exams = Arrays.asList(new StudentExam());
-        when(studentExamService.findByStudentId("SV001")).thenReturn(exams);
+        when(studentExamService.findByStudentId(1L)).thenReturn(exams);
 
         mockMvc.perform(get("/api/student-exams/student/SV001"))
                 .andExpect(status().isOk())
