@@ -26,6 +26,11 @@ public class ExamController {
         return ResponseEntity.ok(examService.findById(id));
     }
 
+    @GetMapping("/random")
+    public ResponseEntity<Exam> getRandomExam() {
+        return ResponseEntity.ok(examService.getRandomExam());
+    }
+
     @PostMapping
     public ResponseEntity<Exam> createExam(@Valid @RequestBody ExamDTO exam) {
         return ResponseEntity.ok(examService.createExam(

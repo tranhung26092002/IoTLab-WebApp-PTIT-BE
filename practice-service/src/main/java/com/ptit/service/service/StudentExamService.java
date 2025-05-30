@@ -1,286 +1,160 @@
 package com.ptit.service.service;
 
-import com.ptit.service.entity.Question;
-import com.ptit.service.entity.StudentExam;
-import com.ptit.service.entity.enums.ExamStatus;
-import com.ptit.service.entity.StudentAnswer;
-import com.ptit.service.entity.enums.QuestionType;
-import com.ptit.service.repository.StudentExamRepository;
-import com.ptit.service.repository.StudentRepository;
-import com.ptit.service.repository.ExamRepository;
-import com.ptit.service.repository.QuestionRepository;
-import com.ptit.service.repository.StudentAnswerRepository;
 import com.ptit.service.dto.StudentExamResult;
 import com.ptit.service.dto.StartExamDTO;
 import com.ptit.service.dto.StudentAnswerDTO;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import com.ptit.service.dto.StudentAnswerListDTO;
+import com.ptit.service.entity.StudentAnswer;
+import com.ptit.service.entity.StudentExam;
+import com.ptit.service.entity.enums.ExamStatus;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.beans.factory.annotation.Autowired;
 
-import java.time.LocalDateTime;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.List;
+import java.util.Map;
 
-@Service
-@RequiredArgsConstructor
-public class StudentExamService {
-    private final StudentExamRepository studentExamRepository;
-    private final StudentRepository studentRepository;
-    private final ExamRepository examRepository;
-    private final QuestionRepository questionRepository;
-    private final FileService fileService;
-    private final StudentAnswerRepository studentAnswerRepository;
+public interface StudentExamService {
+    /**
+     * Find all student exams
+     * @return List of all student exams
+     */
+    List<StudentExam> findAll();
 
-    public List<StudentExam> findAll() {
-        return studentExamRepository.findAll();
-    }
+    /**
+     * Find student exams by student ID
+     * @param studentId the ID of the student
+     * @return List of student exams for the given student
+     */
+    List<StudentExam> findByStudentId(Long studentId);
 
-    public List<StudentExam> findByStudentId(Long studentId) {
-        return studentExamRepository.findByStudentId(studentId);
-    }
+    /**
+     * Find student exams by exam ID
+     * @param examId the ID of the exam
+     * @return List of student exams for the given exam
+     */
+    List<StudentExam> findByExamId(Long examId);
 
-    public List<StudentExam> findByExamId(Long examId) {
-        return studentExamRepository.findByExamId(examId);
-    }
+    /**
+     * Find student exams by status
+     * @param status the status to filter by
+     * @return List of student exams with the given status
+     */
+    List<StudentExam> findByStatus(ExamStatus status);
 
-    public List<StudentExam> findByStatus(ExamStatus status) {
-        return studentExamRepository.findByStatus(status);
-    }
+    /**
+     * Save a student exam
+     * @param studentExam the student exam to save
+     * @return the saved student exam
+     */
+    StudentExam save(StudentExam studentExam);
 
-    public StudentExam save(StudentExam studentExam) {
-        return studentExamRepository.save(studentExam);
-    }
+    /**
+     * Find a student exam by ID
+     * @param id the ID of the student exam
+     * @return the found student exam
+     */
+    StudentExam findById(Long id);
 
-    public StudentExam findById(Long id) {
-        return studentExamRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Student Exam not found"));
-    }
+    /**
+     * Find answers by student exam ID
+     * @param studentExamId the ID of the student exam
+     * @return List of student answers for the given exam
+     */
+    List<StudentAnswer> findAnswersByStudentExamId(Long studentExamId);
 
-    public List<StudentAnswer> findAnswersByStudentExamId(Long studentExamId) {
-        return studentAnswerRepository.findByStudentExamId(studentExamId);
-    }
+    /**
+     * Start an exam for a student
+     * @param startExamDTO the DTO containing start exam information
+     * @return the created student exam
+     */
+    StudentExam startExam(StartExamDTO startExamDTO);
 
-    @Transactional
-    public StudentExam startExam(StartExamDTO startExamDTO) {
-        // Validate student and exam exist
-        var student = studentRepository.findById(startExamDTO.getStudentId())
-            .orElseThrow(() -> new RuntimeException("Student not found"));
-        var exam = examRepository.findById(startExamDTO.getExamId())
-            .orElseThrow(() -> new RuntimeException("Exam not found"));
+    /**
+     * Save a student's answer
+     * @param studentExamId the ID of the student exam
+     * @param answerDTO the DTO containing answer information
+     * @param images optional images for essay answers
+     * @return the saved student answer
+     */
+    StudentAnswer saveAnswer(Long studentExamId, StudentAnswerDTO answerDTO, List<MultipartFile> images);
 
-        // Check if student already has an ongoing exam
-        var existingExam = studentExamRepository.findByStudentIdAndExamId(
-            startExamDTO.getStudentId(), 
-            startExamDTO.getExamId()
-        );
-        if (existingExam != null && existingExam.getStatus() == ExamStatus.IN_PROGRESS) {
-            throw new RuntimeException("Student already has an ongoing exam");
-        }
+    /**
+     * Grade multiple choice answers for a student exam
+     * @param studentExamId the ID of the student exam
+     */
+    void gradeMultipleChoiceAnswers(Long studentExamId);
 
-        // Create new student exam
-        StudentExam studentExam = new StudentExam();
-        studentExam.setStudent(student);
-        studentExam.setExam(exam);
-        studentExam.setStartTime(startExamDTO.getStartTime() != null ? 
-            startExamDTO.getStartTime() : LocalDateTime.now());
-        studentExam.setStatus(ExamStatus.IN_PROGRESS);
-        studentExam.setScore(0.0);
+    /**
+     * Grade an essay answer
+     * @param studentAnswerId the ID of the student answer
+     * @param score the score to assign
+     */
+    void gradeEssayAnswer(Long studentAnswerId, double score);
 
-        return studentExamRepository.save(studentExam);
-    }
+    /**
+     * Get the result of a student exam
+     * @param id the ID of the student exam
+     * @return the student exam result
+     */
+    StudentExamResult getStudentExamResult(Long id);
 
-    @Transactional
-    public StudentAnswer saveAnswer(Long studentExamId, StudentAnswerDTO answerDTO, List<MultipartFile> images) {
-        StudentExam studentExam = findById(studentExamId);
-        
-        // Validate exam is in progress
-        if (studentExam.getStatus() != ExamStatus.IN_PROGRESS) {
-            throw new RuntimeException("Cannot save answer for completed exam");
-        }
+    /**
+     * Find completed exams by student ID
+     * @param studentId the ID of the student
+     * @return List of completed student exams
+     */
+    List<StudentExam> findCompletedExamsByStudentId(Long studentId);
 
-        // Find question
-        Question question = questionRepository.findById(answerDTO.getQuestionId())
-            .orElseThrow(() -> new RuntimeException("Question not found"));
+    /**
+     * Find a student exam by ID with its answers
+     * @param id the ID of the student exam
+     * @return the student exam with answers
+     */
+    StudentExam findByIdWithAnswers(Long id);
 
-        // Find or create answer
-        StudentAnswer answer = studentAnswerRepository
-            .findByStudentExamIdAndQuestionId(studentExamId, answerDTO.getQuestionId())
-            .orElse(new StudentAnswer());
+    /**
+     * Update the status of a student exam
+     * @param id the ID of the student exam
+     * @param status the new status
+     * @return the updated student exam
+     */
+    StudentExam updateStatus(Long id, ExamStatus status);
 
-        // Set answer properties
-        answer.setStudentExam(studentExam);
-        answer.setQuestion(question);
+    /**
+     * Save multiple answers for a student exam
+     * @param studentExamId the ID of the student exam
+     * @param answersDTO the DTO containing list of answers
+     * @param images optional images for essay answers
+     * @return List of saved student answers
+     */
+    List<StudentAnswer> saveAnswers(Long studentExamId, StudentAnswerListDTO answersDTO, List<MultipartFile> images);
 
-        // Set answer based on question type
-        if (question.getType() == QuestionType.MULTIPLE_CHOICE) {
-            if (answerDTO.getSelectedOption() == null) {
-                throw new RuntimeException("Selected option is required for multiple choice questions");
-            }
-            answer.setEssayAnswer(answerDTO.getSelectedOption());
-        } else {
-            // Essay answer
-            answer.setEssayAnswer(answerDTO.getEssayAnswer());
-            
-            // Handle images if present
-            if (images != null && !images.isEmpty()) {
-                List<String> imageUrls = new ArrayList<>();
-                for (MultipartFile image : images) {
-                    String imageUrl = fileService.uploadFile(image);
-                    imageUrls.add(imageUrl);
-                }
-                answer.setImageUrls(String.join(",", imageUrls));
-            }
-        }
+    /**
+     * Get statistics for an exam
+     * @param examId the ID of the exam
+     * @return Map containing exam statistics
+     */
+    Map<String, Object> getExamStatistics(Long examId);
 
-        // Auto-grade multiple choice answers
-        if (question.getType() == QuestionType.MULTIPLE_CHOICE) {
-            boolean isCorrect = question.getOptions().stream()
-                .filter(opt -> opt.isCorrect())
-                .anyMatch(opt -> opt.getOption().equals(answerDTO.getSelectedOption()));
-            answer.setScore(isCorrect ? 1.0 : 0.0);
-        }
+    /**
+     * Get statistics for a student
+     * @param studentId the ID of the student
+     * @return Map containing student statistics
+     */
+    Map<String, Object> getStudentStatistics(Long studentId);
 
-        return studentAnswerRepository.save(answer);
-    }
+    /**
+     * Get top performers for an exam
+     * @param examId the ID of the exam
+     * @param limit the maximum number of results to return
+     * @return List of top performing student exam results
+     */
+    List<StudentExamResult> getTopPerformers(Long examId, int limit);
 
-    @Transactional
-    public void gradeMultipleChoiceAnswers(Long studentExamId) {
-        StudentExam studentExam = studentExamRepository.findById(studentExamId)
-                .orElseThrow(() -> new RuntimeException("Student exam not found"));
-
-        List<StudentAnswer> answers = studentAnswerRepository.findByStudentExamId(studentExamId);
-        double totalScore = 0.0;
-        int correctAnswers = 0;
-
-        for (StudentAnswer answer : answers) {
-            Question question = answer.getQuestion();
-            if (question.getType() == QuestionType.MULTIPLE_CHOICE) {
-                // Kiểm tra đáp án trắc nghiệm
-                boolean isCorrect = question.getOptions().stream()
-                        .filter(opt -> opt.isCorrect())
-                        .anyMatch(opt -> opt.getOption().equals(answer.getEssayAnswer()));
-
-                if (isCorrect) {
-                    correctAnswers++;
-                    totalScore += 1.0; // Mỗi câu trắc nghiệm được 1 điểm
-                }
-            }
-        }
-
-        // Cập nhật điểm số
-        studentExam.setScore(totalScore);
-        studentExam.setStatus(ExamStatus.SUBMITTED);
-        studentExamRepository.save(studentExam);
-    }
-
-    @Transactional
-    public void gradeEssayAnswer(Long studentAnswerId, double score) {
-        StudentAnswer answer = studentAnswerRepository.findById(studentAnswerId)
-                .orElseThrow(() -> new RuntimeException("Student answer not found"));
-
-        // Cập nhật điểm cho câu trả lời tự luận
-        answer.setScore(score);
-        studentAnswerRepository.save(answer);
-
-        // Cập nhật tổng điểm của bài kiểm tra
-        StudentExam studentExam = answer.getStudentExam();
-        double totalScore = studentAnswerRepository.findByStudentExamId(studentExam.getId())
-                .stream()
-                .mapToDouble(StudentAnswer::getScore)
-                .sum();
-
-        studentExam.setScore(totalScore);
-        studentExamRepository.save(studentExam);
-    }
-
-    public StudentExamResult getStudentExamResult(Long id) {
-        StudentExam exam = findById(id);
-        int correctAnswers = studentAnswerRepository.countCorrectAnswers(id).intValue();
-        return new StudentExamResult(
-            exam.getId(),
-            exam.getStudent().getStudentCode(),
-            exam.getScore(),
-            correctAnswers
-        );
-    }
-
-    public List<StudentExam> findCompletedExamsByStudentId(Long studentId) {
-        return studentExamRepository.findByStudentId(studentId).stream()
-            .filter(exam -> exam.getStatus() == ExamStatus.SUBMITTED)
-            .collect(Collectors.toList());
-    }
-
-    public StudentExam findByIdWithAnswers(Long id) {
-        return studentExamRepository.findByIdWithAnswers(id);
-    }
-
-    @Transactional
-    public StudentExam updateStatus(Long id, ExamStatus status) {
-        StudentExam exam = findById(id);
-        exam.setStatus(status);
-        return studentExamRepository.save(exam);
-    }
-
-    public Map<String, Object> getExamStatistics(Long examId) {
-        List<StudentExam> exams = studentExamRepository.findByExamId(examId);
-        Map<String, Object> stats = new HashMap<>();
-        
-        stats.put("totalStudents", exams.size());
-        stats.put("averageScore", exams.stream()
-            .mapToDouble(StudentExam::getScore)
-            .average()
-            .orElse(0.0));
-        stats.put("highestScore", exams.stream()
-            .mapToDouble(StudentExam::getScore)
-            .max()
-            .orElse(0.0));
-        stats.put("lowestScore", exams.stream()
-            .mapToDouble(StudentExam::getScore)
-            .min()
-            .orElse(0.0));
-        
-        return stats;
-    }
-
-    public Map<String, Object> getStudentStatistics(Long studentId) {
-        List<StudentExam> exams = studentExamRepository.findByStudentId(studentId);
-        Map<String, Object> stats = new HashMap<>();
-        
-        stats.put("totalExams", exams.size());
-        stats.put("completedExams", exams.stream()
-            .filter(exam -> exam.getStatus() == ExamStatus.SUBMITTED)
-            .count());
-        stats.put("averageScore", exams.stream()
-            .filter(exam -> exam.getStatus() == ExamStatus.SUBMITTED)
-            .mapToDouble(StudentExam::getScore)
-            .average()
-            .orElse(0.0));
-        
-        return stats;
-    }
-
-    public List<StudentExamResult> getTopPerformers(Long examId, int limit) {
-        return studentExamRepository.findByExamId(examId).stream()
-            .filter(exam -> exam.getStatus() == ExamStatus.SUBMITTED)
-            .sorted(Comparator.comparing(StudentExam::getScore).reversed())
-            .limit(limit)
-            .map(exam -> new StudentExamResult(
-                exam.getId(),
-                exam.getStudent().getStudentCode(),
-                exam.getScore(),
-                studentAnswerRepository.countCorrectAnswers(exam.getId()).intValue()
-            ))
-            .collect(Collectors.toList());
-    }
-
-    public Double getPassingRate(Long examId, double passingScore) {
-        List<StudentExam> exams = studentExamRepository.findByExamId(examId);
-        long passingStudents = exams.stream()
-            .filter(exam -> exam.getStatus() == ExamStatus.SUBMITTED && exam.getScore() >= passingScore)
-            .count();
-        
-        return exams.isEmpty() ? 0.0 : (double) passingStudents / exams.size();
-    }
+    /**
+     * Get the passing rate for an exam
+     * @param examId the ID of the exam
+     * @param passingScore the minimum score required to pass
+     * @return the passing rate as a decimal
+     */
+    Double getPassingRate(Long examId, double passingScore);
 }

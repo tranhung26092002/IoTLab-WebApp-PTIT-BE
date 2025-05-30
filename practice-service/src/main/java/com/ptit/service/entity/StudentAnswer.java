@@ -1,8 +1,12 @@
 package com.ptit.service.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDateTime;
+import java.util.List;
+import io.hypersistence.utils.hibernate.type.json.JsonType;
+import org.hibernate.annotations.Type;
 
 @Data
 @Entity
@@ -13,10 +17,12 @@ public class StudentAnswer {
     private Long id;
 
     @ManyToOne
+    @JsonBackReference
     @JoinColumn(name = "student_exam_id")
     private StudentExam studentExam;
 
     @ManyToOne
+    @JsonBackReference
     @JoinColumn(name = "question_id")
     private Question question;
 
@@ -25,8 +31,9 @@ public class StudentAnswer {
 
     private String selectedOption; // For multiple choice answers (A, B, C, D)
 
+    @Type(JsonType.class)
     @Column(name = "image_urls", columnDefinition = "jsonb")
-    private String imageUrls; // JSON array of image URLs for essay answers
+    private List<String> imageUrls;
 
     private Double score;
 

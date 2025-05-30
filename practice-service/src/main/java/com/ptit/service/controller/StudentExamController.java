@@ -7,11 +7,14 @@ import com.ptit.service.service.StudentExamService;
 import com.ptit.service.dto.StudentExamResult;
 import com.ptit.service.dto.StartExamDTO;
 import com.ptit.service.dto.StudentAnswerDTO;
+import com.ptit.service.dto.StudentAnswerListDTO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
 
 import java.util.List;
 import java.util.Map;
@@ -64,12 +67,17 @@ public class StudentExamController {
     }
 
     @PostMapping("/{studentExamId}/answers")
-    public ResponseEntity<StudentAnswer> saveAnswer(
+    public ResponseEntity<List<StudentAnswer>> saveAnswers(
             @PathVariable Long studentExamId,
-            @RequestPart("answer") StudentAnswerDTO answerDTO,
-            @RequestPart(value = "images", required = false) List<MultipartFile> images) {
-        StudentAnswer answer = studentExamService.saveAnswer(studentExamId, answerDTO, images);
-        return ResponseEntity.ok(answer);
+            @RequestParam(value = "answers", required = true) String answersJson,
+            @RequestParam(value = "images", required = false) List<MultipartFile> images) throws IOException {
+        
+        // Convert JSON to StudentAnswerListDTO
+        ObjectMapper objectMapper = new ObjectMapper();
+        StudentAnswerListDTO answersDTO = objectMapper.readValue(answersJson, StudentAnswerListDTO.class);
+        
+        List<StudentAnswer> answers = studentExamService.saveAnswers(studentExamId, answersDTO, images);
+        return ResponseEntity.ok(answers);
     }
 
     @PostMapping("/answers/{answerId}/grade")

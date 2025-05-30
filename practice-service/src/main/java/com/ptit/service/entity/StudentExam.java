@@ -1,5 +1,7 @@
 package com.ptit.service.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.ptit.service.entity.enums.ExamStatus;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -16,10 +18,12 @@ public class StudentExam {
     private Long id;
 
     @ManyToOne
+    @JsonBackReference
     @JoinColumn(name = "student_id")
     private Student student;
 
     @ManyToOne
+    @JsonBackReference
     @JoinColumn(name = "exam_id")
     private Exam exam;
 
@@ -35,5 +39,6 @@ public class StudentExam {
     private Double score;
 
     @OneToMany(mappedBy = "studentExam", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<StudentAnswer> answers = new ArrayList<>();
 }

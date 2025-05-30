@@ -9,13 +9,17 @@ public class StudentAnswerDTO {
     @NotNull(message = "Question ID is required")
     private Long questionId;
     
-    // Cho câu trả lời tự luận
-    private String essayAnswer;
+    // Loại câu hỏi: MULTIPLE_CHOICE hoặc ESSAY
+    @NotNull(message = "Question type is required")
+    private String questionType;
     
     // Cho câu trả lời trắc nghiệm (A, B, C, D)
     private String selectedOption;
     
-    // Cho câu trả lời tự luận có hình ảnh
+    // Cho câu trả lời tự luận
+    private String essayAnswer;
+    
+    // Cho câu trả lời tự luận có hình ảnh (tối đa 3 ảnh)
     private List<String> imageUrls;
     
     private Double score;
