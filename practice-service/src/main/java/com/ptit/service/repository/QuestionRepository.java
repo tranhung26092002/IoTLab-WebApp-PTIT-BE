@@ -12,6 +12,6 @@ import java.util.List;
 public interface QuestionRepository extends JpaRepository<Question, Long> {
     List<Question> findByType(QuestionType type);
 
-    @Query("SELECT q FROM Question q WHERE q.type = :type ORDER BY RANDOM() LIMIT :limit")
+    @Query(value = "SELECT * FROM question WHERE type = :type ORDER BY RANDOM() LIMIT :limit", nativeQuery = true)
     List<Question> findRandomQuestionsByType(@Param("type") QuestionType type, @Param("limit") int limit);
 }

@@ -76,7 +76,7 @@ public class StudentExamServiceImpl implements StudentExamService {
 
         // Check if student already has an ongoing exam
         StudentExam existingExam = studentExamRepository.findByStudentIdAndExamId(
-            startExamDTO.getStudentId(), 
+            student.getId(),
             startExamDTO.getExamId()
         );
         if (existingExam != null && existingExam.getStatus() == ExamStatus.IN_PROGRESS) {
@@ -333,9 +333,9 @@ public class StudentExamServiceImpl implements StudentExamService {
 
             // Handle answer based on question type
             if (question.getType() == QuestionType.MULTIPLE_CHOICE) {
-                if (answerDTO.getSelectedOption() == null) {
-                    throw new RuntimeException("Selected option is required for multiple choice questions");
-                }
+//                if (answerDTO.getSelectedOption() == null) {
+//                    throw new RuntimeException("Selected option is required for multiple choice questions");
+//                }
                 answer.setSelectedOption(answerDTO.getSelectedOption());
                 
                 // Auto-grade multiple choice answers

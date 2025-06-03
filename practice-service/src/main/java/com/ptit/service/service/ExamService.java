@@ -1,8 +1,9 @@
 package com.ptit.service.service;
 
+import java.util.List;
+
 import com.ptit.service.dto.ExamDTO;
 import com.ptit.service.entity.Exam;
-import java.util.List;
 
 public interface ExamService {
     List<Exam> findAll();
@@ -16,4 +17,6 @@ public interface ExamService {
     Exam createExam(String title, String description);
 
     Exam getRandomExam();
+
+    Exam getRandomExamAndStart(Long studentId);
 }

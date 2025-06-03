@@ -1,14 +1,12 @@
 server:
   port: 8084
   address: 0.0.0.0
-
   servlet:
     context-path: /practice
+
 spring:
   mvc:
     dispatch-options-request: true
-    pathmatch:
-      matching-strategy: ant_path_matcher
   application:
     name: PRACTICE-SERVICE
     environment: ${ENVIRONMENT}
@@ -74,6 +72,10 @@ logging:
       springframework:
         boot:
           autoconfigure: INFO
+    com:
+      netflix:
+        eureka: DEBUG
+        discovery: DEBUG
 eureka:
   client:
     serviceUrl:

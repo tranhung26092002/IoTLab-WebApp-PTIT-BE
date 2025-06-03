@@ -9,29 +9,25 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
 @Entity
-@Table(name = "exam_question")
-public class ExamQuestion {
+@Table(name = "question_option")
+public class QuestionOption {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "exam_id", nullable = false)
-    @JsonBackReference
-    private Exam exam;
-
-    @ManyToOne
     @JoinColumn(name = "question_id", nullable = false)
     private Question question;
 
-    @Column(name = "question_order")
-    private Integer order;
-}
+    @Column(nullable = false)
+    private String content;
+
+    @Column(nullable = false)
+    private Boolean isCorrect;
+} 

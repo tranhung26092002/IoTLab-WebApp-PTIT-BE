@@ -2,8 +2,8 @@ package com.ptit.service.dto.validation;
 
 import com.ptit.service.dto.QuestionDTO;
 import com.ptit.service.entity.enums.QuestionType;
-import jakarta.validation.ConstraintValidator;
-import jakarta.validation.ConstraintValidatorContext;
+import javax.validation.ConstraintValidator;
+import javax.validation.ConstraintValidatorContext;
 
 public class QuestionValidation implements ConstraintValidator<ValidQuestion, QuestionDTO> {
     

@@ -6,9 +6,7 @@ import com.ptit.service.entity.enums.ExamStatus;
 import com.ptit.service.service.StudentExamService;
 import com.ptit.service.dto.StudentExamResult;
 import com.ptit.service.dto.StartExamDTO;
-import com.ptit.service.dto.StudentAnswerDTO;
 import com.ptit.service.dto.StudentAnswerListDTO;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +16,8 @@ import java.io.IOException;
 
 import java.util.List;
 import java.util.Map;
+
+import javax.validation.Valid;
 
 @RestController
 @RequestMapping("/student-exams")

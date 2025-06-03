@@ -3,12 +3,13 @@ package com.ptit.service.controller;
 import com.ptit.service.dto.ExamDTO;
 import com.ptit.service.entity.Exam;
 import com.ptit.service.service.ExamService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
+import javax.validation.Valid;
 
 @RestController
 @RequestMapping("/exams")

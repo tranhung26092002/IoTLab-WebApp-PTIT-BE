@@ -4,7 +4,7 @@ import com.ptit.service.dto.QuestionDTO;
 import com.ptit.service.entity.Question;
 import com.ptit.service.entity.enums.QuestionType;
 import com.ptit.service.service.QuestionService;
-import jakarta.validation.Valid;
+import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;

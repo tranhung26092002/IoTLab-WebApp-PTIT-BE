@@ -1,12 +1,13 @@
 package com.ptit.service.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import jakarta.persistence.*;
+import javax.persistence.*;
+
 import lombok.Data;
 import java.time.LocalDateTime;
 import java.util.List;
-import io.hypersistence.utils.hibernate.type.json.JsonType;
 import org.hibernate.annotations.Type;
+import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 
 @Data
 @Entity
@@ -31,7 +32,7 @@ public class StudentAnswer {
 
     private String selectedOption; // For multiple choice answers (A, B, C, D)
 
-    @Type(JsonType.class)
+    @Type(type = "com.vladmihalcea.hibernate.type.json.JsonBinaryType")
     @Column(name = "image_urls", columnDefinition = "jsonb")
     private List<String> imageUrls;
 

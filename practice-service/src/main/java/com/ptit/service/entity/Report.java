@@ -7,7 +7,7 @@ import com.ptit.service.entity.enums.ShiftType;
 import lombok.*;
 import org.hibernate.annotations.Where;
 
-import jakarta.persistence.*;
+import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
