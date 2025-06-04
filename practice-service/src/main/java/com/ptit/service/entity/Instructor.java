@@ -16,11 +16,7 @@ import java.util.List;
 @Table(name = "instructors")
 public class Instructor {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Column(name = "instructor_id")
-    private Long userId;
 
     @Column(name = "name")
     private String name;

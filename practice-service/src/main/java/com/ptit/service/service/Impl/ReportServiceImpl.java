@@ -4,19 +4,15 @@ import com.ptit.service.dto.ReportContentDTO;
 import com.ptit.service.dto.ReportDTO;
 import com.ptit.service.dto.ReportFilterDTO;
 import com.ptit.service.dto.StudentDTO;
+import com.ptit.service.entity.*;
+import com.ptit.service.entity.enums.PracticeProgressStatus;
+import com.ptit.service.entity.enums.ReportStatus;
 import com.ptit.service.repository.*;
 import com.ptit.service.response.MessageResponse;
 import com.ptit.service.response.ReportResponse;
 import com.ptit.service.response.ResponsePage;
-import com.ptit.service.entity.Instructor;
-import com.ptit.service.entity.Report;
-import com.ptit.service.entity.ReportContent;
-import com.ptit.service.entity.Student;
-import com.ptit.service.entity.StudentProgress;
-import com.ptit.service.entity.enums.PracticeProgressStatus;
-import com.ptit.service.entity.enums.ReportStatus;
-import com.ptit.service.service.ReportService;
 import com.ptit.service.service.FileService;
+import com.ptit.service.service.ReportService;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.common.errors.ResourceNotFoundException;
 import org.modelmapper.ModelMapper;
@@ -58,7 +54,7 @@ public class ReportServiceImpl implements ReportService {
     private ReportResponse convertToResponse(Report report) {
         ReportResponse response = mapper.map(report, ReportResponse.class);
         response.setStudents(report.getStudents().stream()
-                .map(student -> new StudentDTO(student.getId(), student.getUserId(), student.getName(),
+                .map(student -> new StudentDTO(student.getId(), student.getName(),
                         student.getStudentCode()))
                 .collect(Collectors.toList()));
         response.setReportContents(report.getPracticeContents().stream()
@@ -82,10 +78,10 @@ public class ReportServiceImpl implements ReportService {
         Report report = mapper.map(reportDTO, Report.class);
 
         // check if instructor exists or not create new instructor
-        Instructor instructor = instructorRepository.findByUserId(reportDTO.getInstructor().getUserId())
+        Instructor instructor = instructorRepository.findById(reportDTO.getInstructor().getId())
                 .orElseGet(() -> {
                     Instructor newInstructor = new Instructor();
-                    newInstructor.setUserId(reportDTO.getInstructor().getUserId());
+                    newInstructor.setId(reportDTO.getInstructor().getId());
                     newInstructor.setName(reportDTO.getInstructor().getName());
                     return instructorRepository.save(newInstructor);
                 });
@@ -95,24 +91,23 @@ public class ReportServiceImpl implements ReportService {
                 .orElseThrow(() -> new ResourceNotFoundException("Practice not found")));
 
         // check if student exists or not create new student
-        // Truy vấn tất cả sinh viên trước thay vì gọi findByUserId() nhiều lần
         Set<Long> userIds = reportDTO.getStudents()
                 .stream()
-                .map(StudentDTO::getUserId)
+                .map(StudentDTO::getId)
                 .collect(Collectors.toSet());
         // Truy vấn tất cả sinh viên theo userId
-        List<Student> existingStudents = studentRepository.findByUserIdIn(userIds);
+        List<Student> existingStudents = studentRepository.findByIdIn(userIds);
 
         // Tạo map userId -> Student
         Map<Long, Student> studentMap = existingStudents.stream()
-                .collect(Collectors.toMap(Student::getUserId, student -> student));
+                .collect(Collectors.toMap(Student::getId, student -> student));
 
         // Tạo danh sách sinh viên mới
         List<Student> students = reportDTO.getStudents()
                 .stream()
-                .map(studentDTO -> studentMap.computeIfAbsent(studentDTO.getUserId(), code -> {
+                .map(studentDTO -> studentMap.computeIfAbsent(studentDTO.getId(), code -> {
                     Student newStudent = new Student();
-                    newStudent.setUserId(studentDTO.getUserId());
+                    newStudent.setId(studentDTO.getId());
                     newStudent.setName(studentDTO.getName());
                     newStudent.setStudentCode(studentDTO.getStudentCode());
                     return studentRepository.save(newStudent);
@@ -321,10 +316,10 @@ public class ReportServiceImpl implements ReportService {
     }
 
     private ReportResponse convertToResponse(Report report, List<Student> students,
-            List<ReportContent> reportContents) {
+                                             List<ReportContent> reportContents) {
         ReportResponse response = mapper.map(report, ReportResponse.class);
         response.setStudents(students.stream()
-                .map(student -> new StudentDTO(student.getId(), student.getUserId(), student.getName(),
+                .map(student -> new StudentDTO(student.getId(), student.getName(),
                         student.getStudentCode()))
                 .collect(Collectors.toList()));
         response.setReportContents(reportContents.stream()

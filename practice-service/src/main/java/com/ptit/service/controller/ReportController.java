@@ -57,11 +57,11 @@ public class ReportController {
 
     @GetMapping("/me")
     public ResponsePage<Report, ReportResponse> getReportsOfMe(
-            @RequestHeader(name = Constant.headerUserId) Long userId,
+            @RequestHeader(name = Constant.headerUserId) Long studentId,
             @ModelAttribute ReportFilterDTO reportFilterDTO,
             Pageable pageable) {
         processFilter(reportFilterDTO);
-        reportFilterDTO.setUserId(userId); // Lọc theo userId của sinh viên
+        reportFilterDTO.setStudentId(studentId); // Lọc theo studentId
         return reportService.getReportsFilter(reportFilterDTO, pageable);
     }
 

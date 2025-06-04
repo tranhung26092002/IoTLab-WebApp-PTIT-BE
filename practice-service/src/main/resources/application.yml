@@ -49,33 +49,23 @@ spring:
     username: ${RABBITMQ_USERNAME}
     password: ${RABBITMQ_PASSWORD}
 
-springdoc:
-  api-docs:
-    enabled: true
-    path: /api-docs
-  swagger-ui:
-    path: /swagger-ui.html
-    enabled: true
-  packages-to-scan: com.ptit.service.controller
-
 telegram:
   chatId: ${TELEGRAM_CHAT_ID}
   apiToken: ${TELEGRAM_API_TOKEN}
+
 debug: ${DEBUG}
 
 async:
   config:
     core-pool-size: ${ASYNC_CORE_POOL_SIZE}
+
 logging:
   level:
     org:
       springframework:
         boot:
           autoconfigure: INFO
-    com:
-      netflix:
-        eureka: DEBUG
-        discovery: DEBUG
+
 eureka:
   client:
     serviceUrl:

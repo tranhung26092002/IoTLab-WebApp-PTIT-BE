@@ -1,13 +1,12 @@
 package com.ptit.service.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import javax.persistence.*;
-
 import lombok.Data;
+import org.hibernate.annotations.Type;
+
+import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
-import org.hibernate.annotations.Type;
-import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 
 @Data
 @Entity

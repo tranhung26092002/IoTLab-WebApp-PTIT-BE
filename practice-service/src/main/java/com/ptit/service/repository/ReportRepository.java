@@ -14,13 +14,12 @@ import java.util.List;
 @Repository
 public interface ReportRepository extends JpaRepository<Report, Long> {
         @Query("SELECT r FROM Report r WHERE " +
-                        "EXISTS (SELECT s FROM r.students s WHERE s.userId = :studentId)")
+                        "EXISTS (SELECT s FROM r.students s WHERE s.id = :studentId)")
         Page<Report> findByStudentsId(Long studentId, Pageable pageable);
 
         @Query("SELECT r FROM Report r WHERE " +
                         "(:#{#filter.id} IS NULL OR r.id = :#{#filter.id}) AND " +
-                        "(:#{#filter.userId} IS NULL OR EXISTS (SELECT s FROM r.students s WHERE s.userId = :#{#filter.userId})) AND "
-                        +
+                        "(:#{#filter.studentId} IS NULL OR EXISTS (SELECT s FROM r.students s WHERE s.id = :#{#filter.studentId})) AND " +
                         "(:#{#filter.title} IS NULL OR r.title LIKE %:#{#filter.title}%) AND " +
                         "(:#{#filter.className} IS NULL OR r.className LIKE %:#{#filter.className}%) AND " +
                         "(:#{#filter.classGroup} IS NULL OR r.classGroup LIKE %:#{#filter.classGroup}%) AND " +

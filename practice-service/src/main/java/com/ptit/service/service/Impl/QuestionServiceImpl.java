@@ -7,7 +7,10 @@ import com.ptit.service.entity.enums.QuestionType;
 import com.ptit.service.repository.QuestionRepository;
 import com.ptit.service.service.QuestionService;
 import lombok.RequiredArgsConstructor;
-import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -89,7 +92,7 @@ public class QuestionServiceImpl implements QuestionService {
     @Transactional
     public int importQuestionsFromExcel(MultipartFile file) throws IOException {
         List<Question> questions = new ArrayList<>();
-        
+
         try (Workbook workbook = new XSSFWorkbook(file.getInputStream())) {
             // Process Multiple Choice Questions
             Sheet mcSheet = workbook.getSheetAt(0);
@@ -100,22 +103,22 @@ public class QuestionServiceImpl implements QuestionService {
                 Question question = new Question();
                 question.setType(QuestionType.MULTIPLE_CHOICE);
                 question.setContent(getCellValueAsString(row.getCell(1)));
-                
+
                 // Set options
                 List<MultipleChoiceOption> options = new ArrayList<>();
                 for (int j = 2; j <= 5; j++) {
                     MultipleChoiceOption option = new MultipleChoiceOption();
                     option.setQuestion(question);
-                    option.setOption(String.valueOf((char)('A' + (j-2)))); // A, B, C, D
+                    option.setOption(String.valueOf((char) ('A' + (j - 2)))); // A, B, C, D
                     option.setContent(getCellValueAsString(row.getCell(j)));
-                    option.setCorrect(getCellValueAsString(row.getCell(6)).equals(String.valueOf((char)('A' + (j-2)))));
+                    option.setCorrect(getCellValueAsString(row.getCell(6)).equals(String.valueOf((char) ('A' + (j - 2)))));
                     options.add(option);
                 }
                 question.setOptions(options);
-                
+
                 // Set score
                 question.setScore(getCellValueAsDouble(row.getCell(7)));
-                
+
                 questions.add(question);
             }
 
@@ -129,7 +132,7 @@ public class QuestionServiceImpl implements QuestionService {
                 question.setType(QuestionType.ESSAY);
                 question.setContent(getCellValueAsString(row.getCell(1)));
                 question.setScore(getCellValueAsDouble(row.getCell(3)));
-                
+
                 questions.add(question);
             }
         }
@@ -142,18 +145,24 @@ public class QuestionServiceImpl implements QuestionService {
     private String getCellValueAsString(Cell cell) {
         if (cell == null) return "";
         switch (cell.getCellType()) {
-            case STRING: return cell.getStringCellValue();
-            case NUMERIC: return String.valueOf((int)cell.getNumericCellValue());
-            default: return "";
+            case STRING:
+                return cell.getStringCellValue();
+            case NUMERIC:
+                return String.valueOf((int) cell.getNumericCellValue());
+            default:
+                return "";
         }
     }
 
     private Double getCellValueAsDouble(Cell cell) {
         if (cell == null) return 0.0;
         switch (cell.getCellType()) {
-            case NUMERIC: return cell.getNumericCellValue();
-            case STRING: return Double.parseDouble(cell.getStringCellValue());
-            default: return 0.0;
+            case NUMERIC:
+                return cell.getNumericCellValue();
+            case STRING:
+                return Double.parseDouble(cell.getStringCellValue());
+            default:
+                return 0.0;
         }
     }
 } 

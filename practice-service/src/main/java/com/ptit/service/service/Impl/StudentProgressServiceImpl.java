@@ -1,14 +1,15 @@
 package com.ptit.service.service.Impl;
 
+import com.ptit.service.dto.StudentProgressDTO;
 import com.ptit.service.entity.Practice;
-import com.ptit.service.entity.StudentProgress;
 import com.ptit.service.entity.Student;
+import com.ptit.service.entity.StudentProgress;
 import com.ptit.service.entity.enums.PracticeProgressStatus;
-import com.ptit.service.service.StudentProgressService;
 import com.ptit.service.repository.PracticeRepository;
+import com.ptit.service.repository.ReportRepository;
 import com.ptit.service.repository.StudentProgressRepository;
 import com.ptit.service.repository.StudentRepository;
-import com.ptit.service.repository.ReportRepository;
+import com.ptit.service.service.StudentProgressService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -61,34 +62,39 @@ public class StudentProgressServiceImpl implements StudentProgressService {
     }
 
     @Override
-    public List<StudentProgress> getStudentProgress(Long studentId) {
-        return studentProgressRepository.findByStudentIdOrderByPracticeOrderAsc(studentId);
+    public List<StudentProgressDTO> getStudentProgress(Long studentId) {
+        return studentProgressRepository.findByStudentIdOrderByPracticeOrderAsc(studentId).stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public StudentProgress getPracticeProgress(Long studentId, Long practiceId) {
+    public StudentProgressDTO getPracticeProgress(Long studentId, Long practiceId) {
         return studentProgressRepository.findByStudentIdAndPracticeId(studentId, practiceId)
+                .map(this::convertToDTO)
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy tiến trình học tập"));
     }
 
     @Override
     @Transactional
-    public StudentProgress startPractice(Long studentId, Long practiceId) {
-        StudentProgress progress = getPracticeProgress(studentId, practiceId);
+    public StudentProgressDTO startPractice(Long studentId, Long practiceId) {
+        StudentProgress progress = studentProgressRepository.findByStudentIdAndPracticeId(studentId, practiceId)
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy tiến trình học tập"));
 
         if (!canStartPractice(studentId, practiceId)) {
-            return progress;
+            return convertToDTO(progress);
         }
 
         progress.setStatus(PracticeProgressStatus.IN_PROGRESS);
         progress.setStartedAt(LocalDateTime.now());
-        return studentProgressRepository.save(progress);
+        return convertToDTO(studentProgressRepository.save(progress));
     }
 
     @Override
     @Transactional
-    public StudentProgress completePractice(Long studentId, Long practiceId, Double score, String comment) {
-        StudentProgress progress = getPracticeProgress(studentId, practiceId);
+    public StudentProgressDTO completePractice(Long studentId, Long practiceId, Double score, String comment) {
+        StudentProgress progress = studentProgressRepository.findByStudentIdAndPracticeId(studentId, practiceId)
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy tiến trình học tập"));
 
         if (progress.getStatus() != PracticeProgressStatus.IN_PROGRESS) {
             throw new IllegalStateException("Bài thực hành chưa được bắt đầu");
@@ -106,21 +112,23 @@ public class StudentProgressServiceImpl implements StudentProgressService {
                     studentProgressRepository.save(nextProgress);
                 });
 
-        return studentProgressRepository.save(progress);
+        return convertToDTO(studentProgressRepository.save(progress));
     }
 
     @Override
     @Transactional
-    public StudentProgress updatePracticeScore(Long studentId, Long practiceId, Double score, String comment) {
-        StudentProgress progress = getPracticeProgress(studentId, practiceId);
+    public StudentProgressDTO updatePracticeScore(Long studentId, Long practiceId, Double score, String comment) {
+        StudentProgress progress = studentProgressRepository.findByStudentIdAndPracticeId(studentId, practiceId)
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy tiến trình học tập"));
+
         progress.setScore(score);
         progress.setComment(comment);
-        return studentProgressRepository.save(progress);
+        return convertToDTO(studentProgressRepository.save(progress));
     }
 
     @Override
     public boolean canStartPractice(Long studentId, Long practiceId) {
-        StudentProgress progress = getPracticeProgress(studentId, practiceId);
+        StudentProgressDTO progress = getPracticeProgress(studentId, practiceId);
 
         // Kiểm tra trạng thái hiện tại
         if (progress.getStatus() != PracticeProgressStatus.UNLOCKED) {
@@ -151,5 +159,19 @@ public class StudentProgressServiceImpl implements StudentProgressService {
                 .count();
 
         return (double) completedCount / progressList.size() * 100;
+    }
+
+    private StudentProgressDTO convertToDTO(StudentProgress progress) {
+        StudentProgressDTO dto = new StudentProgressDTO();
+        dto.setId(progress.getId());
+        dto.setStudentId(progress.getStudent().getId());
+        dto.setPracticeId(progress.getPractice().getId());
+        dto.setStatus(progress.getStatus());
+        dto.setScore(progress.getScore());
+        dto.setComment(progress.getComment());
+        dto.setCompletedAt(progress.getCompletedAt());
+        dto.setCreatedAt(progress.getCreatedAt());
+        dto.setUpdatedAt(progress.getUpdatedAt());
+        return dto;
     }
 }

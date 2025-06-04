@@ -35,7 +35,6 @@ public class PracticeServiceImpl implements PracticeService {
     private final PracticeVideoRepository practiceVideoRepository;
     private final PracticeGuideRepository practiceGuideRepository;
     private final PracticeFileRepository practiceFileRepository;
-    private final PracticeStudentRepository practiceStudentRepository;
     private final FileService fileService;
     private final StudentProgressRepository studentProgressRepository;
     private final StudentRepository studentRepository;

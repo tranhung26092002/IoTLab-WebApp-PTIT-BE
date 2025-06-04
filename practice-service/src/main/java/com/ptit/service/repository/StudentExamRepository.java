@@ -13,26 +13,10 @@ public interface StudentExamRepository extends JpaRepository<StudentExam, Long> 
     @Query("SELECT se FROM StudentExam se WHERE se.student.id = :studentId")
     List<StudentExam> findByStudentId(@Param("studentId") Long studentId);
 
-    @Query("SELECT se FROM StudentExam se WHERE se.exam.id = :examId")
-    List<StudentExam> findByExamId(@Param("examId") Long examId);
-
-    @Query("SELECT se FROM StudentExam se WHERE se.status = :status")
-    List<StudentExam> findByStatus(@Param("status") ExamStatus status);
-
     @Query("SELECT DISTINCT se FROM StudentExam se " +
             "LEFT JOIN FETCH se.answers " +
             "WHERE se.id = :id")
     StudentExam findByIdWithAnswers(@Param("id") Long id);
-
-    @Query("SELECT DISTINCT se FROM StudentExam se " +
-            "LEFT JOIN FETCH se.answers " +
-            "WHERE se.student.id = :studentId")
-    List<StudentExam> findByStudentIdWithAnswers(@Param("studentId") Long studentId);
-
-    @Query("SELECT DISTINCT se FROM StudentExam se " +
-            "LEFT JOIN FETCH se.answers " +
-            "WHERE se.exam.id = :examId")
-    List<StudentExam> findByExamIdWithAnswers(@Param("examId") Long examId);
 
     @Query("SELECT se FROM StudentExam se " +
            "WHERE se.student.id = :studentId AND se.exam.id = :examId")

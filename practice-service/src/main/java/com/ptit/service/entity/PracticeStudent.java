@@ -23,8 +23,8 @@ public class PracticeStudent {
     @JoinColumn(name = "practice_id", referencedColumnName = "id")
     private Practice practice;
 
-    @Column(name = "user_id")
-    private Long userId;
+    @Column(name = "student_id")
+    private Long studentId;
 
     @Column(name = "start_time")
     private LocalDateTime startTime;

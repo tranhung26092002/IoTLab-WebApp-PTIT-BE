@@ -37,7 +37,7 @@ public class DatabaseUser implements CommandLineRunner {
                             address, false, RoleType.ADMIN
                     ),
                     new User(
-                            "ADMIN1", "Admin1", "IoT Lab", "0123456789",
+                            "TEACHER", "Teacher", "IoT Lab", "0123456789",
                             password, "openlab.user@gmail.com", "",
                             Gender.MALE, dob, StateUser.ACTIVE,
                             address, false, RoleType.TEACHER

@@ -7,9 +7,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 import javax.validation.Valid;
+import java.util.List;
 
 @RestController
 @RequestMapping("/exams")
@@ -18,19 +17,19 @@ public class ExamController {
     private final ExamService examService;
 
     @GetMapping
-    public ResponseEntity<List<Exam>> getAllExams() {
+    public ResponseEntity<List<ExamDTO>> getAllExams() {
         return ResponseEntity.ok(examService.findAll());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Exam> getExamById(@PathVariable Long id) {
+    public ResponseEntity<ExamDTO> getExamById(@PathVariable Long id) {
         return ResponseEntity.ok(examService.findById(id));
     }
 
-    @GetMapping("/random")
-    public ResponseEntity<Exam> getRandomExam() {
-        return ResponseEntity.ok(examService.getRandomExam());
-    }
+//    @GetMapping("/random/{studentId}")
+//    public ResponseEntity<ExamDTO> getRandomExamAndStart(@PathVariable Long studentId) {
+//        return ResponseEntity.ok(examService.getRandomExamAndStart(studentId));
+//    }
 
     @PostMapping
     public ResponseEntity<Exam> createExam(@Valid @RequestBody ExamDTO exam) {
@@ -40,7 +39,7 @@ public class ExamController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Exam> updateExam(@PathVariable Long id, @Valid @RequestBody ExamDTO exam) {
+    public ResponseEntity<ExamDTO> updateExam(@PathVariable Long id, @Valid @RequestBody ExamDTO exam) {
         exam.setId(id);
         return ResponseEntity.ok(examService.updateExam(exam));
     }

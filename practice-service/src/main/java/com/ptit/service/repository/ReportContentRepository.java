@@ -7,5 +7,4 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ReportContentRepository extends JpaRepository<ReportContent, Long> {
-    List<ReportContent> findByReportId(Long reportId);
 }

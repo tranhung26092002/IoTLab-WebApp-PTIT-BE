@@ -45,7 +45,7 @@ public class UserNotificationService {
         log.info("Nhận thông báo đăng nhập từ user: {}", userLoginNotification.getUserName());
 
         // Tìm student dựa trên userId
-        Optional<Student> studentOpt = studentService.findByUserId(userLoginNotification.getId());
+        Optional<Student> studentOpt = studentRepository.findById(userLoginNotification.getId());
 
         if (studentOpt.isEmpty()) {
             // Nếu chưa có student, tạo mới
@@ -63,7 +63,7 @@ public class UserNotificationService {
             Student student = studentOpt.get();
             if (!student.getName().equals(userLoginNotification.getFullName())) {
                 student.setName(userLoginNotification.getFullName());
-                studentService.updateStudent(student);
+                studentRepository.save(student);
                 log.info("Đã cập nhật thông tin student: {}", student.getId());
             }
 
@@ -93,11 +93,11 @@ public class UserNotificationService {
             // Chỉ xử lý nếu user là sinh viên
             if ("STUDENT".equals(userDTO.getRole())) {
                 // Kiểm tra xem sinh viên đã tồn tại chưa
-                if (!studentRepository.existsByUserId(userDTO.getId())) {
+                if (!studentRepository.existsById(userDTO.getId())) {
                     try {
                         // Tạo sinh viên mới trong practice-service
                         final Student student = new Student();
-                        student.setUserId(userDTO.getId());
+                        student.setId(userDTO.getId());
                         student.setName(userDTO.getFullName());
                         student.setStudentCode(userDTO.getStudentCode());
                         final Student savedStudent = studentRepository.save(student);

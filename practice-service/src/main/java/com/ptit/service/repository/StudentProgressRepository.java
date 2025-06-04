@@ -36,8 +36,4 @@ public interface StudentProgressRepository extends JpaRepository<StudentProgress
         boolean hasCompletedAllPractices(Long studentId);
 
         List<StudentProgress> findByStudentId(Long studentId);
-
-        @Query("SELECT CASE WHEN COUNT(sp) > 0 THEN true ELSE false END FROM StudentProgress sp WHERE sp.student.id = :studentId AND sp.practice.id = :practiceId")
-        boolean existsByStudentIdAndPracticeId(@Param("studentId") Long studentId,
-                        @Param("practiceId") Long practiceId);
 }

@@ -1,23 +1,17 @@
 package com.ptit.service.controller;
 
-import com.ptit.service.entity.StudentExam;
-import com.ptit.service.entity.StudentAnswer;
-import com.ptit.service.entity.enums.ExamStatus;
-import com.ptit.service.service.StudentExamService;
-import com.ptit.service.dto.StudentExamResult;
-import com.ptit.service.dto.StartExamDTO;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ptit.service.dto.StudentAnswerListDTO;
+import com.ptit.service.dto.StudentExamDTO;
+import com.ptit.service.dto.StudentExamResult;
+import com.ptit.service.service.StudentExamService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.io.IOException;
-
 import java.util.List;
-import java.util.Map;
-
-import javax.validation.Valid;
 
 @RestController
 @RequestMapping("/student-exams")
@@ -26,110 +20,53 @@ public class StudentExamController {
     private final StudentExamService studentExamService;
 
     @GetMapping
-    public ResponseEntity<List<StudentExam>> getAllStudentExams() {
+    public ResponseEntity<List<StudentExamDTO>> getAllStudentExams() {
         return ResponseEntity.ok(studentExamService.findAll());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<StudentExam> getStudentExamById(@PathVariable Long id) {
+    public ResponseEntity<StudentExamDTO> getStudentExamById(@PathVariable Long id) {
         return ResponseEntity.ok(studentExamService.findById(id));
     }
 
-    @GetMapping("/student/{studentId}")
-    public ResponseEntity<List<StudentExam>> getStudentExamsByStudentId(@PathVariable Long studentId) {
-        return ResponseEntity.ok(studentExamService.findByStudentId(studentId));
-    }
-
-    @GetMapping("/exam/{examId}")
-    public ResponseEntity<List<StudentExam>> getStudentExamsByExamId(@PathVariable Long examId) {
-        return ResponseEntity.ok(studentExamService.findByExamId(examId));
-    }
-
-    @GetMapping("/status/{status}")
-    public ResponseEntity<List<StudentExam>> getStudentExamsByStatus(@PathVariable ExamStatus status) {
-        return ResponseEntity.ok(studentExamService.findByStatus(status));
-    }
-
-    @PostMapping
-    public ResponseEntity<StudentExam> startExam(@Valid @RequestBody StartExamDTO startExamDTO) {
-        return ResponseEntity.ok(studentExamService.startExam(startExamDTO));
+    @GetMapping("/student/{studentId}/current")
+    public ResponseEntity<StudentExamDTO> getCurrentExam(@PathVariable Long studentId) {
+        return ResponseEntity.ok(studentExamService.findCurrentExamByStudentId(studentId));
     }
 
     @PostMapping("/{id}/submit")
-    public ResponseEntity<Void> submitExam(@PathVariable Long id) {
-        studentExamService.gradeMultipleChoiceAnswers(id);
-        return ResponseEntity.ok().build();
-    }
-
-    @GetMapping("/{id}/answers")
-    public ResponseEntity<List<StudentAnswer>> getStudentAnswers(@PathVariable Long id) {
-        return ResponseEntity.ok(studentExamService.findAnswersByStudentExamId(id));
-    }
-
-    @PostMapping("/{studentExamId}/answers")
-    public ResponseEntity<List<StudentAnswer>> saveAnswers(
-            @PathVariable Long studentExamId,
-            @RequestParam(value = "answers", required = true) String answersJson,
+    public ResponseEntity<StudentExamResult> submitExam(
+            @PathVariable Long id,
+            @RequestParam(value = "answers", required = false) String answersJson,
             @RequestParam(value = "images", required = false) List<MultipartFile> images) throws IOException {
-        
-        // Convert JSON to StudentAnswerListDTO
-        ObjectMapper objectMapper = new ObjectMapper();
-        StudentAnswerListDTO answersDTO = objectMapper.readValue(answersJson, StudentAnswerListDTO.class);
-        
-        List<StudentAnswer> answers = studentExamService.saveAnswers(studentExamId, answersDTO, images);
-        return ResponseEntity.ok(answers);
-    }
 
-    @PostMapping("/answers/{answerId}/grade")
-    public ResponseEntity<Void> gradeEssayAnswer(@PathVariable Long answerId,
-            @RequestParam double score) {
-        studentExamService.gradeEssayAnswer(answerId, score);
-        return ResponseEntity.ok().build();
-    }
+        // Parse and save answers if provided, which will also calculate scores
+        if (answersJson != null) {
+            ObjectMapper objectMapper = new ObjectMapper();
+            StudentAnswerListDTO answersDTO = objectMapper.readValue(answersJson, StudentAnswerListDTO.class);
+            studentExamService.saveAnswers(id, answersDTO, images);
+        }
 
-    @GetMapping("/{id}/result")
-    public ResponseEntity<StudentExamResult> getStudentExamResult(@PathVariable Long id) {
+        // Return the exam result which will include the calculated scores
         return ResponseEntity.ok(studentExamService.getStudentExamResult(id));
     }
 
-    @GetMapping("/student/{studentId}/completed")
-    public ResponseEntity<List<StudentExam>> getCompletedExamsByStudentId(@PathVariable Long studentId) {
-        return ResponseEntity.ok(studentExamService.findCompletedExamsByStudentId(studentId));
+    @PostMapping("/answers/{answerId}/grade")
+    public ResponseEntity<StudentExamResult> gradeEssayAnswer(
+            @PathVariable Long answerId,
+            @RequestParam double score) {
+        // Chấm điểm tự luận và trả về kết quả mới
+        studentExamService.gradeEssayAnswer(answerId, score);
+        return ResponseEntity.ok(studentExamService.getStudentExamResult(answerId));
     }
 
-    @GetMapping("/{id}/details")
-    public ResponseEntity<StudentExam> getStudentExamDetails(@PathVariable Long id) {
-        return ResponseEntity.ok(studentExamService.findByIdWithAnswers(id));
+    @GetMapping("/{studentExamId}/result")
+    public ResponseEntity<StudentExamResult> getStudentExamResult(@PathVariable Long studentExamId) {
+        return ResponseEntity.ok(studentExamService.getStudentExamResult(studentExamId));
     }
 
-    @PatchMapping("/{id}/status")
-    public ResponseEntity<StudentExam> updateExamStatus(
-            @PathVariable Long id,
-            @RequestParam ExamStatus status) {
-        return ResponseEntity.ok(studentExamService.updateStatus(id, status));
-    }
-
-    @GetMapping("/exam/{examId}/statistics")
-    public ResponseEntity<Map<String, Object>> getExamStatistics(@PathVariable Long examId) {
-        return ResponseEntity.ok(studentExamService.getExamStatistics(examId));
-    }
-
-    @GetMapping("/student/{studentId}/statistics")
-    public ResponseEntity<Map<String, Object>> getStudentStatistics(@PathVariable Long studentId) {
-        return ResponseEntity.ok(studentExamService.getStudentStatistics(studentId));
-    }
-
-    @GetMapping("/exam/{examId}/top-performers")
-    public ResponseEntity<List<StudentExamResult>> getTopPerformers(
-            @PathVariable Long examId,
-            @RequestParam(defaultValue = "10") int limit) {
-        return ResponseEntity.ok(studentExamService.getTopPerformers(examId, limit));
-    }
-
-    @GetMapping("/exam/{examId}/passing-rate")
-    public ResponseEntity<Double> getPassingRate(
-            @PathVariable Long examId,
-            @RequestParam(defaultValue = "5.0") double passingScore) {
-        return ResponseEntity.ok(studentExamService.getPassingRate(examId, passingScore));
+    @GetMapping("/{studentExamId}/details")
+    public ResponseEntity<StudentExamDTO> getStudentExamDetails(@PathVariable Long studentExamId) {
+        return ResponseEntity.ok(studentExamService.findByIdWithAnswers(studentExamId));
     }
 }
