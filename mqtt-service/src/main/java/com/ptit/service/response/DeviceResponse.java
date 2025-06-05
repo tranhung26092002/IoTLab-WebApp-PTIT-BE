@@ -9,4 +9,6 @@ public class DeviceResponse {
     private String name;
     private String type;
     private String location;
+    private String wifi;
+    private String ip;
 }

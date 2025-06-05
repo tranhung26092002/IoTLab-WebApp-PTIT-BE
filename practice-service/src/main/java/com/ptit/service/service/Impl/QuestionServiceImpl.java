@@ -5,6 +5,8 @@ import com.ptit.service.entity.MultipleChoiceOption;
 import com.ptit.service.entity.Question;
 import com.ptit.service.entity.enums.QuestionType;
 import com.ptit.service.repository.QuestionRepository;
+import com.ptit.service.response.QuestionResponse;
+import com.ptit.service.response.ResponsePage;
 import com.ptit.service.service.QuestionService;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.Cell;
@@ -12,6 +14,8 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -27,13 +31,9 @@ public class QuestionServiceImpl implements QuestionService {
     private final QuestionRepository questionRepository;
 
     @Override
-    public List<Question> findAll() {
-        return questionRepository.findAll();
-    }
-
-    @Override
-    public List<Question> findByType(QuestionType type) {
-        return questionRepository.findByType(type);
+    public ResponsePage<Question, QuestionResponse> findAll(Pageable pageable) {
+        Page<Question> questions = questionRepository.findAll(pageable);
+        return new ResponsePage<>(questions, QuestionResponse.class);
     }
 
     @Override
@@ -42,6 +42,7 @@ public class QuestionServiceImpl implements QuestionService {
         existingQuestion.setContent(question.getContent());
         existingQuestion.setType(question.getType());
         existingQuestion.setOptions(question.getOptions());
+        existingQuestion.setScore(question.getScore());
         return questionRepository.save(existingQuestion);
     }
 

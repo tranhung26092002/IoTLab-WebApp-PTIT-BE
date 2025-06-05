@@ -5,10 +5,12 @@ import com.ptit.service.entity.*;
 import com.ptit.service.entity.enums.ExamStatus;
 import com.ptit.service.entity.enums.QuestionType;
 import com.ptit.service.repository.*;
+import com.ptit.service.response.ResponsePage;
 import com.ptit.service.service.ExamService;
 import com.ptit.service.service.FileService;
 import com.ptit.service.service.StudentExamService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -32,10 +34,8 @@ public class StudentExamServiceImpl implements StudentExamService {
     private final Random random = new Random();
 
     @Override
-    public List<StudentExamDTO> findAll() {
-        return studentExamRepository.findAll().stream()
-                .map(this::convertToStudentExamDTO)
-                .collect(Collectors.toList());
+    public ResponsePage<StudentExam, StudentExamDTO> findAll(Pageable pageable) {
+        return new ResponsePage<>(studentExamRepository.findAll(pageable), StudentExamDTO.class);
     }
 
     @Override
@@ -305,7 +305,6 @@ public class StudentExamServiceImpl implements StudentExamService {
                 .id(option.getId())
                 .content(option.getContent())
                 .option(option.getOption())
-//                .isCorrect(option.isCorrect())
                 .build();
     }
 }

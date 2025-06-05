@@ -2,20 +2,15 @@ package com.ptit.service.service.Impl;
 
 import com.ommanisoft.common.utils.FnCommon;
 import com.ptit.service.dto.PraticeFilterDTO;
+import com.ptit.service.entity.*;
+import com.ptit.service.entity.enums.PracticeProgressStatus;
+import com.ptit.service.entity.enums.PracticeStatus;
 import com.ptit.service.repository.*;
 import com.ptit.service.response.MessageResponse;
 import com.ptit.service.response.PracticeResponse;
 import com.ptit.service.response.ResponsePage;
-import com.ptit.service.entity.Practice;
-import com.ptit.service.entity.PracticeFile;
-import com.ptit.service.entity.PracticeGuide;
-import com.ptit.service.entity.PracticeVideo;
-import com.ptit.service.entity.Student;
-import com.ptit.service.entity.StudentProgress;
-import com.ptit.service.entity.enums.PracticeProgressStatus;
-import com.ptit.service.entity.enums.PracticeStatus;
-import com.ptit.service.service.PracticeService;
 import com.ptit.service.service.FileService;
+import com.ptit.service.service.PracticeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -39,7 +34,8 @@ public class PracticeServiceImpl implements PracticeService {
     private final StudentProgressRepository studentProgressRepository;
     private final StudentRepository studentRepository;
 
-    // Example method to get all practices
+    @Override
+    @Transactional(readOnly = true)
     public ResponsePage<Practice, PracticeResponse> getAllPractices(Pageable pageable) {
         Page<Practice> practices = practiceRepository.findAll(pageable);
 
@@ -56,7 +52,8 @@ public class PracticeServiceImpl implements PracticeService {
         return new ResponsePage<>(practiceResponses);
     }
 
-    // Example method to get a practice by id
+    @Override
+    @Transactional(readOnly = true)
     public PracticeResponse getPracticeById(Long id) {
         Practice practice = practiceRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Practice not found"));
@@ -330,7 +327,7 @@ public class PracticeServiceImpl implements PracticeService {
 
     @Override
     public ResponsePage<Practice, PracticeResponse> getPracticeFilter(PraticeFilterDTO praticeFilterDTO,
-            Pageable pageable) {
+                                                                      Pageable pageable) {
         Sort.Direction direction = Sort.Direction.ASC;
 
         if (praticeFilterDTO.getSortOrder() != null && praticeFilterDTO.getSortOrder().equalsIgnoreCase("desc")) {

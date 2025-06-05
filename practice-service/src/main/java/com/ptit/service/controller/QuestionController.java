@@ -2,16 +2,17 @@ package com.ptit.service.controller;
 
 import com.ptit.service.dto.QuestionDTO;
 import com.ptit.service.entity.Question;
-import com.ptit.service.entity.enums.QuestionType;
+import com.ptit.service.response.QuestionResponse;
+import com.ptit.service.response.ResponsePage;
 import com.ptit.service.service.QuestionService;
-import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
+import javax.validation.Valid;
 
 @RestController
 @RequestMapping("/questions")
@@ -20,18 +21,8 @@ public class QuestionController {
     private final QuestionService questionService;
 
     @GetMapping
-    public ResponseEntity<List<Question>> getAllQuestions() {
-        return ResponseEntity.ok(questionService.findAll());
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<Question> getQuestionById(@PathVariable Long id) {
-        return ResponseEntity.ok(questionService.findById(id));
-    }
-
-    @GetMapping("/type/{type}")
-    public ResponseEntity<List<Question>> getQuestionsByType(@PathVariable QuestionType type) {
-        return ResponseEntity.ok(questionService.findByType(type));
+    public ResponseEntity<ResponsePage<Question, QuestionResponse>> getAllQuestions(Pageable pageable) {
+        return ResponseEntity.ok(questionService.findAll(pageable));
     }
 
     @PostMapping(value = "/multiple-choice", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -46,7 +37,7 @@ public class QuestionController {
 
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Question> updateQuestion(@PathVariable Long id,
-            @Valid @RequestBody Question question) {
+                                                   @Valid @RequestBody Question question) {
         question.setId(id);
         return ResponseEntity.ok(questionService.updateQuestion(question));
     }

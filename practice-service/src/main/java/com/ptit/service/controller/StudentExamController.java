@@ -4,8 +4,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ptit.service.dto.StudentAnswerListDTO;
 import com.ptit.service.dto.StudentExamDTO;
 import com.ptit.service.dto.StudentExamResult;
+import com.ptit.service.entity.StudentExam;
+import com.ptit.service.response.ResponsePage;
 import com.ptit.service.service.StudentExamService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,8 +25,12 @@ public class StudentExamController {
     private final StudentExamService studentExamService;
 
     @GetMapping
-    public ResponseEntity<List<StudentExamDTO>> getAllStudentExams() {
-        return ResponseEntity.ok(studentExamService.findAll());
+    public ResponseEntity<ResponsePage<StudentExam, StudentExamDTO>> getAllStudentExams(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
+        return ResponseEntity.ok(studentExamService.findAll(pageable));
     }
 
     @GetMapping("/{id}")

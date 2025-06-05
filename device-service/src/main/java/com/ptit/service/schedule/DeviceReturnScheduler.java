@@ -20,7 +20,7 @@ public class DeviceReturnScheduler {
     private final BorrowRecordService borrowRecordService;
     private final RabbitTemplate rabbitTemplate;
 
-    @Scheduled(cron = "0 0/5 * * * ?") // Run every 5 minutes
+    @Scheduled(cron = "0 0 * * * ?") // Run every hour
     public void checkDeviceReturns() {
         List<BorrowRecord> devicesToReturn = borrowRecordService.findDevicesDueForReturn();
 

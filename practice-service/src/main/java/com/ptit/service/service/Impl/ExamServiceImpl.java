@@ -11,14 +11,15 @@ import com.ptit.service.entity.Question;
 import com.ptit.service.entity.enums.QuestionType;
 import com.ptit.service.repository.ExamRepository;
 import com.ptit.service.repository.QuestionRepository;
+import com.ptit.service.response.ResponsePage;
 import com.ptit.service.service.ExamService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Random;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,13 +27,10 @@ import java.util.stream.Collectors;
 public class ExamServiceImpl implements ExamService {
     private final ExamRepository examRepository;
     private final QuestionRepository questionRepository;
-    private final Random random = new Random();
 
     @Override
-    public List<ExamDTO> findAll() {
-        return examRepository.findAll().stream()
-                .map(this::convertToExamDTO)
-                .collect(Collectors.toList());
+    public ResponsePage<Exam, ExamDTO> findAll(Pageable pageable) {
+        return new ResponsePage<>(examRepository.findAll(pageable), ExamDTO.class);
     }
 
     @Override
@@ -131,7 +129,6 @@ public class ExamServiceImpl implements ExamService {
                 .id(option.getId())
                 .content(option.getContent())
                 .option(option.getOption())
-//                .isCorrect(option.isCorrect())
                 .build();
     }
 } 

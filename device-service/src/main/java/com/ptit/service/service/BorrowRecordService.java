@@ -1,18 +1,19 @@
 package com.ptit.service.service;
 
-import com.ptit.service.response.BorrowRecordResponse;
-import com.ptit.service.response.DeviceReponse;
-import com.ptit.service.response.ResponsePage;
 import com.ptit.service.entity.BorrowRecord;
 import com.ptit.service.entity.Device;
 import com.ptit.service.entity.enums.BorrowStatus;
 import com.ptit.service.repository.BorrowRecordRepository;
+import com.ptit.service.response.BorrowRecordResponse;
+import com.ptit.service.response.DeviceReponse;
+import com.ptit.service.response.ResponsePage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -112,5 +113,17 @@ public class BorrowRecordService {
 
     public List<BorrowRecord> findDevicesDueForReturn() {
         return borrowRecordRepository.findByExpiredAt(LocalDate.now());
+    }
+
+    public void autoUpdateOverdueBorrowRecords() {
+        LocalDate fourHoursAgo = LocalDateTime.now().minusHours(4).toLocalDate();
+        List<BorrowRecord> overdueRecords = borrowRecordRepository.findOverdueBorrowRecords(fourHoursAgo);
+        
+        for (BorrowRecord record : overdueRecords) {
+            record.setStatus(BorrowStatus.RETURNED);
+            record.setReturnedAt(LocalDate.now());
+            deviceService.returnDevice(record.getDevice().getId());
+            borrowRecordRepository.save(record);
+        }
     }
 }

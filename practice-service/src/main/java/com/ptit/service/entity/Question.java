@@ -2,8 +2,9 @@ package com.ptit.service.entity;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.ptit.service.entity.enums.QuestionType;
-import javax.persistence.*;
 import lombok.Data;
+
+import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
 

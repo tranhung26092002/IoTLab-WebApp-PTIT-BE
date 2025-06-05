@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -25,4 +26,7 @@ public interface BorrowRecordRepository extends JpaRepository<BorrowRecord, Long
     BorrowRecord findByDeviceIdAndUserId(Long deviceId, Long userId);
 
     List<BorrowRecord> findByExpiredAt(LocalDate now);
+
+    @Query("SELECT br FROM BorrowRecord br WHERE br.status = 'BORROWED' AND br.borrowedAt <= :fourHoursAgo")
+    List<BorrowRecord> findOverdueBorrowRecords(@Param("fourHoursAgo") LocalDate fourHoursAgo);
 }

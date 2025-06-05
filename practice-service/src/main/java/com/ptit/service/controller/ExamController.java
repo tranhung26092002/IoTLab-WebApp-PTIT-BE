@@ -2,13 +2,16 @@ package com.ptit.service.controller;
 
 import com.ptit.service.dto.ExamDTO;
 import com.ptit.service.entity.Exam;
+import com.ptit.service.response.ResponsePage;
 import com.ptit.service.service.ExamService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.List;
 
 @RestController
 @RequestMapping("/exams")
@@ -17,8 +20,12 @@ public class ExamController {
     private final ExamService examService;
 
     @GetMapping
-    public ResponseEntity<List<ExamDTO>> getAllExams() {
-        return ResponseEntity.ok(examService.findAll());
+    public ResponseEntity<ResponsePage<Exam, ExamDTO>> getAllExams(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
+        return ResponseEntity.ok(examService.findAll(pageable));
     }
 
     @GetMapping("/{id}")
