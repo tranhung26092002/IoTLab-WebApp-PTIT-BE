@@ -8,18 +8,18 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class CorsConfig implements WebMvcConfigurer {
 
-  @Bean
-  public WebMvcConfigurer corsConfigurer() {
-    return new WebMvcConfigurer() {
-      @Override
-      public void addCorsMappings(CorsRegistry registry) {
-        registry
-                .addMapping("/**")
-                .allowedOrigins("http://192.168.1.222:3000", " http://localhost:3000", "http://localhost")
-                .allowedHeaders("*")
-                .allowedMethods("*")
-                .allowCredentials(true);  // Quan trọng nếu cần gửi cookies hoặc authorization headers
-      }
-    };
-  }
+    @Bean
+    public WebMvcConfigurer corsConfigurer() {
+        return new WebMvcConfigurer() {
+            @Override
+            public void addCorsMappings(CorsRegistry registry) {
+                registry
+                        .addMapping("/**")
+                        .allowedOrigins("http://192.168.1.222:4000", " http://localhost:4000", "http://localhost")
+                        .allowedHeaders("*")
+                        .allowedMethods("*")
+                        .allowCredentials(true);  // Quan trọng nếu cần gửi cookies hoặc authorization headers
+            }
+        };
+    }
 }

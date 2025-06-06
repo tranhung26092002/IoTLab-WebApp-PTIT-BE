@@ -8,7 +8,7 @@ WORKDIR /app
 COPY target/api-gateway.jar app.jar
 
 # Expose the port your application will run on
-EXPOSE 8080
+EXPOSE 8088
 
 # Define the command to run your application
 ENTRYPOINT ["java", "-jar", "app.jar"]
