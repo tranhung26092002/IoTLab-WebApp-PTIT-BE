@@ -1,19 +1,18 @@
 package com.ptit.service.util;
 
-import com.ommanisoft.common.exceptions.ExceptionOm;
 import com.ptit.service.dto.AddressDto;
-import com.ptit.service.response.AddressResponse;
 import com.ptit.service.entity.Address;
 import com.ptit.service.entity.District;
 import com.ptit.service.entity.Province;
 import com.ptit.service.entity.Ward;
-import com.ptit.service.exception.ErrorMessage;
+import com.ptit.service.exception.BaseException;
+import com.ptit.service.exception.ErrorCode;
 import com.ptit.service.repository.DistrictRepository;
 import com.ptit.service.repository.ProvinceRepository;
 import com.ptit.service.repository.WardRepository;
+import com.ptit.service.response.AddressResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import java.util.Objects;
@@ -47,14 +46,12 @@ public class AddressUtil {
         // Tìm kiếm Ward theo mã
         Ward ward = wardRepository.findByCodeWard(addressDto.getCodeWard())
                 .orElseThrow(() -> {
-                    log.error("Failed to create Admin: Ward with code '{}' not found", addressDto.getCodeWard());
-                    return new ExceptionOm(HttpStatus.NOT_FOUND, ErrorMessage.WARD_NOT_FOUND.val());
+                    return new BaseException(ErrorCode.ADDRESS_NOT_FOUND);
                 });
 
         // Kiểm tra tính hợp lệ của địa chỉ
         if (!checkAddress(ward, addressDto)) {
-            log.error("Failed to create Admin: Address does not match with ward");
-            throw new ExceptionOm(HttpStatus.NOT_FOUND, ErrorMessage.ADDRESS_NOT_MATCH_WARD.val());
+            throw new BaseException(ErrorCode.ADDRESS_NOT_MATCH_WARD);
         }
 
         Address newAddress = new Address();
@@ -72,16 +69,12 @@ public class AddressUtil {
     public boolean checkAddress(Ward ward, AddressDto addressDto) {
         // Kiểm tra mã District có khớp với mã Ward không
         if (!Objects.equals(ward.getDistrict().getCodeDistrict(), addressDto.getCodeDistrict())) {
-            log.error("Failed to create Admin: District code '{}' does not match with ward code '{}'",
-                    addressDto.getCodeDistrict(), addressDto.getCodeWard());
-            throw new ExceptionOm(HttpStatus.NOT_FOUND, ErrorMessage.DISTRICT_NOT_FOUND.val());
+            throw new BaseException(ErrorCode.ADDRESS_DISTRICT_NOT_FOUND);
         }
 
         // Kiểm tra mã Province có khớp với mã District không
         if (!Objects.equals(ward.getDistrict().getProvince().getCodeProvince(), addressDto.getCodeProvince())) {
-            log.error("Failed to create Admin: Province code '{}' does not match with district code '{}'",
-                    addressDto.getCodeProvince(), addressDto.getCodeDistrict());
-            throw new ExceptionOm(HttpStatus.NOT_FOUND, ErrorMessage.PROVINCE_NOT_FOUND.val());
+            throw new BaseException(ErrorCode.ADDRESS_PROVINCE_NOT_FOUND);
         }
 
         return true;

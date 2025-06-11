@@ -1,12 +1,11 @@
 package com.ptit.service.security;
 
-import com.ommanisoft.common.exceptions.ExceptionOm;
-import com.ptit.service.exception.ErrorMessage;
+import com.ptit.service.exception.BaseException;
+import com.ptit.service.exception.ErrorCode;
 import com.ptit.service.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -22,11 +21,10 @@ public class ApplicationConfig {
     private final UserRepository userRepository;
 
     @Bean
-    public UserDetailsService userDetailsService(){
+    public UserDetailsService userDetailsService() {
         return userName -> userRepository.findByUserName(userName)
                 .orElseThrow(() ->
-                        new ExceptionOm(HttpStatus.NOT_FOUND,
-                                ErrorMessage.USER_NOT_FOUND.val()));
+                        new BaseException(ErrorCode.USER_NOT_FOUND));
     }
 
     @Bean
@@ -40,7 +38,7 @@ public class ApplicationConfig {
     }
 
     @Bean
-    public AuthenticationProvider authenticationProvider(){
+    public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
         authenticationProvider.setUserDetailsService(userDetailsService());
         authenticationProvider.setPasswordEncoder(passwordEncoder());

@@ -60,13 +60,14 @@ public class StudentExamController {
         return ResponseEntity.ok(studentExamService.getStudentExamResult(id));
     }
 
-    @PostMapping("/answers/{answerId}/grade")
+    @PostMapping("/{studentExamId}/questions/{questionId}/grade")
     public ResponseEntity<StudentExamResult> gradeEssayAnswer(
-            @PathVariable Long answerId,
+            @PathVariable Long studentExamId,
+            @PathVariable Long questionId,
             @RequestParam double score) {
         // Chấm điểm tự luận và trả về kết quả mới
-        studentExamService.gradeEssayAnswer(answerId, score);
-        return ResponseEntity.ok(studentExamService.getStudentExamResult(answerId));
+        studentExamService.gradeEssayAnswer(studentExamId, questionId, score);
+        return ResponseEntity.ok(studentExamService.getStudentExamResult(studentExamId));
     }
 
     @GetMapping("/{studentExamId}/result")

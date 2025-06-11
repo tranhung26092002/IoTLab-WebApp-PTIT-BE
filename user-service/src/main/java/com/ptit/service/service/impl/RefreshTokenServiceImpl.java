@@ -1,17 +1,17 @@
 package com.ptit.service.service.impl;
 
-import com.ommanisoft.common.exceptions.ExceptionOm;
-import com.ptit.service.response.AuthResponse;
 import com.ptit.service.entity.RefreshToken;
 import com.ptit.service.entity.User;
 import com.ptit.service.entity.enums.TokenType;
-import com.ptit.service.exception.ErrorMessage;
+import com.ptit.service.exception.BaseException;
+import com.ptit.service.exception.BusinessException;
+import com.ptit.service.exception.ErrorCode;
 import com.ptit.service.repository.RefreshTokenRepository;
 import com.ptit.service.repository.UserRepository;
-import com.ptit.service.service.RefreshTokenService;
+import com.ptit.service.response.AuthResponse;
 import com.ptit.service.security.JwtService;
+import com.ptit.service.service.RefreshTokenService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,7 +44,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
         return refreshTokenRepository
                 .findByToken(token)
                 .orElseThrow(
-                        () -> new ExceptionOm(HttpStatus.NOT_FOUND, ErrorMessage.REFRESH_TOKEN_NOT_FOUND)
+                        () -> new BusinessException(ErrorCode.TOKEN_REFRESH_NOT_FOUND)
                 );
     }
 
@@ -52,7 +52,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
     @Transactional
     public void revokeAllUserToken(User user) {
         List<RefreshToken> refreshTokens = refreshTokenRepository.findAllValidTokenByUserId(user.getId());
-        if(refreshTokens.isEmpty()){
+        if (refreshTokens.isEmpty()) {
             return;
         }
         refreshTokens.forEach(token -> token.setRevoked(true));
@@ -67,29 +67,29 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
         final String phoneNumber;
         final String refreshTokenKey = jwtService.getJwtRefreshKey();
 
-        if(authHeader == null || !authHeader.startsWith("Bearer")){
-            throw new ExceptionOm(HttpStatus.BAD_REQUEST, ErrorMessage.INVALID_REFRESH_TOKEN);
+        if (authHeader == null || !authHeader.startsWith("Bearer")) {
+            throw new BaseException(ErrorCode.TOKEN_REFRESH_INVALID);
         }
 
         refreshToken = authHeader.substring(7);
         phoneNumber = jwtService.extractUserName(refreshToken, refreshTokenKey);
 
-        if (phoneNumber == null){
-            throw new ExceptionOm(HttpStatus.BAD_REQUEST, ErrorMessage.INVALID_REFRESH_TOKEN);
+        if (phoneNumber == null) {
+            throw new BusinessException(ErrorCode.TOKEN_REFRESH_INVALID);
         }
 
         User user = userRepository.findByPhoneNumber(phoneNumber)
                 .orElseThrow(() ->
-                        new ExceptionOm(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND));
+                        new BusinessException(ErrorCode.USER_NOT_FOUND));
 
         // kiem tra xem trong database co ton tai refreshToken tuong ung hay khong
         RefreshToken existRefreshToken = refreshTokenRepository
                 .findByToken(refreshToken)
                 .orElseThrow(() ->
-                        new ExceptionOm(HttpStatus.NOT_FOUND, ErrorMessage.REFRESH_TOKEN_NOT_FOUND));
+                        new BusinessException(ErrorCode.TOKEN_REFRESH_NOT_FOUND));
 
-        if (!jwtService.isTokenValid(existRefreshToken.getToken(), user, refreshTokenKey)){
-            throw new ExceptionOm(HttpStatus.BAD_REQUEST, ErrorMessage.INVALID_REFRESH_TOKEN);
+        if (!jwtService.isTokenValid(existRefreshToken.getToken(), user, refreshTokenKey)) {
+            throw new BusinessException(ErrorCode.TOKEN_REFRESH_INVALID);
         }
 
         String newAccessToken = jwtService.generateToken(user, user.getId());

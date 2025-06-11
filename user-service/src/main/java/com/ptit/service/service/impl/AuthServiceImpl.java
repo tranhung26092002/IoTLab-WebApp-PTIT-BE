@@ -1,28 +1,26 @@
 package com.ptit.service.service.impl;
 
-import com.ommanisoft.common.exceptions.ExceptionOm;
-import com.ptit.service.entity.enums.RoleType;
-import com.ptit.service.entity.enums.StateUser;
 import com.ptit.service.dto.EmailDTO;
 import com.ptit.service.dto.ResetPasswordDTO;
 import com.ptit.service.dto.SignInDTO;
 import com.ptit.service.dto.SignUpDTO;
-import com.ptit.service.security.JwtService;
-import com.ptit.service.response.MessageResponse;
-import com.ptit.service.response.AuthResponse;
-import com.ptit.service.response.OTPResponse;
 import com.ptit.service.entity.PasswordResetToken;
 import com.ptit.service.entity.User;
+import com.ptit.service.entity.enums.RoleType;
+import com.ptit.service.entity.enums.StateUser;
 import com.ptit.service.entity.enums.TokenType;
-import com.ptit.service.exception.ErrorMessage;
+import com.ptit.service.exception.BaseException;
+import com.ptit.service.exception.ErrorCode;
 import com.ptit.service.repository.PasswordResetTokenRepository;
 import com.ptit.service.repository.UserRepository;
+import com.ptit.service.response.AuthResponse;
+import com.ptit.service.response.MessageResponse;
+import com.ptit.service.response.OTPResponse;
+import com.ptit.service.security.JwtService;
 import com.ptit.service.service.*;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.modelmapper.ModelMapper;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -39,6 +37,8 @@ import java.util.Random;
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
+    private static final int LENGTH_OF_RANDOM_USER_NAME = 12;
+    private static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
     private final OTPService otpService;
@@ -46,9 +46,6 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
-    private static final int LENGTH_OF_RANDOM_USER_NAME = 12;
-    private static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    private ModelMapper mapper;
     private final EmailService emailService;
     private final AttendanceService attendanceService;
     private final UserLoginNotificationService userLoginNotificationService;
@@ -85,7 +82,7 @@ public class AuthServiceImpl implements AuthService {
                         signInDto.getPassword()));
 
         User user = userRepository.findByUserName(signInDto.getUserName())
-                .orElseThrow(() -> new ExceptionOm(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND.val()));
+                .orElseThrow(() -> new BaseException(ErrorCode.USER_NOT_FOUND));
 
         String accessToken = jwtService.generateToken(user, user.getId());
         String refreshToken = jwtService.generateRefreshToken(user);
@@ -119,7 +116,7 @@ public class AuthServiceImpl implements AuthService {
 
         User user = userRepository.findByEmail(email)
                 .orElseThrow(
-                        () -> new ExceptionOm(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND));
+                        () -> new BaseException(ErrorCode.USER_NOT_FOUND));
 
         String otpCode = otpService.generateOTP();
 
@@ -138,10 +135,8 @@ public class AuthServiceImpl implements AuthService {
 
             // Gửi email
             emailService.sendEmail(email, "Your OTP Code", "otp-template", context);
-            log.info("OTP sent to {}", email);
         } catch (Exception e) {
-            log.error("Failed to send OTP to email {}: {}", email, e.getMessage());
-            throw new ExceptionOm(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to send OTP email.");
+            throw new BaseException(ErrorCode.OTP_NOT_SEND);
         }
 
         return OTPResponse.builder()
@@ -157,17 +152,17 @@ public class AuthServiceImpl implements AuthService {
         PasswordResetToken passwordResetToken = passwordResetTokenRepository
                 .findByToken(token)
                 .orElseThrow(
-                        () -> new ExceptionOm(HttpStatus.NOT_FOUND, ErrorMessage.PASSWORD_RESET_TOKEN_NOT_FOUND.val()));
+                        () -> new BaseException(ErrorCode.USER_PASSWORD_RESET_TOKEN_NOT_FOUND));
 
         log.info("{}", passwordResetToken.getToken());
 
         // check mat khau moi khong trung mat khau cu
         User user = userRepository.findByPasswordToken(token).orElseThrow(
-                () -> new ExceptionOm(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND.val()));
+                () -> new BaseException(ErrorCode.USER_NOT_FOUND));
 
         String currentPassword = user.getPassword();
         if (passwordEncoder.matches(resetPasswordDto.getNewPassword(), currentPassword)) {
-            throw new ExceptionOm(HttpStatus.BAD_REQUEST, ErrorMessage.CURRENT_PASSWORD_SAME_NEW_PASSWORD);
+            throw new BaseException(ErrorCode.USER_PASSWORD_SAME_AS_OLD);
         }
 
         user.setPassword(passwordEncoder.encode(resetPasswordDto.getNewPassword()));
@@ -223,7 +218,7 @@ public class AuthServiceImpl implements AuthService {
     private User mapDtoToEntity(SignUpDTO request) {
         // check user name da ton tai chua
         if (userRepository.existsByUserName(request.getUserName())) {
-            throw new ExceptionOm(HttpStatus.BAD_REQUEST, ErrorMessage.USER_NAME_EXISTED.val());
+            throw new BaseException(ErrorCode.USER_NAME_EXISTS);
         }
         String userName = request.getUserName();
 

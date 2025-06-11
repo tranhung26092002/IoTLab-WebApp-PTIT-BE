@@ -1,15 +1,14 @@
 package com.ptit.service.service;
 
-import java.util.List;
-
-import org.springframework.data.domain.Pageable;
-import org.springframework.web.multipart.MultipartFile;
-
 import com.ptit.service.dto.StudentAnswerListDTO;
 import com.ptit.service.dto.StudentExamDTO;
 import com.ptit.service.dto.StudentExamResult;
 import com.ptit.service.entity.StudentExam;
 import com.ptit.service.response.ResponsePage;
+import org.springframework.data.domain.Pageable;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 public interface StudentExamService {
     /**
@@ -40,10 +39,11 @@ public interface StudentExamService {
     /**
      * Grade an essay answer
      *
-     * @param studentAnswerId the ID of the student answer
-     * @param score           the score to assign
+     * @param studentExamId the ID of the student exam
+     * @param questionId    the ID of the question
+     * @param score         the score to assign
      */
-    void gradeEssayAnswer(Long studentAnswerId, double score);
+    void gradeEssayAnswer(Long studentExamId, Long questionId, double score);
 
     /**
      * Get the result of a student exam

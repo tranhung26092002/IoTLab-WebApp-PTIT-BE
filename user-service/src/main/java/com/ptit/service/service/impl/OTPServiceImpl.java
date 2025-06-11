@@ -1,16 +1,15 @@
 package com.ptit.service.service.impl;
 
-import com.ommanisoft.common.exceptions.ExceptionOm;
 import com.ptit.service.dto.EmailDTO;
 import com.ptit.service.dto.OtpCodeDTO;
-import com.ptit.service.response.OTPResponse;
-import com.ptit.service.exception.ErrorMessage;
+import com.ptit.service.exception.BusinessException;
+import com.ptit.service.exception.ErrorCode;
 import com.ptit.service.repository.UserRepository;
+import com.ptit.service.response.OTPResponse;
 import com.ptit.service.service.EmailService;
 import com.ptit.service.service.OTPService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.thymeleaf.context.Context;
@@ -38,7 +37,7 @@ public class OTPServiceImpl implements OTPService {
 
         // Check if the email already exists
         if (userRepository.findByEmail(email).isPresent()) {
-            throw new ExceptionOm(HttpStatus.CONFLICT, ErrorMessage.EMAIL_ALREADY_EXISTS.val());
+            throw new BusinessException(ErrorCode.USER_EMAIL_EXISTS);
         }
 
         // Generate OTP
@@ -58,10 +57,8 @@ public class OTPServiceImpl implements OTPService {
 
             // Gửi email
             emailService.sendEmail(email, "Your OTP Code", "otp-template", context);
-            log.info("OTP sent to {}", email);
         } catch (Exception e) {
-            log.error("Failed to send OTP to email {}: {}", email, e.getMessage());
-            throw new ExceptionOm(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to send OTP email.");
+            throw new BusinessException(ErrorCode.OTP_NOT_SEND);
         }
 
         return OTPResponse.builder()
@@ -99,7 +96,7 @@ public class OTPServiceImpl implements OTPService {
     public String generateOTP() {
         StringBuilder otp = new StringBuilder(LENGTH_OTP);
         ThreadLocalRandom random = ThreadLocalRandom.current();
-        for(int i = 0; i < LENGTH_OTP; ++i){
+        for (int i = 0; i < LENGTH_OTP; ++i) {
             otp.append(NUMBERS.charAt(random.nextInt(NUMBERS.length())));
         }
         return otp.toString();

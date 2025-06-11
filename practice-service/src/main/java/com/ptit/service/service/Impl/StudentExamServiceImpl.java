@@ -52,9 +52,15 @@ public class StudentExamServiceImpl implements StudentExamService {
 
     @Override
     @Transactional
-    public void gradeEssayAnswer(Long studentAnswerId, double score) {
-        StudentAnswer answer = studentAnswerRepository.findById(studentAnswerId)
-                .orElseThrow(() -> new RuntimeException("Student answer not found"));
+    public void gradeEssayAnswer(Long studentExamId, Long questionId, double score) {
+        // Tìm câu trả lời của sinh viên dựa trên studentExamId và questionId
+        StudentAnswer answer = studentAnswerRepository.findByStudentExamIdAndQuestionId(studentExamId, questionId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy câu trả lời của sinh viên"));
+
+        // Kiểm tra xem câu hỏi có phải là câu hỏi tự luận không
+        if (answer.getQuestion().getType() != QuestionType.ESSAY) {
+            throw new RuntimeException("Chỉ có thể chấm điểm câu hỏi tự luận");
+        }
 
         // Cập nhật điểm cho câu trả lời tự luận
         answer.setScore(score);

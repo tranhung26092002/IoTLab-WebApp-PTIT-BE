@@ -1,39 +1,33 @@
 package com.ptit.service.exception;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.Getter;
 
-@Data
-@EqualsAndHashCode(callSuper=true)
+@Getter
 public class BaseException extends RuntimeException {
-    Object[] args;
+    private final ErrorCode errorCode;
+    private final Object[] args;
 
-    public BaseException() {
-        super();
+    public BaseException(ErrorCode errorCode) {
+        super(errorCode.getMessageKey());
+        this.errorCode = errorCode;
+        this.args = null;
     }
 
-    public BaseException(String messageCode) {
-        super(messageCode);
+    public BaseException(ErrorCode errorCode, Object[] args) {
+        super(errorCode.getMessageKey());
+        this.errorCode = errorCode;
+        this.args = args;
     }
 
-    public BaseException(String messageCode, Throwable cause) {
-        super(messageCode, cause);
+    public BaseException(ErrorCode errorCode, Throwable cause) {
+        super(errorCode.getMessageKey(), cause);
+        this.errorCode = errorCode;
+        this.args = null;
     }
 
-    public BaseException(Throwable cause) {
-        super(cause);
-    }
-
-    public BaseException(String messageCode, Object... arg) {
-        super(messageCode);
-        this.args = arg;
-    }
-
-    public int getStatus() {
-        return 400;
-    }
-
-    public String getStatusCode() {
-        return "BAD_REQUEST";
+    public BaseException(ErrorCode errorCode, Object[] args, Throwable cause) {
+        super(errorCode.getMessageKey(), cause);
+        this.errorCode = errorCode;
+        this.args = args;
     }
 }

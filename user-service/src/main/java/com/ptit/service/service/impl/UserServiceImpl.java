@@ -1,26 +1,21 @@
 package com.ptit.service.service.impl;
 
-import com.ommanisoft.common.exceptions.ExceptionOm;
-import com.ommanisoft.common.utils.FnCommon;
+import com.ptit.service.dto.ChangePasswordDTO;
 import com.ptit.service.dto.UserDTO;
 import com.ptit.service.dto.UserFilterDTO;
-import com.ptit.service.dto.ChangePasswordDTO;
-import com.ptit.service.response.AttendanceResponse;
-import com.ptit.service.response.InstructorReponse;
-import com.ptit.service.response.StudentResponse;
-import com.ptit.service.response.UserResponse;
-import com.ptit.service.response.MessageResponse;
-import com.ptit.service.response.ResponsePage;
 import com.ptit.service.entity.Address;
 import com.ptit.service.entity.Attendance;
 import com.ptit.service.entity.User;
 import com.ptit.service.entity.enums.StateUser;
-import com.ptit.service.exception.ErrorMessage;
+import com.ptit.service.exception.BaseException;
+import com.ptit.service.exception.BusinessException;
+import com.ptit.service.exception.ErrorCode;
 import com.ptit.service.repository.AttendanceRepository;
 import com.ptit.service.repository.UserRepository;
+import com.ptit.service.response.*;
 import com.ptit.service.service.EmailService;
-import com.ptit.service.service.UserService;
 import com.ptit.service.service.UserNotificationService;
+import com.ptit.service.service.UserService;
 import com.ptit.service.util.AddressUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -84,7 +79,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponse getUserById(Long id) {
         User user = userRepository.findById(id).orElseThrow(
-                () -> new ExceptionOm(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND.val()));
+                () -> new BaseException(ErrorCode.USER_NOT_FOUND));
 
         log.info("Get user with id: {} successful!", id);
         return convertToUserResponse(user);
@@ -139,10 +134,10 @@ public class UserServiceImpl implements UserService {
 
         String email = authentication.getName();
         User user = userRepository.findByEmail(email).orElseThrow(
-                () -> new ExceptionOm(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND.val()));
+                () -> new BaseException(ErrorCode.USER_NOT_FOUND));
 
         if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
-            throw new ExceptionOm(HttpStatus.BAD_REQUEST, ErrorMessage.CURRENT_PASSWORD_INCORRECT.val());
+            throw new BaseException(ErrorCode.USER_PASSWORD_CURRENT_INCORRECT);
         }
 
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
@@ -159,7 +154,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public MessageResponse changeStatusAccount(Long id, StateUser status) {
         User user = userRepository.findById(id).orElseThrow(
-                () -> new ExceptionOm(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND.val()));
+                () -> new BaseException(ErrorCode.USER_NOT_FOUND));
 
         user.setStatus(status);
         userRepository.save(user);
@@ -174,7 +169,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponse updateMe(Long id, UserDTO userDto, MultipartFile file) {
         User user = userRepository.findById(id).orElseThrow(
-                () -> new ExceptionOm(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND.val()));
+                () -> new BaseException(ErrorCode.USER_NOT_FOUND));
 
         if (userDto.getAddress() != null) {
             Address address = addressUtil.generateAddress(userDto.getAddress());
@@ -197,7 +192,7 @@ public class UserServiceImpl implements UserService {
             }
         }
 
-        FnCommon.coppyNonNullProperties(user, userDto);
+        modelMapper.map(userDto, user);
 
         userRepository.save(user);
 
@@ -207,7 +202,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponse updateUser(Long id, UserDTO userDto) {
         User user = userRepository.findById(id).orElseThrow(
-                () -> new ExceptionOm(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND.val()));
+                () -> new BaseException(ErrorCode.USER_NOT_FOUND));
 
         if (userDto.getAddress() != null) {
             Address address = addressUtil.generateAddress(userDto.getAddress());
@@ -216,7 +211,7 @@ public class UserServiceImpl implements UserService {
             }
         }
 
-        FnCommon.coppyNonNullProperties(user, userDto);
+        modelMapper.map(userDto, user);
 
         userRepository.save(user);
 
@@ -226,7 +221,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public MessageResponse deleteUser(Long id) {
         User user = userRepository.findById(id).orElseThrow(
-                () -> new ExceptionOm(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND.val()));
+                () -> new BaseException(ErrorCode.USER_NOT_FOUND));
 
         user.setDeleted(true);
         userRepository.save(user);
@@ -237,7 +232,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public MessageResponse createUser(UserDTO userDto) {
         if (userRepository.existsByUserName(userDto.getUserName())) {
-            throw new ExceptionOm(HttpStatus.BAD_REQUEST, ErrorMessage.USER_NAME_EXISTED.val());
+            throw new BusinessException(ErrorCode.USER_NAME_EXISTS);
         }
 
         User user = new User();
@@ -247,7 +242,7 @@ public class UserServiceImpl implements UserService {
             user.setAddress(address);
         }
 
-        FnCommon.coppyNonNullProperties(user, userDto);
+        modelMapper.map(userDto, user);
 
         user.setPassword(passwordEncoder.encode("12345678"));
         user.setStatus(StateUser.ACTIVE);
@@ -275,7 +270,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public StudentResponse getUserByUsername(String userName) {
         User user = userRepository.findByUserName(userName).orElseThrow(
-                () -> new ExceptionOm(HttpStatus.NOT_FOUND, ErrorMessage.USER_NOT_FOUND.val()));
+                () -> new BaseException(ErrorCode.USER_NOT_FOUND));
 
         return convertToStudentResponse(user);
     }
@@ -341,7 +336,7 @@ public class UserServiceImpl implements UserService {
     private UserResponse convertToUserResponse(User user) {
         UserResponse userResponse = new UserResponse();
 
-        FnCommon.coppyNonNullProperties(userResponse, user);
+        modelMapper.map(user, userResponse);
 
         return userResponse;
     }
@@ -371,10 +366,10 @@ public class UserServiceImpl implements UserService {
             if (response.getStatusCode() == HttpStatus.OK) {
                 return response.getBody();
             } else {
-                throw new ExceptionOm(HttpStatus.BAD_REQUEST, "Upload file thất bại");
+                throw new BusinessException(ErrorCode.UPLOAD_FILE_ERROR);
             }
         } catch (IOException e) {
-            throw new RuntimeException("Error occurred while uploading file: " + e.getMessage(), e);
+            throw new BusinessException(ErrorCode.UPLOAD_FILE_INVALID);
         }
     }
 
