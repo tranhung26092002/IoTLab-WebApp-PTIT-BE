@@ -1,8 +1,11 @@
 package com.ptit.service.exception;
 
+import lombok.Getter;
 import org.springframework.validation.FieldError;
+
 import java.util.List;
 
+@Getter
 public class ValidationException extends BaseException {
     private final List<FieldError> fieldErrors;
 
@@ -15,8 +18,4 @@ public class ValidationException extends BaseException {
         super(errorCode, args);
         this.fieldErrors = fieldErrors;
     }
-
-    public List<FieldError> getFieldErrors() {
-        return fieldErrors;
-    }
-} 
+}

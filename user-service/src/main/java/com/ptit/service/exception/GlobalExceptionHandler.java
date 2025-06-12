@@ -213,11 +213,8 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(BusinessException.class)
-    public ResponseEntity<ErrorResponse> handleIBusinessException(BusinessException ex) {
-        ErrorResponse errorResponse = new ErrorResponse();
-        errorResponse.setStatus(ErrorCode.UNKNOWN_ERROR.getHttpStatus().value());
-        errorResponse.setStatusCode(ErrorCode.UNKNOWN_ERROR.name());
-        errorResponse.setMessage(i18nUntil.getMessage(ErrorCode.UNKNOWN_ERROR.getMessageKey()));
-        return ResponseEntity.status(ErrorCode.UNKNOWN_ERROR.getHttpStatus()).body(errorResponse);
+    public ResponseEntity<ErrorResponse> handleBusinessException(BusinessException ex) {
+        ErrorResponse errorResponse = getErrorResponse(i18nUntil, ex);
+        return ResponseEntity.status(ex.getErrorCode().getHttpStatus()).body(errorResponse);
     }
 }
