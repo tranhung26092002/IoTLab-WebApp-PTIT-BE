@@ -6,7 +6,6 @@ import com.ptit.service.entity.Question;
 import com.ptit.service.entity.enums.QuestionType;
 import com.ptit.service.repository.QuestionRepository;
 import com.ptit.service.response.QuestionResponse;
-import com.ptit.service.response.ResponsePage;
 import com.ptit.service.service.QuestionService;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.Cell;
@@ -31,9 +30,8 @@ public class QuestionServiceImpl implements QuestionService {
     private final QuestionRepository questionRepository;
 
     @Override
-    public ResponsePage<Question, QuestionResponse> findAll(Pageable pageable) {
-        Page<Question> questions = questionRepository.findAll(pageable);
-        return new ResponsePage<>(questions, QuestionResponse.class);
+    public Page<Question> findAll(Pageable pageable) {
+        return questionRepository.findAll(pageable);
     }
 
     @Override

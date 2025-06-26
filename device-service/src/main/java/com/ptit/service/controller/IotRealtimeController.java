@@ -3,6 +3,7 @@ package com.ptit.service.controller;
 import com.ptit.service.dto.IotSensorDataDTO;
 import com.ptit.service.entity.Device;
 import com.ptit.service.entity.IotSensorData;
+import com.ptit.service.response.DataResponse;
 import com.ptit.service.response.IotDeviceResponse;
 import com.ptit.service.response.MessageResponse;
 import com.ptit.service.service.IotDeviceService;
@@ -29,7 +30,7 @@ import java.util.HashMap;
 @Api(tags = "IoT Realtime Data APIs")
 @Slf4j
 @CrossOrigin(origins = "*")
-public class IotRealtimeController {
+public class IotRealtimeController extends BaseController {
 
     @Autowired
     private IotDeviceService iotDeviceService;
@@ -42,7 +43,7 @@ public class IotRealtimeController {
      */
     @GetMapping("/latest-sensor-data")
     @ApiOperation("Lấy dữ liệu sensor mới nhất của tất cả thiết bị IoT")
-    public ResponseEntity<MessageResponse> getLatestSensorData() {
+    public ResponseEntity<DataResponse<Object>> getLatestSensorData() {
         try {
             List<Device> activeDevices = iotDeviceService.getActiveIotDevices();
             List<Map<String, Object>> latestData = activeDevices.stream()
@@ -68,10 +69,10 @@ public class IotRealtimeController {
                     })
                     .collect(Collectors.toList());
 
-            return ResponseEntity.ok(new MessageResponse("success", "Lấy dữ liệu thành công", latestData));
+            return success(latestData);
         } catch (Exception e) {
             log.error("Error getting latest sensor data: {}", e.getMessage(), e);
-            return ResponseEntity.badRequest().body(new MessageResponse("error", "Lỗi khi lấy dữ liệu: " + e.getMessage()));
+            return ResponseEntity.badRequest().body(DataResponse.badRequest("Lỗi khi lấy dữ liệu: " + e.getMessage()));
         }
     }
 
@@ -80,7 +81,7 @@ public class IotRealtimeController {
      */
     @GetMapping("/device/{deviceId}/latest-sensor-data")
     @ApiOperation("Lấy dữ liệu sensor mới nhất của một thiết bị cụ thể")
-    public ResponseEntity<MessageResponse> getLatestSensorDataByDevice(
+    public ResponseEntity<DataResponse<Object>> getLatestSensorDataByDevice(
             @ApiParam("Mã thiết bị") @PathVariable String deviceId) {
         try {
             // Tìm device theo code
@@ -91,7 +92,7 @@ public class IotRealtimeController {
                     .orElse(null);
 
             if (device == null) {
-                return ResponseEntity.badRequest().body(new MessageResponse("error", "Không tìm thấy thiết bị"));
+                return ResponseEntity.badRequest().body(DataResponse.badRequest("Không tìm thấy thiết bị"));
             }
 
             Map<String, Object> response = Map.of(
@@ -111,10 +112,10 @@ public class IotRealtimeController {
                 ));
             });
 
-            return ResponseEntity.ok(new MessageResponse("success", "Lấy dữ liệu thành công", response));
+            return success(response);
         } catch (Exception e) {
             log.error("Error getting latest sensor data for device {}: {}", deviceId, e.getMessage(), e);
-            return ResponseEntity.badRequest().body(new MessageResponse("error", "Lỗi khi lấy dữ liệu: " + e.getMessage()));
+            return ResponseEntity.badRequest().body(DataResponse.badRequest("Lỗi khi lấy dữ liệu: " + e.getMessage()));
         }
     }
 
@@ -123,7 +124,7 @@ public class IotRealtimeController {
      */
     @GetMapping("/device/{deviceId}/sensor-history")
     @ApiOperation("Lấy lịch sử dữ liệu sensor của một thiết bị")
-    public ResponseEntity<MessageResponse> getSensorHistory(
+    public ResponseEntity<DataResponse<Object>> getSensorHistory(
             @ApiParam("Mã thiết bị") @PathVariable String deviceId,
             @ApiParam("Thời gian bắt đầu") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startTime,
             @ApiParam("Thời gian kết thúc") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endTime) {
@@ -136,7 +137,7 @@ public class IotRealtimeController {
                     .orElse(null);
 
             if (device == null) {
-                return ResponseEntity.badRequest().body(new MessageResponse("error", "Không tìm thấy thiết bị"));
+                return ResponseEntity.badRequest().body(DataResponse.badRequest("Không tìm thấy thiết bị"));
             }
 
             List<IotSensorData> history = iotDeviceService.getSensorDataHistory(device.getId(), startTime, endTime);
@@ -152,10 +153,10 @@ public class IotRealtimeController {
                     })
                     .collect(Collectors.toList());
 
-            return ResponseEntity.ok(new MessageResponse("success", "Lấy lịch sử thành công", historyData));
+            return success(historyData);
         } catch (Exception e) {
             log.error("Error getting sensor history for device {}: {}", deviceId, e.getMessage(), e);
-            return ResponseEntity.badRequest().body(new MessageResponse("error", "Lỗi khi lấy lịch sử: " + e.getMessage()));
+            return ResponseEntity.badRequest().body(DataResponse.badRequest("Lỗi khi lấy lịch sử: " + e.getMessage()));
         }
     }
 
@@ -164,7 +165,7 @@ public class IotRealtimeController {
      */
     @GetMapping("/dashboard-stats")
     @ApiOperation("Lấy thống kê tổng quan về các thiết bị IoT")
-    public ResponseEntity<MessageResponse> getDashboardStats() {
+    public ResponseEntity<DataResponse<Object>> getDashboardStats() {
         try {
             List<Device> allDevices = iotDeviceService.getAllIotDevices();
             List<Device> activeDevices = iotDeviceService.getActiveIotDevices();
@@ -178,10 +179,10 @@ public class IotRealtimeController {
                     "lastUpdated", LocalDateTime.now()
             );
 
-            return ResponseEntity.ok(new MessageResponse("success", "Lấy thống kê thành công", stats));
+            return success(stats);
         } catch (Exception e) {
             log.error("Error getting dashboard stats: {}", e.getMessage(), e);
-            return ResponseEntity.badRequest().body(new MessageResponse("error", "Lỗi khi lấy thống kê: " + e.getMessage()));
+            return ResponseEntity.badRequest().body(DataResponse.badRequest("Lỗi khi lấy thống kê: " + e.getMessage()));
         }
     }
 
@@ -203,7 +204,7 @@ public class IotRealtimeController {
      */
     @PostMapping("/test-websocket")
     @ApiOperation("Test gửi dữ liệu qua WebSocket")
-    public ResponseEntity<MessageResponse> testWebSocket(
+    public ResponseEntity<DataResponse<MessageResponse>> testWebSocket(
             @ApiParam("Mã thiết bị") @RequestParam String deviceId,
             @ApiParam("Nhiệt độ") @RequestParam Double temperature,
             @ApiParam("Độ ẩm") @RequestParam Double humidity) {
@@ -218,10 +219,10 @@ public class IotRealtimeController {
             // Gửi qua WebSocket
             webSocketService.sendSensorData(testData);
 
-            return ResponseEntity.ok(new MessageResponse("success", "Dữ liệu test đã được gửi qua WebSocket"));
+            return success("Dữ liệu test đã được gửi qua WebSocket");
         } catch (Exception e) {
             log.error("Error testing WebSocket: {}", e.getMessage(), e);
-            return ResponseEntity.badRequest().body(new MessageResponse("error", "Lỗi khi test WebSocket: " + e.getMessage()));
+            return ResponseEntity.badRequest().body(DataResponse.badRequest("Lỗi khi test WebSocket: " + e.getMessage()));
         }
     }
 } 

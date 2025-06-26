@@ -6,7 +6,6 @@ import com.ptit.service.entity.enums.BorrowStatus;
 import com.ptit.service.repository.BorrowRecordRepository;
 import com.ptit.service.response.BorrowRecordResponse;
 import com.ptit.service.response.DeviceResponse;
-import com.ptit.service.response.ResponsePage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -51,10 +50,10 @@ public class BorrowRecordService {
         return Optional.of(borrowRecordRepository.save(record));
     }
 
-    public ResponsePage<BorrowRecordResponse> getBorrowHistoryByUserId(Long userId, Pageable pageable) {
+    public Page<BorrowRecordResponse> getBorrowHistoryByUserId(Long userId, Pageable pageable) {
         Page<BorrowRecord> borrowRecords = borrowRecordRepository.findByUserId(userId, pageable);
 
-        Page<BorrowRecordResponse> responsePage = borrowRecords.map(record -> {
+        return borrowRecords.map(record -> {
             BorrowRecordResponse response = new BorrowRecordResponse();
             response.setId(record.getId());
 
@@ -72,24 +71,20 @@ public class BorrowRecordService {
             response.setStatus(record.getStatus());
             return response;
         });
-
-        return new ResponsePage<>(responsePage);
     }
 
-
-    public ResponsePage<BorrowRecord> getBorrowHistoryByDeviceId(Long deviceId, Pageable pageable) {
-        return new ResponsePage<>(borrowRecordRepository.findAllByDeviceId(deviceId, pageable));
+    public Page<BorrowRecord> getBorrowHistoryByDeviceId(Long deviceId, Pageable pageable) {
+        return borrowRecordRepository.findAllByDeviceId(deviceId, pageable);
     }
 
-    public ResponsePage<Device> getDevicesBorrowedByUser(Long userId, Pageable pageable) {
-        Page<Device> devicePage = borrowRecordRepository.findDevicesBorrowedByUser(userId, pageable);
-        return new ResponsePage<>(devicePage);
+    public Page<Device> getDevicesBorrowedByUser(Long userId, Pageable pageable) {
+        return borrowRecordRepository.findDevicesBorrowedByUser(userId, pageable);
     }
 
-    public ResponsePage<BorrowRecordResponse> getBorrowHistory(Pageable pageable) {
+    public Page<BorrowRecordResponse> getBorrowHistory(Pageable pageable) {
         Page<BorrowRecord> borrowRecords = borrowRecordRepository.findAll(pageable);
 
-        Page<BorrowRecordResponse> responsePage = borrowRecords.map(record -> {
+        return borrowRecords.map(record -> {
             BorrowRecordResponse response = new BorrowRecordResponse();
             response.setId(record.getId());
 
@@ -107,8 +102,6 @@ public class BorrowRecordService {
             response.setStatus(record.getStatus());
             return response;
         });
-
-        return new ResponsePage<>(responsePage);
     }
 
     public List<BorrowRecord> findDevicesDueForReturn() {

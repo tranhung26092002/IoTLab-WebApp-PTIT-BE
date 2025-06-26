@@ -4,10 +4,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.ptit.service.dto.DeviceFilterDTO;
 import com.ptit.service.entity.Device;
-import com.ptit.service.response.ResponsePage;
+import com.ptit.service.response.DataResponse;
+import com.ptit.service.response.PaginationData;
 import com.ptit.service.service.DeviceService;
 import com.ptit.service.service.IotDeviceService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,39 +22,42 @@ import java.util.List;
 @RestController
 @RequestMapping("/devices")
 @RequiredArgsConstructor
-public class DeviceController {
+public class DeviceController extends BaseController {
     private final DeviceService deviceService;
     private final IotDeviceService iotDeviceService;
 
     @GetMapping("/{id}")
-    public Device getDeviceById(@PathVariable Long id) {
-        return deviceService.getDeviceById(id);
+    public ResponseEntity<DataResponse<Device>> getDeviceById(@PathVariable Long id) {
+        Device device = deviceService.getDeviceById(id);
+        return success(device);
     }
 
     @GetMapping("/code")
-    public Device getDeviceByCode(@RequestParam String code) {
-        return deviceService.getDeviceByCode(code);
+    public ResponseEntity<DataResponse<Device>> getDeviceByCode(@RequestParam String code) {
+        Device device = deviceService.getDeviceByCode(code);
+        return success(device);
     }
 
     @GetMapping
-    public ResponsePage<Device> getAllDevices(Pageable pageable) {
-        return deviceService.getAllDevices(pageable);
+    public ResponseEntity<DataResponse<PaginationData<Device>>> getAllDevices(Pageable pageable) {
+        Page<Device> devices = deviceService.getAllDevices(pageable);
+        return successWithPagination(devices);
     }
 
     @GetMapping("/regular")
-    public ResponseEntity<List<Device>> getRegularDevices() {
+    public ResponseEntity<DataResponse<List<Device>>> getRegularDevices() {
         List<Device> regularDevices = deviceService.getDeviceRepository().findRegularDevices();
-        return ResponseEntity.ok(regularDevices);
+        return success(regularDevices);
     }
 
     @GetMapping("/iot")
-    public ResponseEntity<List<Device>> getIotDevices() {
+    public ResponseEntity<DataResponse<List<Device>>> getIotDevices() {
         List<Device> iotDevices = iotDeviceService.getAllIotDevices();
-        return ResponseEntity.ok(iotDevices);
+        return success(iotDevices);
     }
 
     @PostMapping
-    public Device createDevice(
+    public ResponseEntity<DataResponse<Device>> createDevice(
             @RequestParam(value = "device", required = false) String deviceJson,
             @RequestParam(value = "file", required = false) MultipartFile file
     ) throws IOException {
@@ -66,11 +71,12 @@ public class DeviceController {
             device = objectMapper.readValue(deviceJson, Device.class);
         }
 
-        return deviceService.createDevice(device, file);
+        Device createdDevice = deviceService.createDevice(device, file);
+        return created(createdDevice);
     }
 
     @GetMapping("/filter")
-    public ResponsePage<Device> getDeviceFilter(
+    public ResponseEntity<DataResponse<PaginationData<Device>>> getDeviceFilter(
             @ModelAttribute DeviceFilterDTO deviceFilterDto,
             Pageable pageable
     ) {
@@ -80,11 +86,12 @@ public class DeviceController {
         if (!allowedFields.contains(deviceFilterDto.getSortField())) {
             deviceFilterDto.setSortField("id");
         }
-        return deviceService.getDeviceFilter(deviceFilterDto, pageable);
+        Page<Device> devices = deviceService.getDeviceFilter(deviceFilterDto, pageable);
+        return successWithPagination(devices);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Device> updateDevice(
+    public ResponseEntity<DataResponse<Device>> updateDevice(
             @PathVariable Long id,
             @RequestParam(value = "device", required = false) String deviceJson,
             @RequestParam(value = "file", required = false) MultipartFile file
@@ -100,11 +107,12 @@ public class DeviceController {
         }
         Device updatedDevice = deviceService.updateDevice(id, device, file);
 
-        return ResponseEntity.ok(updatedDevice);
+        return success(updatedDevice);
     }
 
     @DeleteMapping("/{id}")
-    public void deleteDevice(@PathVariable Long id) {
+    public ResponseEntity<DataResponse<Void>> deleteDevice(@PathVariable Long id) {
         deviceService.deleteDevice(id);
+        return noContent();
     }
 }

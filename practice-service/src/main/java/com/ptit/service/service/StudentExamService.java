@@ -4,7 +4,7 @@ import com.ptit.service.dto.StudentAnswerListDTO;
 import com.ptit.service.dto.StudentExamDTO;
 import com.ptit.service.dto.StudentExamResult;
 import com.ptit.service.entity.StudentExam;
-import com.ptit.service.response.ResponsePage;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -15,9 +15,9 @@ public interface StudentExamService {
      * Find all student exams with pagination
      *
      * @param pageable pagination information
-     * @return ResponsePage containing student exams and metadata
+     * @return Page containing student exams and metadata
      */
-    ResponsePage<StudentExam, StudentExamDTO> findAll(Pageable pageable);
+    Page<StudentExam> findAll(Pageable pageable);
 
     /**
      * Find student exams by student ID

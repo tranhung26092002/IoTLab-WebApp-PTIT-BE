@@ -6,6 +6,7 @@ import com.ptit.service.entity.PracticeVideo;
 import com.ptit.service.entity.enums.PracticeStatus;
 import lombok.Data;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -14,6 +15,7 @@ public class PracticeResponse {
     private String title;
     private String description;
     private String imageUrl;
+    private Integer practiceOrder;
     private PracticeStatus status;
 
     private List<PracticeVideo> practiceVideos;
@@ -22,6 +24,6 @@ public class PracticeResponse {
 
     private List<PracticeGuide> practiceGuides;
 
-    private String createdAt;
-    private String updatedAt;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }

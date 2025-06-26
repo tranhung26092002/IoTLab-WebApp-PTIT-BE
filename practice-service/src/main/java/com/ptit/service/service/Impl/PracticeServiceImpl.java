@@ -8,7 +8,6 @@ import com.ptit.service.entity.enums.PracticeStatus;
 import com.ptit.service.repository.*;
 import com.ptit.service.response.MessageResponse;
 import com.ptit.service.response.PracticeResponse;
-import com.ptit.service.response.ResponsePage;
 import com.ptit.service.service.FileService;
 import com.ptit.service.service.PracticeService;
 import lombok.RequiredArgsConstructor;
@@ -36,20 +35,8 @@ public class PracticeServiceImpl implements PracticeService {
 
     @Override
     @Transactional(readOnly = true)
-    public ResponsePage<Practice, PracticeResponse> getAllPractices(Pageable pageable) {
-        Page<Practice> practices = practiceRepository.findAll(pageable);
-
-        Page<PracticeResponse> practiceResponses = practices.map(practice -> {
-            PracticeResponse practiceResponse = new PracticeResponse();
-            FnCommon.coppyNonNullProperties(practiceResponse, practice);
-            practiceResponse
-                    .setPracticeVideos(practiceVideoRepository.findAllByPracticeIdOrderByIdAsc(practice.getId()));
-            practiceResponse.setPracticeFiles(practiceFileRepository.findAllByPracticeIdOrderByIdAsc(practice.getId()));
-            practiceResponse
-                    .setPracticeGuides(practiceGuideRepository.findAllByPracticeIdOrderByIdAsc(practice.getId()));
-            return practiceResponse;
-        });
-        return new ResponsePage<>(practiceResponses);
+    public Page<Practice> getAllPractices(Pageable pageable) {
+        return practiceRepository.findAll(pageable);
     }
 
     @Override
@@ -300,20 +287,8 @@ public class PracticeServiceImpl implements PracticeService {
         }
     }
 
-    public ResponsePage<Practice, PracticeResponse> searchPractices(PracticeStatus status, Pageable pageable) {
-        Page<Practice> practices = practiceRepository.search(status, pageable);
-
-        Page<PracticeResponse> practiceResponses = practices.map(practice -> {
-            PracticeResponse practiceResponse = new PracticeResponse();
-            FnCommon.coppyNonNullProperties(practiceResponse, practice);
-            practiceResponse
-                    .setPracticeVideos(practiceVideoRepository.findAllByPracticeIdOrderByIdAsc(practice.getId()));
-            practiceResponse.setPracticeFiles(practiceFileRepository.findAllByPracticeIdOrderByIdAsc(practice.getId()));
-            practiceResponse
-                    .setPracticeGuides(practiceGuideRepository.findAllByPracticeIdOrderByIdAsc(practice.getId()));
-            return practiceResponse;
-        });
-        return new ResponsePage<>(practiceResponses);
+    public Page<Practice> searchPractices(PracticeStatus status, Pageable pageable) {
+        return practiceRepository.search(status, pageable);
     }
 
     public Optional<PracticeGuide> updateGuide(Long guideId, PracticeGuide guide) {
@@ -326,7 +301,7 @@ public class PracticeServiceImpl implements PracticeService {
     }
 
     @Override
-    public ResponsePage<Practice, PracticeResponse> getPracticeFilter(PraticeFilterDTO praticeFilterDTO,
+    public Page<Practice> getPracticeFilter(PraticeFilterDTO praticeFilterDTO,
                                                                       Pageable pageable) {
         Sort.Direction direction = Sort.Direction.ASC;
 
@@ -336,19 +311,6 @@ public class PracticeServiceImpl implements PracticeService {
         Sort sort = Sort.by(direction, praticeFilterDTO.getSortField());
         PageRequest pageRequest = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
 
-        Page<Practice> practices = practiceRepository.getPracticeFilter(praticeFilterDTO, pageRequest);
-
-        Page<PracticeResponse> practiceResponses = practices.map(practice -> {
-            PracticeResponse practiceResponse = new PracticeResponse();
-            FnCommon.coppyNonNullProperties(practiceResponse, practice);
-            practiceResponse
-                    .setPracticeVideos(practiceVideoRepository.findAllByPracticeIdOrderByIdAsc(practice.getId()));
-            practiceResponse.setPracticeFiles(practiceFileRepository.findAllByPracticeIdOrderByIdAsc(practice.getId()));
-            practiceResponse
-                    .setPracticeGuides(practiceGuideRepository.findAllByPracticeIdOrderByIdAsc(practice.getId()));
-            return practiceResponse;
-        });
-
-        return new ResponsePage<>(practiceResponses);
+        return practiceRepository.getPracticeFilter(praticeFilterDTO, pageRequest);
     }
 }

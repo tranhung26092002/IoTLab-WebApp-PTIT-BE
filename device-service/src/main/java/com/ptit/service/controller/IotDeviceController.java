@@ -3,6 +3,7 @@ package com.ptit.service.controller;
 import com.ptit.service.dto.IotDeviceActivationDTO;
 import com.ptit.service.entity.Device;
 import com.ptit.service.entity.IotSensorData;
+import com.ptit.service.response.DataResponse;
 import com.ptit.service.response.MessageResponse;
 import com.ptit.service.service.IotDeviceService;
 import io.swagger.annotations.Api;
@@ -21,46 +22,46 @@ import java.util.Optional;
 @RequestMapping("/api/iot-devices")
 @Api(tags = "IoT Device Management")
 @Slf4j
-public class IotDeviceController {
+public class IotDeviceController extends BaseController {
 
     @Autowired
     private IotDeviceService iotDeviceService;
 
     @GetMapping
     @ApiOperation("Get all IoT devices")
-    public ResponseEntity<List<Device>> getAllIotDevices() {
+    public ResponseEntity<DataResponse<List<Device>>> getAllIotDevices() {
         List<Device> devices = iotDeviceService.getAllIotDevices();
-        return ResponseEntity.ok(devices);
+        return success(devices);
     }
 
     @GetMapping("/active")
     @ApiOperation("Get active IoT devices (showing on dashboard)")
-    public ResponseEntity<List<Device>> getActiveIotDevices() {
+    public ResponseEntity<DataResponse<List<Device>>> getActiveIotDevices() {
         List<Device> devices = iotDeviceService.getActiveIotDevices();
-        return ResponseEntity.ok(devices);
+        return success(devices);
     }
 
     @GetMapping("/registered")
     @ApiOperation("Get registered IoT devices (not yet activated)")
-    public ResponseEntity<List<Device>> getRegisteredIotDevices() {
+    public ResponseEntity<DataResponse<List<Device>>> getRegisteredIotDevices() {
         List<Device> devices = iotDeviceService.getRegisteredIotDevices();
-        return ResponseEntity.ok(devices);
+        return success(devices);
     }
 
     @PostMapping("/activate")
     @ApiOperation("Activate IoT device using Active Code")
-    public ResponseEntity<MessageResponse> activateDevice(@RequestBody IotDeviceActivationDTO activationDTO) {
+    public ResponseEntity<DataResponse<MessageResponse>> activateDevice(@RequestBody IotDeviceActivationDTO activationDTO) {
         boolean success = iotDeviceService.activateDevice(activationDTO);
         if (success) {
-            return ResponseEntity.ok(new MessageResponse("success", "Device activated successfully"));
+            return success("Device activated successfully");
         } else {
-            return ResponseEntity.badRequest().body(new MessageResponse("error", "Failed to activate device"));
+            return ResponseEntity.badRequest().body(DataResponse.badRequest("Failed to activate device"));
         }
     }
 
     @PostMapping("/qr-scan")
     @ApiOperation("Activate device by scanning QR code")
-    public ResponseEntity<MessageResponse> activateDeviceByQrCode(@RequestParam String qrCodeData) {
+    public ResponseEntity<DataResponse<MessageResponse>> activateDeviceByQrCode(@RequestParam String qrCodeData) {
         // Extract Active Code from QR code data
         String activeCode = extractActiveCodeFromQrCode(qrCodeData);
         
@@ -71,56 +72,59 @@ public class IotDeviceController {
         
         boolean success = iotDeviceService.activateDevice(activationDTO);
         if (success) {
-            return ResponseEntity.ok(new MessageResponse("success", "Device activated successfully via QR code"));
+            return success("Device activated successfully via QR code");
         } else {
-            return ResponseEntity.badRequest().body(new MessageResponse("error", "Failed to activate device via QR code"));
+            return ResponseEntity.badRequest().body(DataResponse.badRequest("Failed to activate device via QR code"));
         }
     }
 
     @GetMapping("/{deviceId}/data/latest")
     @ApiOperation("Get latest sensor data for device")
-    public ResponseEntity<IotSensorData> getLatestSensorData(@PathVariable Long deviceId) {
+    public ResponseEntity<DataResponse<IotSensorData>> getLatestSensorData(@PathVariable Long deviceId) {
         Optional<IotSensorData> sensorData = iotDeviceService.getLatestSensorData(deviceId);
-        return sensorData.map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        if (sensorData.isPresent()) {
+            return success(sensorData.get());
+        } else {
+            return ResponseEntity.ok(DataResponse.notFound("Sensor data not found"));
+        }
     }
 
     @GetMapping("/{deviceId}/data/history")
     @ApiOperation("Get sensor data history for device")
-    public ResponseEntity<List<IotSensorData>> getSensorDataHistory(
+    public ResponseEntity<DataResponse<List<IotSensorData>>> getSensorDataHistory(
             @PathVariable Long deviceId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startTime,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endTime) {
         
         List<IotSensorData> sensorData = iotDeviceService.getSensorDataHistory(deviceId, startTime, endTime);
-        return ResponseEntity.ok(sensorData);
+        return success(sensorData);
     }
 
     @PostMapping("/{deviceId}/deactivate")
     @ApiOperation("Deactivate IoT device")
-    public ResponseEntity<MessageResponse> deactivateDevice(@PathVariable Long deviceId) {
+    public ResponseEntity<DataResponse<MessageResponse>> deactivateDevice(@PathVariable Long deviceId) {
         boolean success = iotDeviceService.deactivateDevice(deviceId);
         if (success) {
-            return ResponseEntity.ok(new MessageResponse("success", "Device deactivated successfully"));
+            return success("Device deactivated successfully");
         } else {
-            return ResponseEntity.badRequest().body(new MessageResponse("error", "Failed to deactivate device"));
+            return ResponseEntity.badRequest().body(DataResponse.badRequest("Failed to deactivate device"));
         }
     }
 
     @PostMapping("/{deviceId}/restart")
     @ApiOperation("Restart IoT device")
-    public ResponseEntity<MessageResponse> restartDevice(@PathVariable Long deviceId) {
+    public ResponseEntity<DataResponse<MessageResponse>> restartDevice(@PathVariable Long deviceId) {
         boolean success = iotDeviceService.restartDevice(deviceId);
         if (success) {
-            return ResponseEntity.ok(new MessageResponse("success", "Restart command sent successfully"));
+            return success("Restart command sent successfully");
         } else {
-            return ResponseEntity.badRequest().body(new MessageResponse("error", "Failed to send restart command"));
+            return ResponseEntity.badRequest().body(DataResponse.badRequest("Failed to send restart command"));
         }
     }
 
     @GetMapping("/dashboard/overview")
     @ApiOperation("Get dashboard overview (only active devices)")
-    public ResponseEntity<Object> getDashboardOverview() {
+    public ResponseEntity<DataResponse<Object>> getDashboardOverview() {
         List<Device> activeDevices = iotDeviceService.getActiveIotDevices();
         List<Device> registeredDevices = iotDeviceService.getRegisteredIotDevices();
         
@@ -132,7 +136,7 @@ public class IotDeviceController {
         overview.setActiveDevicesList(activeDevices);
         overview.setRegisteredDevicesList(registeredDevices);
         
-        return ResponseEntity.ok(overview);
+        return success(overview);
     }
 
     private String extractActiveCodeFromQrCode(String qrCodeData) {

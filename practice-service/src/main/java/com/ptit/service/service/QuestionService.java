@@ -3,7 +3,7 @@ package com.ptit.service.service;
 import com.ptit.service.dto.QuestionDTO;
 import com.ptit.service.entity.Question;
 import com.ptit.service.response.QuestionResponse;
-import com.ptit.service.response.ResponsePage;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -15,7 +15,7 @@ public interface QuestionService {
      *
      * @return List of all questions
      */
-    ResponsePage<Question, QuestionResponse> findAll(Pageable pageable);
+    Page<Question> findAll(Pageable pageable);
 
     /**
      * Update an existing question

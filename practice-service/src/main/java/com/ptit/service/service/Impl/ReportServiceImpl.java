@@ -10,7 +10,6 @@ import com.ptit.service.entity.enums.ReportStatus;
 import com.ptit.service.repository.*;
 import com.ptit.service.response.MessageResponse;
 import com.ptit.service.response.ReportResponse;
-import com.ptit.service.response.ResponsePage;
 import com.ptit.service.service.FileService;
 import com.ptit.service.service.ReportService;
 import lombok.RequiredArgsConstructor;
@@ -43,12 +42,8 @@ public class ReportServiceImpl implements ReportService {
     private final StudentProgressRepository studentProgressRepository;
 
     @Override
-    public ResponsePage<Report, ReportResponse> getReports(Pageable pageable) {
-        Page<Report> reports = reportRepository.findAll(pageable);
-
-        Page<ReportResponse> response = reports.map(this::convertToResponse);
-
-        return new ResponsePage<>(response);
+    public Page<Report> getReports(Pageable pageable) {
+        return reportRepository.findAll(pageable);
     }
 
     private ReportResponse convertToResponse(Report report) {
@@ -289,16 +284,12 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public ResponsePage<Report, ReportResponse> getReportsByStudentId(Long studentId, Pageable pageable) {
-        Page<Report> reports = reportRepository.findByStudentsId(studentId, pageable);
-
-        Page<ReportResponse> response = reports.map(this::convertToResponse);
-
-        return new ResponsePage<>(response);
+    public Page<Report> getReportsByStudentId(Long studentId, Pageable pageable) {
+        return reportRepository.findByStudentsId(studentId, pageable);
     }
 
     @Override
-    public ResponsePage<Report, ReportResponse> getReportsFilter(ReportFilterDTO reportFilterDTO, Pageable pageable) {
+    public Page<Report> getReportsFilter(ReportFilterDTO reportFilterDTO, Pageable pageable) {
         Sort.Direction direction = Sort.Direction.ASC;
 
         if (reportFilterDTO.getSortOrder() != null && reportFilterDTO.getSortOrder().equalsIgnoreCase("desc")) {
@@ -306,13 +297,7 @@ public class ReportServiceImpl implements ReportService {
         }
         Sort sort = Sort.by(direction, reportFilterDTO.getSortField());
         PageRequest pageRequest = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
-        Page<Report> reportPage = reportRepository.filterReports(
-                reportFilterDTO,
-                pageRequest);
-
-        Page<ReportResponse> response = reportPage.map(this::convertToResponse);
-
-        return new ResponsePage<>(response);
+        return reportRepository.filterReports(reportFilterDTO, pageRequest);
     }
 
     private ReportResponse convertToResponse(Report report, List<Student> students,

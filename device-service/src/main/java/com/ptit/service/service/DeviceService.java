@@ -3,7 +3,6 @@ package com.ptit.service.service;
 import com.ommanisoft.common.exceptions.ExceptionOm;
 import com.ommanisoft.common.utils.FnCommon;
 import com.ptit.service.dto.DeviceFilterDTO;
-import com.ptit.service.response.ResponsePage;
 import com.ptit.service.entity.Device;
 import com.ptit.service.entity.enums.DeviceStatus;
 import com.ptit.service.repository.DeviceRepository;
@@ -32,9 +31,8 @@ public class DeviceService {
     @Value("${ptit.storage-service}")
     private String storageService;
 
-    public ResponsePage<Device> getAllDevices(Pageable pageable) {
-        Page<Device> devices = deviceRepository.findAll(pageable);
-        return new ResponsePage<>(devices);
+    public Page<Device> getAllDevices(Pageable pageable) {
+        return deviceRepository.findAll(pageable);
     }
 
     public Device createDevice(Device deviceDto, MultipartFile file) {
@@ -79,7 +77,7 @@ public class DeviceService {
         return deviceRepository.save(device);
     }
 
-    public ResponsePage<Device> getDeviceFilter(DeviceFilterDTO deviceFilterDto, Pageable pageable) {
+    public Page<Device> getDeviceFilter(DeviceFilterDTO deviceFilterDto, Pageable pageable) {
         Sort.Direction direction = Sort.Direction.ASC;
 
         if (deviceFilterDto.getSortOrder() != null && deviceFilterDto.getSortOrder().equalsIgnoreCase("desc")) {
@@ -87,11 +85,7 @@ public class DeviceService {
         }
         Sort sort = Sort.by(direction, deviceFilterDto.getSortField());
         PageRequest pageRequest = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
-        Page<Device> devicePages = deviceRepository.filterDevices(
-                deviceFilterDto,
-                pageRequest);
-
-        return new ResponsePage<>(devicePages);
+        return deviceRepository.filterDevices(deviceFilterDto, pageRequest);
     }
 
     public Device getDeviceById(Long id) {
