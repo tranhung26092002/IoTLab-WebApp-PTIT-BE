@@ -79,3 +79,12 @@ device:
       days: 3
     check:
       cron: 0 0 9 * * ?
+
+# MQTT Configuration for IoT Devices
+mqtt:
+  broker:
+    url: ${MQTT_BROKER_URL:localhost:1883}
+  client:
+    id: ${MQTT_CLIENT_ID:device-service}
+  username: ${MQTT_USERNAME:admin}
+  password: ${MQTT_PASSWORD:admin}

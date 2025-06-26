@@ -186,4 +186,9 @@ public class DeviceService {
             return -1; // Chúng ta không biết trước độ dài của nội dung
         }
     }
+
+    // Getter for DeviceRepository
+    public DeviceRepository getDeviceRepository() {
+        return deviceRepository;
+    }
 }

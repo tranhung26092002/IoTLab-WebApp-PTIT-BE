@@ -3,9 +3,10 @@ package com.ptit.service.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.ptit.service.dto.DeviceFilterDTO;
-import com.ptit.service.response.ResponsePage;
 import com.ptit.service.entity.Device;
+import com.ptit.service.response.ResponsePage;
 import com.ptit.service.service.DeviceService;
+import com.ptit.service.service.IotDeviceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +22,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class DeviceController {
     private final DeviceService deviceService;
+    private final IotDeviceService iotDeviceService;
 
     @GetMapping("/{id}")
     public Device getDeviceById(@PathVariable Long id) {
@@ -35,6 +37,18 @@ public class DeviceController {
     @GetMapping
     public ResponsePage<Device> getAllDevices(Pageable pageable) {
         return deviceService.getAllDevices(pageable);
+    }
+
+    @GetMapping("/regular")
+    public ResponseEntity<List<Device>> getRegularDevices() {
+        List<Device> regularDevices = deviceService.getDeviceRepository().findRegularDevices();
+        return ResponseEntity.ok(regularDevices);
+    }
+
+    @GetMapping("/iot")
+    public ResponseEntity<List<Device>> getIotDevices() {
+        List<Device> iotDevices = iotDeviceService.getAllIotDevices();
+        return ResponseEntity.ok(iotDevices);
     }
 
     @PostMapping
@@ -56,10 +70,10 @@ public class DeviceController {
     }
 
     @GetMapping("/filter")
-    public ResponsePage<Device> getJobPostFilter(
+    public ResponsePage<Device> getDeviceFilter(
             @ModelAttribute DeviceFilterDTO deviceFilterDto,
             Pageable pageable
-    ){
+    ) {
         List<String> allowedFields = Arrays.asList(
                 "id", "name", "type", "status");
 

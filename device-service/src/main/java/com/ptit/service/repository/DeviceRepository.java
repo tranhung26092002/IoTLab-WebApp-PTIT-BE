@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -26,4 +27,25 @@ public interface DeviceRepository extends JpaRepository<Device, Long> {
     );
 
     Optional<Device> findByCode(String code);
+    
+    // IoT Device specific queries
+    Optional<Device> findByActiveCode(String activeCode);
+    
+    Optional<Device> findByMacAddress(String macAddress);
+    
+    List<Device> findByIsIotDeviceTrue();
+    
+    List<Device> findByIsIotDeviceTrueAndStatus(DeviceStatus status);
+    
+    @Query("SELECT d FROM Device d WHERE d.isIotDevice = true AND d.status IN ('REGISTERED', 'ACTIVE', 'OFFLINE', 'ERROR')")
+    List<Device> findAllIotDevices();
+    
+    @Query("SELECT d FROM Device d WHERE d.isIotDevice = true AND d.status = 'ACTIVE'")
+    List<Device> findActiveIotDevices();
+    
+    @Query("SELECT d FROM Device d WHERE d.isIotDevice = true AND d.status = 'REGISTERED'")
+    List<Device> findRegisteredIotDevices();
+    
+    @Query("SELECT d FROM Device d WHERE d.isIotDevice = false")
+    List<Device> findRegularDevices();
 }

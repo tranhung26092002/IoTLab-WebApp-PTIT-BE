@@ -8,5 +8,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class MessageResponse {
-  private String message;
+    private String status;
+    private String message;
+    private Object data;
+
+    public MessageResponse(String status, String message) {
+        this.status = status;
+        this.message = message;
+    }
 }

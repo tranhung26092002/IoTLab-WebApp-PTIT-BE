@@ -8,7 +8,7 @@ import java.time.LocalDate;
 @Data
 public class BorrowRecordResponse {
     private Long id;
-    private DeviceReponse device;
+    private DeviceResponse device;
     private Long userId;
     private String note;
     private LocalDate borrowedAt;

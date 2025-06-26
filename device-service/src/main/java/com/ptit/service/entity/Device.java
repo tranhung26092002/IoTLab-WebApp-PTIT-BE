@@ -46,6 +46,34 @@ public class Device {
     @Column(name = "total_borrowed", nullable = false)
     private int totalBorrowed = 0;
 
+    // IoT Device specific fields
+    @Column(name = "is_iot_device", nullable = false)
+    private boolean isIotDevice = false;
+
+    @Column(name = "active_code", unique = true)
+    private String activeCode; // Active Code for IoT devices
+
+    @Column(name = "mac_address", unique = true)
+    private String macAddress; // MAC address of ESP32
+
+    @Column(name = "ip_address")
+    private String ipAddress; // Current IP address
+
+    @Column(name = "firmware_version")
+    private String firmwareVersion; // Firmware version
+
+    @Column(name = "wifi_ssid")
+    private String wifiSsid; // WiFi SSID configured
+
+    @Column(name = "last_seen")
+    private LocalDateTime lastSeen; // Last time device sent data
+
+    @Column(name = "activated_at")
+    private LocalDateTime activatedAt; // When device was activated
+
+    @Column(name = "activated_by")
+    private Long activatedBy; // User ID who activated the device
+
     @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP")
     private LocalDateTime createdAt = LocalDateTime.now();
 
@@ -54,13 +82,16 @@ public class Device {
 
     @PrePersist
     public void onCreate() {
-        this.code = generateRandomCode();
+        if (this.code == null) {
+            this.code = generateRandomCode();
+        }
     }
 
     @PreUpdate
     public void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
+    
     private String generateRandomCode() {
         String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         StringBuilder sb = new StringBuilder("Device-");

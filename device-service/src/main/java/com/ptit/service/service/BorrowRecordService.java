@@ -5,7 +5,7 @@ import com.ptit.service.entity.Device;
 import com.ptit.service.entity.enums.BorrowStatus;
 import com.ptit.service.repository.BorrowRecordRepository;
 import com.ptit.service.response.BorrowRecordResponse;
-import com.ptit.service.response.DeviceReponse;
+import com.ptit.service.response.DeviceResponse;
 import com.ptit.service.response.ResponsePage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -58,7 +58,7 @@ public class BorrowRecordService {
             BorrowRecordResponse response = new BorrowRecordResponse();
             response.setId(record.getId());
 
-            DeviceReponse device = new DeviceReponse();
+            DeviceResponse device = new DeviceResponse();
             device.setId(record.getDevice().getId());
             device.setName(record.getDevice().getName());
             device.setCode(record.getDevice().getCode());
@@ -93,7 +93,7 @@ public class BorrowRecordService {
             BorrowRecordResponse response = new BorrowRecordResponse();
             response.setId(record.getId());
 
-            DeviceReponse device = new DeviceReponse();
+            DeviceResponse device = new DeviceResponse();
             device.setId(record.getDevice().getId());
             device.setName(record.getDevice().getName());
             device.setCode(record.getDevice().getCode());
