@@ -1,7 +1,9 @@
 package com.ptit.service.entity;
 
-import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.ptit.service.entity.enums.Gender;
+import com.ptit.service.entity.enums.Provider;
 import com.ptit.service.entity.enums.RoleType;
 import com.ptit.service.entity.enums.StateUser;
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
@@ -58,6 +60,10 @@ public class User implements UserDetails, Serializable {
     @Column(name = "avatar")
     private String avatarUrl;
 
+    @Column(name = "avatar_source")
+    @Enumerated(EnumType.STRING)
+    private Provider avatarSource;
+
     @Column(name = "gender")
     @Enumerated(EnumType.STRING)
     private Gender gender;
@@ -79,6 +85,13 @@ public class User implements UserDetails, Serializable {
     @Column(name = "role")
     @Enumerated(EnumType.STRING)
     private RoleType roleType;
+
+    @Column(name = "oauth2_id")
+    private String oauth2Id;
+
+    @Column(name = "auth_provider")
+    @Enumerated(EnumType.STRING)
+    private Provider authProvider;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
@@ -118,7 +131,7 @@ public class User implements UserDetails, Serializable {
         return userName;
     }
 
-    public String getUserName(){
+    public String getUserName() {
         return userName;
     }
 

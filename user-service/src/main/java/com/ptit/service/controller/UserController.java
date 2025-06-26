@@ -2,31 +2,24 @@ package com.ptit.service.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.ptit.service.dto.ChangePasswordDTO;
 import com.ptit.service.dto.UserDTO;
 import com.ptit.service.dto.UserFilterDTO;
-import com.ptit.service.dto.ChangePasswordDTO;
-import com.ptit.service.response.AttendanceResponse;
-import com.ptit.service.response.MessageResponse;
-import com.ptit.service.response.ResponsePage;
-import com.ptit.service.response.InstructorReponse;
-import com.ptit.service.response.StudentResponse;
-import com.ptit.service.response.UserResponse;
-import com.ptit.service.entity.Attendance;
-import com.ptit.service.entity.User;
 import com.ptit.service.entity.enums.StateUser;
+import com.ptit.service.response.*;
 import com.ptit.service.service.UserService;
 import com.ptit.service.util.Constant;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import javax.validation.Valid;
-import javax.websocket.server.PathParam;
-
 import org.springframework.web.multipart.MultipartFile;
 import org.thymeleaf.context.Context;
 
+import javax.validation.Valid;
+import javax.websocket.server.PathParam;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -36,22 +29,24 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/users")
 //@PreAuthorize("hasRole('APPLICANT') || hasRole('EMPLOYER') || hasRole('ADMIN')")
-public class UserController {
+public class UserController extends BaseController {
     private final UserService userService;
 
     @GetMapping("/me")
-    public UserResponse getMe(@RequestHeader(name = Constant.headerUserId) Long userId) {
-        return userService.getUserById(userId);
+    public ResponseEntity<DataResponse<UserResponse>> getMe(@RequestHeader(name = Constant.headerUserId) Long userId) {
+        UserResponse user = userService.getUserById(userId);
+        return success(user);
     }
 
     // Get list of users with role admin
     @GetMapping("/instructors")
-    public ResponsePage<User, InstructorReponse> getAllInstructors(Pageable pageable){
-        return userService.getAllInstructors(pageable);
+    public ResponseEntity<DataResponse<PaginationData<InstructorReponse>>> getAllInstructors(Pageable pageable) {
+        var page = userService.getAllInstructors(pageable);
+        return successWithPagination(page);
     }
 
     @PutMapping("/me")
-    public UserResponse updateMe(
+    public ResponseEntity<DataResponse<UserResponse>> updateMe(
             @RequestHeader(name = Constant.headerUserId) Long userId,
             @RequestParam(value = "user", required = false) String userJson,
             @RequestParam(value = "file", required = false) MultipartFile file
@@ -65,82 +60,94 @@ public class UserController {
             user = objectMapper.readValue(userJson, UserDTO.class);
         }
 
-        return userService.updateMe(userId, user, file);
+        UserResponse updatedUser = userService.updateMe(userId, user, file);
+        return success(updatedUser);
     }
 
     // Get list of attendees
     @GetMapping("/attendances")
-    public ResponsePage<Attendance, AttendanceResponse> getAllAttendances(
+    public ResponseEntity<DataResponse<PaginationData<AttendanceResponse>>> getAllAttendances(
             @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
             Pageable pageable
     ) {
         if (date == null) {
             date = LocalDate.now(); // hoặc một giá trị mặc định khác
         }
-        return userService.getAllAttendances(date, pageable);
+        var page = userService.getAllAttendances(date, pageable);
+        return successWithPagination(page);
     }
 
     //@PreAuthorize("hasRole('ADMIN')")
     @GetMapping()
-    public ResponsePage<User, UserResponse> getAllUser(Pageable pageable){
-        return userService.getALlUser(pageable);
+    public ResponseEntity<DataResponse<PaginationData<UserResponse>>> getAllUser(Pageable pageable) {
+        var page = userService.getALlUser(pageable);
+        return successWithPagination(page);
     }
 
     @GetMapping("/filter")
-    public ResponsePage<User, UserResponse> searchUser(@ModelAttribute UserFilterDTO userFilterDTO, Pageable pageable) {
+    public ResponseEntity<DataResponse<PaginationData<UserResponse>>> searchUser(@ModelAttribute UserFilterDTO userFilterDTO, Pageable pageable) {
         List<String> allowedFields = Arrays.asList(
                 "id", "userName", "fullName", "classCode");
 
-        if (!allowedFields.contains(userFilterDTO.getSortField())) {
+        if (userFilterDTO.getSortField() != null && !allowedFields.contains(userFilterDTO.getSortField())) {
             userFilterDTO.setSortField("id");
         }
-        return userService.searchUser(userFilterDTO, pageable);
+        var page = userService.searchUser(userFilterDTO, pageable);
+        return successWithPagination(page);
     }
 
     @PostMapping()
-    public MessageResponse createUser(@Valid @RequestBody UserDTO userDto) {
-        return userService.createUser(userDto);
+    public ResponseEntity<DataResponse<MessageResponse>> createUser(@Valid @RequestBody UserDTO userDto) {
+        MessageResponse response = userService.createUser(userDto);
+        return success(response);
     }
 
     @GetMapping("/{id}")
-    public UserResponse getUserById(@PathVariable Long id) {
-        return userService.getUserById(id);
+    public ResponseEntity<DataResponse<UserResponse>> getUserById(@PathVariable Long id) {
+        UserResponse user = userService.getUserById(id);
+        return success(user);
     }
 
     // Get user by username
     @GetMapping("/username/{userName}")
-    public StudentResponse getUserByUsername(@PathVariable String userName) {
-        return userService.getUserByUsername(userName);
+    public ResponseEntity<DataResponse<StudentResponse>> getUserByUsername(@PathVariable String userName) {
+        StudentResponse student = userService.getUserByUsername(userName);
+        return success(student);
     }
 
     @PostMapping("/send-notification")
-    public MessageResponse sendNotificationToAllUsers(
+    public ResponseEntity<DataResponse<MessageResponse>> sendNotificationToAllUsers(
             @RequestParam String subject,
             @RequestParam String message) {
         Context context = new Context();
         context.setVariable("message", message);
 
-        return userService.sendNotificationToAllUsers(subject, context);
+        MessageResponse response = userService.sendNotificationToAllUsers(subject, context);
+        return success(response);
     }
 
     @PostMapping("/change-password")
-    public MessageResponse changePassword(@Valid @RequestBody ChangePasswordDTO request, Authentication authentication) {
-        return userService.changePassword(request, authentication);
+    public ResponseEntity<DataResponse<MessageResponse>> changePassword(@Valid @RequestBody ChangePasswordDTO request, Authentication authentication) {
+        MessageResponse response = userService.changePassword(request, authentication);
+        return success(response);
     }
 
-//    @PreAuthorize("hasRole('ADMIN')")
+    //    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
-    public MessageResponse changeStatusAccount(@PathVariable Long id, @PathParam("status") StateUser status) {
-        return userService.changeStatusAccount(id, status);
+    public ResponseEntity<DataResponse<MessageResponse>> changeStatusAccount(@PathVariable Long id, @PathParam("status") StateUser status) {
+        MessageResponse response = userService.changeStatusAccount(id, status);
+        return success(response);
     }
 
     @PutMapping("/update/{id}")
-    public UserResponse updateUser(@PathVariable Long id, @RequestBody UserDTO userDto) {
-        return userService.updateUser(id, userDto);
+    public ResponseEntity<DataResponse<UserResponse>> updateUser(@PathVariable Long id, @RequestBody UserDTO userDto) {
+        UserResponse updatedUser = userService.updateUser(id, userDto);
+        return success(updatedUser);
     }
 
     @DeleteMapping("/{id}")
-    public MessageResponse deleteUser(@PathVariable Long id) {
-        return userService.deleteUser(id);
+    public ResponseEntity<DataResponse<MessageResponse>> deleteUser(@PathVariable Long id) {
+        MessageResponse response = userService.deleteUser(id);
+        return success(response);
     }
 }

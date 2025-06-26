@@ -5,8 +5,8 @@ server:
     context-path: /user
 
 jwt:
-  key: ${JWT_KEY}
-  expiration: 86400000
+  secret: ${JWT_SECRET}
+  expiration: 86400000 # 24 hours in milliseconds
 
 refresh-token:
   expiration: 864000000
@@ -51,6 +51,23 @@ spring:
       max-request-size: 20MB
       enabled: true
       file-size-threshold: 2KB
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            redirect-uri: "{baseUrl}/auth/oauth2/callback/google"
+            scope:
+              - email
+              - profile
+          facebook:
+            client-id: ${FACEBOOK_CLIENT_ID}
+            client-secret: ${FACEBOOK_CLIENT_SECRET}
+            scope:
+              - email
+              - public_profile
 
   # RabbitMQ settings
   rabbitmq:

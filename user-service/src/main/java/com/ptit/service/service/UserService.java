@@ -5,13 +5,13 @@ import com.ptit.service.dto.UserFilterDTO;
 import com.ptit.service.dto.ChangePasswordDTO;
 import com.ptit.service.response.AttendanceResponse;
 import com.ptit.service.response.MessageResponse;
-import com.ptit.service.response.ResponsePage;
 import com.ptit.service.response.InstructorReponse;
 import com.ptit.service.response.StudentResponse;
 import com.ptit.service.response.UserResponse;
 import com.ptit.service.entity.Attendance;
 import com.ptit.service.entity.User;
 import com.ptit.service.entity.enums.StateUser;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -22,7 +22,7 @@ import java.time.LocalDate;
 
 @Service
 public interface UserService {
-    ResponsePage<User, UserResponse> getALlUser(Pageable pageable);
+    Page<UserResponse> getALlUser(Pageable pageable);
 
     UserResponse getUserById(Long id);
 
@@ -42,11 +42,11 @@ public interface UserService {
 
     MessageResponse createUser(UserDTO userDto);
 
-    ResponsePage<User, InstructorReponse> getAllInstructors(Pageable pageable);
+    Page<InstructorReponse> getAllInstructors(Pageable pageable);
 
     StudentResponse getUserByUsername(String userName);
 
-    ResponsePage<Attendance, AttendanceResponse> getAllAttendances(LocalDate date, Pageable pageable);
+    Page<AttendanceResponse> getAllAttendances(LocalDate date, Pageable pageable);
 
-    ResponsePage<User, UserResponse> searchUser(UserFilterDTO userFilterDTO, Pageable pageable);
+    Page<UserResponse> searchUser(UserFilterDTO userFilterDTO, Pageable pageable);
 }

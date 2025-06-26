@@ -19,6 +19,8 @@ import com.ptit.service.response.OTPResponse;
 import com.ptit.service.security.JwtService;
 import com.ptit.service.service.*;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.MalformedJwtException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -192,14 +194,11 @@ public class AuthServiceImpl implements AuthService {
             response.put("authenticate", true);
 
             return response;
-        } catch (io.jsonwebtoken.MalformedJwtException e) {
-            log.error("Token không đúng định dạng: ", e);
+        } catch (MalformedJwtException e) {
             return Map.of("authenticate", false, "error", "Token không đúng định dạng");
-        } catch (io.jsonwebtoken.ExpiredJwtException e) {
-            log.error("Token đã hết hạn: ", e);
+        } catch (ExpiredJwtException e) {
             return Map.of("authenticate", false, "error", "Token đã hết hạn");
         } catch (Exception ex) {
-            log.error("Lỗi xác thực token: ", ex);
             return Map.of("authenticate", false, "error", "Token không hợp lệ");
         }
     }

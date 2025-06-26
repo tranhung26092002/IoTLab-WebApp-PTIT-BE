@@ -136,4 +136,23 @@ public class DataResponse<T> {
     public static <T> DataResponse<T> internalServerError(String messageKey) {
         return error(HttpStatus.INTERNAL_SERVER_ERROR, messageKey);
     }
+
+    // Pagination support methods
+    public static <T> DataResponse<PaginationData<T>> successWithPagination(PaginationData<T> paginationData) {
+        return new DataResponse<>(
+                HttpStatus.OK.value(),
+                HttpStatus.OK.name(),
+                "message.success",
+                paginationData
+        );
+    }
+
+    public static <T> DataResponse<PaginationData<T>> successWithPagination(String messageKey, PaginationData<T> paginationData) {
+        return new DataResponse<>(
+                HttpStatus.OK.value(),
+                HttpStatus.OK.name(),
+                messageKey,
+                paginationData
+        );
+    }
 }

@@ -52,9 +52,10 @@ public class SecurityConfig {
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .cors(cors -> cors.configurationSource(request -> {
                     CorsConfiguration corsConfig = new CorsConfiguration();
-                    corsConfig.addAllowedOrigin("*");
-                    corsConfig.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE"));
+                    corsConfig.addAllowedOrigin("http://localhost:4000"); // URL của frontend
+                    corsConfig.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
                     corsConfig.addAllowedHeader("*");
+                    corsConfig.setAllowCredentials(true);
                     return corsConfig;
                 }))
                 .logout()

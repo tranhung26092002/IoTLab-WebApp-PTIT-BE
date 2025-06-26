@@ -19,6 +19,9 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.nimbusds.jwt.JWT;
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.JWTParser;
 
 @Service
 @Getter
@@ -145,6 +148,28 @@ public class JwtService {
     public Key getSigningKey(String key) {
         byte[] keyBytes = Decoders.BASE64.decode(key);
         return Keys.hmacShaKeyFor(keyBytes);
+    }
+
+    public Map<String, Object> validateGoogleToken(String token) {
+        try {
+            // Giải mã token Google
+            JWT jwt = JWTParser.parse(token);
+            JWTClaimsSet claims = jwt.getJWTClaimsSet();
+            
+            // Kiểm tra issuer
+            if (!claims.getIssuer().equals("https://accounts.google.com")) {
+                throw new RuntimeException("Invalid token issuer");
+            }
+            
+            // Kiểm tra thời gian hết hạn
+            if (claims.getExpirationTime().before(new Date())) {
+                throw new RuntimeException("Token has expired");
+            }
+            
+            return claims.getClaims();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to validate Google token: " + e.getMessage());
+        }
     }
 
 }

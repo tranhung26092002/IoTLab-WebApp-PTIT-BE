@@ -4,8 +4,9 @@ import com.ptit.service.dto.EmailDTO;
 import com.ptit.service.dto.ResetPasswordDTO;
 import com.ptit.service.dto.SignInDTO;
 import com.ptit.service.dto.SignUpDTO;
-import com.ptit.service.response.MessageResponse;
 import com.ptit.service.response.AuthResponse;
+import com.ptit.service.response.DataResponse;
+import com.ptit.service.response.MessageResponse;
 import com.ptit.service.response.OTPResponse;
 import com.ptit.service.service.AuthService;
 import com.ptit.service.service.OTPService;
@@ -25,49 +26,48 @@ import java.util.Map;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/auth")
-public class AuthController {
+public class AuthController extends BaseController {
     private final AuthService authService;
     private final OTPService otpService;
     private final RefreshTokenService refreshTokenService;
 
     @PostMapping("/check-email")
-    public ResponseEntity<OTPResponse> sendOtp(@Valid @RequestBody EmailDTO request){
+    public ResponseEntity<DataResponse<OTPResponse>> sendOtp(@Valid @RequestBody EmailDTO request) {
         OTPResponse response = otpService.sendOTP(request);
-        return ResponseEntity.ok(response);
+        return success(response);
     }
 
-
     @PostMapping("/sign-up")
-    public ResponseEntity<AuthResponse> signUp(@Valid @RequestBody SignUpDTO request){
+    public ResponseEntity<DataResponse<AuthResponse>> signUp(@Valid @RequestBody SignUpDTO request) {
         AuthResponse response = authService.signUp(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return created(response);
     }
 
     @PostMapping("/sign-in")
-    public ResponseEntity<AuthResponse> signIn(@Valid @RequestBody SignInDTO request){
+    public ResponseEntity<DataResponse<AuthResponse>> signIn(@Valid @RequestBody SignInDTO request) {
         AuthResponse response = authService.signIn(request);
-        return ResponseEntity.ok(response);
+        return success(response);
     }
 
     @PostMapping("/refresh-token")
-    public ResponseEntity<AuthResponse> refreshToken(
+    public ResponseEntity<DataResponse<AuthResponse>> refreshToken(
             HttpServletRequest request,
             HttpServletResponse response
     ) throws IOException {
         AuthResponse res = refreshTokenService.refreshToken(request, response);
-        return ResponseEntity.ok(res);
+        return success(res);
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<OTPResponse> forgotPassword(@Valid @RequestBody EmailDTO request){
+    public ResponseEntity<DataResponse<OTPResponse>> forgotPassword(@Valid @RequestBody EmailDTO request) {
         OTPResponse response = authService.forgotPassword(request);
-        return ResponseEntity.ok(response);
+        return success(response);
     }
 
     @PostMapping("/reset-password")
-    public ResponseEntity<MessageResponse> resetPassword(@Valid @RequestBody ResetPasswordDTO request){
+    public ResponseEntity<DataResponse<MessageResponse>> resetPassword(@Valid @RequestBody ResetPasswordDTO request) {
         MessageResponse response = authService.resetPassword(request);
-        return ResponseEntity.ok(response);
+        return success(response);
     }
 
     @RequestMapping("/valid-token")

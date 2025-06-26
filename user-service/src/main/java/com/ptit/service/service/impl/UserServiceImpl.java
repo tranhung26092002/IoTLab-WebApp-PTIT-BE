@@ -67,13 +67,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ResponsePage<User, UserResponse> getALlUser(Pageable pageable) {
+    public Page<UserResponse> getALlUser(Pageable pageable) {
         Page<User> userPage = userRepository.findAll(pageable);
 
-        Page<UserResponse> userResponsePage = userPage.map(this::convertToUserResponse);
+        Page<UserResponse> userResponses = userPage.map(this::convertToUserResponse);
 
-        log.info("Get all user successful!");
-        return new ResponsePage<>(userResponsePage);
+        log.info("Get all users successful!");
+        return userResponses;
     }
 
     @Override
@@ -258,13 +258,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ResponsePage<User, InstructorReponse> getAllInstructors(Pageable pageable) {
+    public Page<InstructorReponse> getAllInstructors(Pageable pageable) {
         Page<User> userPage = userRepository.getAllInstructors(pageable);
 
         Page<InstructorReponse> instructorReponsePage = userPage.map(this::convertToInstructorReponse);
 
         log.info("Get all instructors successful!");
-        return new ResponsePage<>(instructorReponsePage);
+        return instructorReponsePage;
     }
 
     @Override
@@ -276,7 +276,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ResponsePage<Attendance, AttendanceResponse> getAllAttendances(LocalDate date, Pageable pageable) {
+    public Page<AttendanceResponse> getAllAttendances(LocalDate date, Pageable pageable) {
         // Xác định khoảng thời gian từ 00:00 đến 23:59 trong ngày đó
         LocalDateTime startOfDay = date.atStartOfDay(); // YYYY-MM-DD 00:00:00
         LocalDateTime endOfDay = date.atTime(LocalTime.MAX); // YYYY-MM-DD 23:59:59.999999999
@@ -285,11 +285,11 @@ public class UserServiceImpl implements UserService {
         Page<Attendance> attendancePage = attendanceRepository.findByCheckInTimeBetween(startOfDay, endOfDay, pageable);
 
         Page<AttendanceResponse> responses = attendancePage.map(this::convertToAttendanceResponse);
-        return new ResponsePage<>(responses);
+        return responses;
     }
 
     @Override
-    public ResponsePage<User, UserResponse> searchUser(UserFilterDTO filter, Pageable pageable) {
+    public Page<UserResponse> searchUser(UserFilterDTO filter, Pageable pageable) {
         Sort.Direction direction = Sort.Direction.ASC;
 
         if (filter.getSortOrder() != null && filter.getSortOrder().equalsIgnoreCase("desc")) {
@@ -303,7 +303,7 @@ public class UserServiceImpl implements UserService {
 
         Page<UserResponse> userResponses = userPages.map(this::convertToUserResponse);
 
-        return new ResponsePage<>(userResponses);
+        return userResponses;
     }
 
     private AttendanceResponse convertToAttendanceResponse(Attendance attendance) {

@@ -45,4 +45,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
         Page<User> filterUsers(
                         @Param("filter") UserFilterDTO filter,
                         Pageable pageable);
+
+        Optional<User> findByOauth2Id(String oauth2Id);
 }
