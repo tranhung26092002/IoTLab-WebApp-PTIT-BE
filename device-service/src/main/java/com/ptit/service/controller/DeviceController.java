@@ -8,6 +8,7 @@ import com.ptit.service.response.DataResponse;
 import com.ptit.service.response.PaginationData;
 import com.ptit.service.service.DeviceService;
 import com.ptit.service.service.IotDeviceService;
+import io.swagger.annotations.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,41 +23,73 @@ import java.util.List;
 @RestController
 @RequestMapping("/devices")
 @RequiredArgsConstructor
+@Api(tags = "Device Management", description = "APIs quản lý thiết bị IoT và thông tin thiết bị")
 public class DeviceController extends BaseController {
     private final DeviceService deviceService;
     private final IotDeviceService iotDeviceService;
 
     @GetMapping("/{id}")
+    @ApiOperation(value = "Lấy thông tin thiết bị theo ID", notes = "Trả về chi tiết thiết bị theo ID")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Thành công"),
+        @ApiResponse(code = 404, message = "Không tìm thấy thiết bị")
+    })
     public ResponseEntity<DataResponse<Device>> getDeviceById(@PathVariable Long id) {
         Device device = deviceService.getDeviceById(id);
         return success(device);
     }
 
     @GetMapping("/code")
+    @ApiOperation(value = "Lấy thông tin thiết bị theo mã", notes = "Trả về chi tiết thiết bị theo mã thiết bị")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Thành công"),
+        @ApiResponse(code = 404, message = "Không tìm thấy thiết bị")
+    })
     public ResponseEntity<DataResponse<Device>> getDeviceByCode(@RequestParam String code) {
         Device device = deviceService.getDeviceByCode(code);
         return success(device);
     }
 
     @GetMapping
+    @ApiOperation(value = "Lấy danh sách tất cả thiết bị", notes = "Trả về danh sách thiết bị có phân trang")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Thành công"),
+        @ApiResponse(code = 401, message = "Chưa xác thực"),
+        @ApiResponse(code = 403, message = "Không có quyền truy cập")
+    })
     public ResponseEntity<DataResponse<PaginationData<Device>>> getAllDevices(Pageable pageable) {
         Page<Device> devices = deviceService.getAllDevices(pageable);
         return successWithPagination(devices);
     }
 
     @GetMapping("/regular")
+    @ApiOperation(value = "Lấy danh sách thiết bị thường", notes = "Trả về danh sách thiết bị không phải IoT")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Thành công")
+    })
     public ResponseEntity<DataResponse<List<Device>>> getRegularDevices() {
         List<Device> regularDevices = deviceService.getDeviceRepository().findRegularDevices();
         return success(regularDevices);
     }
 
     @GetMapping("/iot")
+    @ApiOperation(value = "Lấy danh sách thiết bị IoT", notes = "Trả về danh sách thiết bị IoT")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Thành công")
+    })
     public ResponseEntity<DataResponse<List<Device>>> getIotDevices() {
         List<Device> iotDevices = iotDeviceService.getAllIotDevices();
         return success(iotDevices);
     }
 
     @PostMapping
+    @ApiOperation(value = "Tạo thiết bị mới", notes = "Tạo thiết bị mới với file đính kèm")
+    @ApiResponses(value = {
+        @ApiResponse(code = 201, message = "Tạo thành công"),
+        @ApiResponse(code = 400, message = "Dữ liệu không hợp lệ"),
+        @ApiResponse(code = 401, message = "Chưa xác thực"),
+        @ApiResponse(code = 403, message = "Không có quyền tạo")
+    })
     public ResponseEntity<DataResponse<Device>> createDevice(
             @RequestParam(value = "device", required = false) String deviceJson,
             @RequestParam(value = "file", required = false) MultipartFile file
@@ -76,6 +109,11 @@ public class DeviceController extends BaseController {
     }
 
     @GetMapping("/filter")
+    @ApiOperation(value = "Lọc thiết bị", notes = "Lọc thiết bị theo các tiêu chí")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Thành công"),
+        @ApiResponse(code = 400, message = "Dữ liệu không hợp lệ")
+    })
     public ResponseEntity<DataResponse<PaginationData<Device>>> getDeviceFilter(
             @ModelAttribute DeviceFilterDTO deviceFilterDto,
             Pageable pageable
@@ -91,6 +129,12 @@ public class DeviceController extends BaseController {
     }
 
     @PutMapping("/{id}")
+    @ApiOperation(value = "Cập nhật thiết bị", notes = "Cập nhật thông tin thiết bị theo ID")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Cập nhật thành công"),
+        @ApiResponse(code = 404, message = "Không tìm thấy thiết bị"),
+        @ApiResponse(code = 400, message = "Dữ liệu không hợp lệ")
+    })
     public ResponseEntity<DataResponse<Device>> updateDevice(
             @PathVariable Long id,
             @RequestParam(value = "device", required = false) String deviceJson,
@@ -111,6 +155,11 @@ public class DeviceController extends BaseController {
     }
 
     @DeleteMapping("/{id}")
+    @ApiOperation(value = "Xóa thiết bị", notes = "Xóa thiết bị theo ID")
+    @ApiResponses(value = {
+        @ApiResponse(code = 204, message = "Xóa thành công"),
+        @ApiResponse(code = 404, message = "Không tìm thấy thiết bị")
+    })
     public ResponseEntity<DataResponse<Void>> deleteDevice(@PathVariable Long id) {
         deviceService.deleteDevice(id);
         return noContent();

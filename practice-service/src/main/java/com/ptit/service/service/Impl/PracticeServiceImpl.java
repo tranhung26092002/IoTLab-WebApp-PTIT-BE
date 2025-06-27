@@ -1,6 +1,5 @@
 package com.ptit.service.service.Impl;
 
-import com.ommanisoft.common.utils.FnCommon;
 import com.ptit.service.dto.PraticeFilterDTO;
 import com.ptit.service.entity.*;
 import com.ptit.service.entity.enums.PracticeProgressStatus;
@@ -11,6 +10,7 @@ import com.ptit.service.response.PracticeResponse;
 import com.ptit.service.service.FileService;
 import com.ptit.service.service.PracticeService;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -32,6 +32,7 @@ public class PracticeServiceImpl implements PracticeService {
     private final FileService fileService;
     private final StudentProgressRepository studentProgressRepository;
     private final StudentRepository studentRepository;
+    private final ModelMapper modelMapper;
 
     @Override
     @Transactional(readOnly = true)
@@ -47,7 +48,9 @@ public class PracticeServiceImpl implements PracticeService {
 
         PracticeResponse practiceResponse = new PracticeResponse();
 
-        FnCommon.coppyNonNullProperties(practiceResponse, practice);
+        // copy properties from Practice to PracticeResponse
+        modelMapper.map(practice, practiceResponse);
+
         practiceResponse.setPracticeVideos(practiceVideoRepository.findAllByPracticeIdOrderByIdAsc(practice.getId()));
         practiceResponse.setPracticeFiles(practiceFileRepository.findAllByPracticeIdOrderByIdAsc(practice.getId()));
         practiceResponse.setPracticeGuides(practiceGuideRepository.findAllByPracticeIdOrderByIdAsc(practice.getId()));
@@ -75,7 +78,8 @@ public class PracticeServiceImpl implements PracticeService {
         }
 
         // Copy các thuộc tính từ practice vào newPractice
-        FnCommon.coppyNonNullProperties(newPractice, practice);
+        modelMapper.map(practice, newPractice);
+
         newPractice.setStatus(PracticeStatus.PUBLISHED);
 
         // Lấy practiceOrder lớn nhất hiện tại và set cho bài mới
@@ -150,7 +154,7 @@ public class PracticeServiceImpl implements PracticeService {
             }
         }
 
-        FnCommon.coppyNonNullProperties(practice, practiceDetails);
+        modelMapper.map(practiceDetails, practice);
 
         return Optional.of(practiceRepository.save(practice));
     }
@@ -256,7 +260,9 @@ public class PracticeServiceImpl implements PracticeService {
                 .orElseThrow(() -> new RuntimeException("Practice not found"));
 
         PracticeGuide newGuide = new PracticeGuide();
-        FnCommon.coppyNonNullProperties(newGuide, guide);
+
+        modelMapper.map(guide, newGuide);
+
         newGuide.setPractice(practice);
 
         return Optional.of(practiceGuideRepository.save(newGuide));
@@ -295,14 +301,14 @@ public class PracticeServiceImpl implements PracticeService {
         PracticeGuide practiceGuide = practiceGuideRepository.findById(guideId)
                 .orElseThrow(() -> new RuntimeException("Guide not found"));
 
-        FnCommon.coppyNonNullProperties(practiceGuide, guide);
+        modelMapper.map(guide, practiceGuide);
 
         return Optional.of(practiceGuideRepository.save(practiceGuide));
     }
 
     @Override
     public Page<Practice> getPracticeFilter(PraticeFilterDTO praticeFilterDTO,
-                                                                      Pageable pageable) {
+                                            Pageable pageable) {
         Sort.Direction direction = Sort.Direction.ASC;
 
         if (praticeFilterDTO.getSortOrder() != null && praticeFilterDTO.getSortOrder().equalsIgnoreCase("desc")) {

@@ -12,6 +12,7 @@ services=(
     "notification-service"
     "mqtt-service"
     "device-service"
+    "api-docs-service"
 )
 
 for service in "${services[@]}"; do

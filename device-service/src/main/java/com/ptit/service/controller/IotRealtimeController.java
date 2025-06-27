@@ -27,7 +27,7 @@ import java.util.HashMap;
 
 @RestController
 @RequestMapping("/api/iot/realtime")
-@Api(tags = "IoT Realtime Data APIs")
+@Api(tags = "IoT Realtime")
 @Slf4j
 @CrossOrigin(origins = "*")
 public class IotRealtimeController extends BaseController {

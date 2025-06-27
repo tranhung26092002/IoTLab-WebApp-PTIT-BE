@@ -7,6 +7,7 @@ import com.ptit.service.entity.Device;
 import com.ptit.service.entity.SensorData;
 import com.ptit.service.service.DeviceService;
 import com.ptit.service.service.SensorDataService;
+import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Controller;
 
 @Controller
 @Slf4j
+@Api(tags = "WebSocket", description = "APIs WebSocket cho dữ liệu thời gian thực và điều khiển thiết bị")
 public class WebSocketController {
 
     @Autowired
@@ -36,12 +38,14 @@ public class WebSocketController {
 
     @MessageMapping("/device/{deviceId}")
     @SendTo("/topic/sensorData/{deviceId}")
+    @ApiOperation(value = "Lấy dữ liệu thiết bị", notes = "Lấy dữ liệu cảm biến mới nhất của thiết bị")
     public SensorData getDeviceData(@DestinationVariable Long deviceId) {
         return sensorDataService.getLatestData(deviceId);
     }
 
     // Subscribe to real-time updates for a specific deivce
     @MessageMapping("/subscribe/device/{deviceId}")
+    @ApiOperation(value = "Đăng ký nhận dữ liệu thiết bị", notes = "Đăng ký nhận dữ liệu thời gian thực từ thiết bị")
     public void subscribeToDevice(@DestinationVariable Long deviceId) {
         Device device = deviceService.findById(deviceId);
         if (device != null) {
@@ -52,11 +56,13 @@ public class WebSocketController {
     // Get historical data for a Device
     @MessageMapping("/device/history/{deviceId}")
     @SendTo("/topic/history/{deviceId}")
+    @ApiOperation(value = "Lấy lịch sử dữ liệu thiết bị", notes = "Lấy dữ liệu lịch sử của thiết bị có phân trang")
     public Page<SensorData> getDeviceHistory(@DestinationVariable Long deviceId, Pageable pageable) {
         return sensorDataService.getHistory(deviceId, pageable);
     }
 
     @MessageMapping("/publish/command/{deviceId}")
+    @ApiOperation(value = "Gửi lệnh điều khiển thiết bị", notes = "Gửi lệnh điều khiển thiết bị qua MQTT")
     public void publishCommand(@DestinationVariable Long deviceId, @Payload String commandJson) {
         // Nhận lệnh từ client và gửi lệnh đến thiết bị
         log.info("Received command: {}", commandJson);
@@ -96,6 +102,7 @@ public class WebSocketController {
     }
 
     @MessageMapping("/subscribe/command-response/{deviceId}")
+    @ApiOperation(value = "Đăng ký nhận phản hồi lệnh", notes = "Đăng ký nhận phản hồi từ thiết bị sau khi gửi lệnh")
     public void subscribeToCommandResponse(@DestinationVariable Long deviceId) {
         log.info("Subscribed to command response for device ID: {}", deviceId);
         try {

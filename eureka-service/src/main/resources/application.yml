@@ -1,10 +1,11 @@
-spring:
-  application:
-    name: eureka-service
-
 server:
   port: 8761
   address: 0.0.0.0
+
+spring:
+  application:
+    name: EUREKA-SERVER
+
 eureka:
   client:
     registerWithEureka: false

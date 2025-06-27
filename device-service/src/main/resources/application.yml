@@ -44,30 +44,38 @@ spring:
       enabled: true
       file-size-threshold: 2KB
 
-  # RabbitMQ settings
-  rabbitmq:
-    host: ${RABBITMQ_HOST}
-    port: ${RABBITMQ_PORT}
-    username: ${RABBITMQ_USERNAME}
-    password: ${RABBITMQ_PASSWORD}
+rabbitmq:
+  host: ${RABBITMQ_HOST}
+  port: ${RABBITMQ_PORT}
+  username: ${RABBITMQ_USERNAME}
+  password: ${RABBITMQ_PASSWORD}
 
-telegram:
-  chatId: ${TELEGRAM_CHAT_ID}
-  apiToken: ${TELEGRAM_API_TOKEN}
 debug: ${DEBUG}
+
 async:
   config:
     core-pool-size: ${ASYNC_CORE_POOL_SIZE}
+
 logging:
   level:
     org:
       springframework:
         boot:
           autoconfigure: INFO
+          
 eureka:
   client:
     serviceUrl:
       defaultZone: ${EUREKA_URI}
+    register-with-eureka: true
+    fetch-registry: true
+    healthcheck:
+      enabled: true
+  instance:
+    prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 30
+    lease-expiration-duration-in-seconds: 90
+    health-check-url-path: /actuator/health
 
 ptit:
   storage-service: ${STORAGE_SERVICE}
@@ -83,8 +91,17 @@ device:
 # MQTT Configuration for IoT Devices
 mqtt:
   broker:
-    url: ${MQTT_BROKER_URL:localhost:1883}
+    url: ${MQTT_BROKER_URL}
   client:
-    id: ${MQTT_CLIENT_ID:device-service}
-  username: ${MQTT_USERNAME:admin}
-  password: ${MQTT_PASSWORD:admin}
+    id: ${MQTT_CLIENT_ID}
+  username: ${MQTT_USERNAME}
+  password: ${MQTT_PASSWORD}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always

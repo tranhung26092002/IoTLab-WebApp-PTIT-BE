@@ -1,8 +1,9 @@
 server:
-  port: 8087
+  port: 8085
   address: 0.0.0.0
   servlet:
     context-path: /notification
+
 spring:
   mvc:
     dispatch-options-request: true
@@ -42,25 +43,45 @@ spring:
       max-request-size: 20MB
       enabled: true
       file-size-threshold: 2KB
-  rabbitmq:
-    host: ${RABBITMQ_HOST}
-    port: ${RABBITMQ_PORT}
-    username: ${RABBITMQ_USERNAME}
-    password: ${RABBITMQ_PASSWORD}
-telegram:
-  chatId: ${TELEGRAM_CHAT_ID}
-  apiToken: ${TELEGRAM_API_TOKEN}
+
+rabbitmq:
+  host: ${RABBITMQ_HOST}
+  port: ${RABBITMQ_PORT}
+  username: ${RABBITMQ_USERNAME}
+  password: ${RABBITMQ_PASSWORD}
+
 debug: ${DEBUG}
+
 async:
   config:
     core-pool-size: ${ASYNC_CORE_POOL_SIZE}
+
 logging:
   level:
     org:
       springframework:
         boot:
           autoconfigure: INFO
+
 eureka:
   client:
     serviceUrl:
       defaultZone: ${EUREKA_URI}
+    register-with-eureka: true
+    fetch-registry: true
+    healthcheck:
+      enabled: true
+  instance:
+    prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 30
+    lease-expiration-duration-in-seconds: 90
+    health-check-url-path: /actuator/health
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always

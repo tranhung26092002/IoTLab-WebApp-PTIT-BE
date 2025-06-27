@@ -7,13 +7,14 @@ import com.ptit.service.dto.StudentDTO;
 import com.ptit.service.entity.*;
 import com.ptit.service.entity.enums.PracticeProgressStatus;
 import com.ptit.service.entity.enums.ReportStatus;
+import com.ptit.service.exception.BaseException;
+import com.ptit.service.exception.ErrorCode;
 import com.ptit.service.repository.*;
 import com.ptit.service.response.MessageResponse;
 import com.ptit.service.response.ReportResponse;
 import com.ptit.service.service.FileService;
 import com.ptit.service.service.ReportService;
 import lombok.RequiredArgsConstructor;
-import org.apache.kafka.common.errors.ResourceNotFoundException;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -63,7 +64,7 @@ public class ReportServiceImpl implements ReportService {
 
     public ReportResponse getReport(Long id) {
         Report report = reportRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Report not found"));
+                .orElseThrow(() -> new BaseException(ErrorCode.INVALID_REQUEST));
         return mapper.map(report, ReportResponse.class);
     }
 
@@ -83,7 +84,7 @@ public class ReportServiceImpl implements ReportService {
         report.setInstructor(instructor);
 
         report.setPractice(practiceRepository.findById(reportDTO.getPracticeId())
-                .orElseThrow(() -> new ResourceNotFoundException("Practice not found")));
+                .orElseThrow(() -> new BaseException(ErrorCode.INVALID_REQUEST)));
 
         // check if student exists or not create new student
         Set<Long> userIds = reportDTO.getStudents()
@@ -184,7 +185,7 @@ public class ReportServiceImpl implements ReportService {
     @Override
     public ReportResponse updateReport(Long id, ReportDTO reportDTO) {
         Report existingReport = reportRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Report not found"));
+                .orElseThrow(() -> new BaseException(ErrorCode.INVALID_REQUEST));
 
         mapper.map(reportDTO, existingReport);
         return mapper.map(reportRepository.save(existingReport), ReportResponse.class);
@@ -193,7 +194,7 @@ public class ReportServiceImpl implements ReportService {
     @Override
     public MessageResponse deleteReport(Long id) {
         Report report = reportRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Report not found"));
+                .orElseThrow(() -> new BaseException(ErrorCode.INVALID_REQUEST));
         report.setIsDeleted(true);
         reportRepository.save(report);
 
@@ -207,7 +208,7 @@ public class ReportServiceImpl implements ReportService {
     @Override
     public ReportResponse updateReportStatus(Long id, ReportStatus newStatus) {
         Report report = reportRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Report not found"));
+                .orElseThrow(() -> new BaseException(ErrorCode.INVALID_REQUEST));
 
         ReportStatus currentStatus = report.getStatus();
 
@@ -273,7 +274,7 @@ public class ReportServiceImpl implements ReportService {
     @Override
     public ReportResponse updateEvaluation(Long contentId, Double evaluation) {
         ReportContent reportContent = reportContentRepository.findById(contentId)
-                .orElseThrow(() -> new ResourceNotFoundException("Report content not found"));
+                .orElseThrow(() -> new BaseException(ErrorCode.INVALID_REQUEST));
 
         reportContent.setEvaluation(evaluation);
         reportContentRepository.save(reportContent);

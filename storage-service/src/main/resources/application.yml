@@ -1,6 +1,8 @@
 server:
   port: 8086
   address: 0.0.0.0
+  servlet:
+    context-path: /storage
 
 spring:
   mvc:
@@ -25,9 +27,6 @@ logging:
         boot:
           autoconfigure: INFO
 
-telegram:
-  chatId: ${TELEGRAM_CHAT_ID}
-  apiToken: ${TELEGRAM_API_TOKEN}
 debug: ${DEBUG}
 async:
   config:
@@ -37,6 +36,25 @@ eureka:
   client:
     serviceUrl:
       defaultZone: ${EUREKA_URI}
+    register-with-eureka: true
+    fetch-registry: true
+    healthcheck:
+      enabled: true
+  instance:
+    prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 30
+    lease-expiration-duration-in-seconds: 90
+    health-check-url-path: /actuator/health
 
 ptit:
   storage-service: ${STORAGE_SERVICE}
+
+  # Cấu hình actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always

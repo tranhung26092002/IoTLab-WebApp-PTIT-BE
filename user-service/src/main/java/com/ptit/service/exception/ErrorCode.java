@@ -1,6 +1,5 @@
 package com.ptit.service.exception;
 
-import com.ptit.service.constant.ErrorMessageConstants;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 

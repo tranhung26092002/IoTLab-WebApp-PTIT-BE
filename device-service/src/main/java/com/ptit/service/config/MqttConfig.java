@@ -69,13 +69,13 @@ public class MqttConfig {
         return adapter;
     }
 
-    @Bean
+    @Bean("mqttOutboundHandler")
     @ServiceActivator(inputChannel = "mqttOutboundChannel")
-    public MessageHandler outbound() {
+    public MqttPahoMessageHandler mqttOutboundHandler() {
         MqttPahoMessageHandler messageHandler =
                 new MqttPahoMessageHandler(clientId + "_outbound", mqttClientFactory());
         messageHandler.setAsync(true);
-        messageHandler.setDefaultTopic("iot/devices/register/response");
+        messageHandler.setDefaultTopic("iot/devices/commands");
         return messageHandler;
     }
 } 

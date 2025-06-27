@@ -20,7 +20,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/iot-devices")
-@Api(tags = "IoT Device Management")
+@Api(tags = "IoT Device")
 @Slf4j
 public class IotDeviceController extends BaseController {
 

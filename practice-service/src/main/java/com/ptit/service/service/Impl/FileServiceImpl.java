@@ -1,6 +1,7 @@
 package com.ptit.service.service.Impl;
 
-import com.ommanisoft.common.exceptions.ExceptionOm;
+import com.ptit.service.exception.BaseException;
+import com.ptit.service.exception.ErrorCode;
 import com.ptit.service.response.MessageResponse;
 import com.ptit.service.service.FileService;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,7 +37,7 @@ public class FileServiceImpl implements FileService {
             if (response.getStatusCode() == HttpStatus.OK) {
                 return new MessageResponse("File deleted successfully.");
             } else {
-                throw new ExceptionOm(HttpStatus.BAD_REQUEST, "Xóa file thất bại");
+                throw new BaseException(ErrorCode.INVALID_REQUEST);
             }
         } catch (Exception e) {
             throw new RuntimeException("Error occurred while deleting file: " + e.getMessage(), e);
@@ -68,7 +69,7 @@ public class FileServiceImpl implements FileService {
             if (response.getStatusCode() == HttpStatus.OK) {
                 return response.getBody();
             } else {
-                throw new ExceptionOm(HttpStatus.BAD_REQUEST, "Upload file thất bại");
+                throw new BaseException(ErrorCode.INVALID_REQUEST);
             }
         } catch (IOException e) {
             throw new RuntimeException("Error occurred while uploading file: " + e.getMessage(), e);

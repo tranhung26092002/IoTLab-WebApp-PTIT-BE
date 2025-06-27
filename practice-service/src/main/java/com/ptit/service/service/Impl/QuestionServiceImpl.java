@@ -5,7 +5,6 @@ import com.ptit.service.entity.MultipleChoiceOption;
 import com.ptit.service.entity.Question;
 import com.ptit.service.entity.enums.QuestionType;
 import com.ptit.service.repository.QuestionRepository;
-import com.ptit.service.response.QuestionResponse;
 import com.ptit.service.service.QuestionService;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.Cell;

@@ -20,6 +20,7 @@ services=(
     "mqtt-service"
     "practice-service"
     "storage-service"
+    "api-docs-service"
 )
 
 # Chạy từng service

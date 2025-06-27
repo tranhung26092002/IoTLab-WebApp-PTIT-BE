@@ -137,7 +137,7 @@ public class IotDeviceService {
     }
 
     public Optional<IotSensorData> getLatestSensorData(Long deviceId) {
-        return Optional.ofNullable(sensorDataRepository.findLatestByDeviceId(deviceId));
+        return sensorDataRepository.findFirstByDeviceIdOrderByTimestampDesc(deviceId);
     }
 
     public List<IotSensorData> getSensorDataHistory(Long deviceId, LocalDateTime startTime, LocalDateTime endTime) {

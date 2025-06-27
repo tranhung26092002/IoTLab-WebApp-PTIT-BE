@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface IotSensorDataRepository extends JpaRepository<IotSensorData, Long> {
@@ -19,8 +20,8 @@ public interface IotSensorDataRepository extends JpaRepository<IotSensorData, Lo
             @Param("deviceId") Long deviceId, 
             @Param("startTime") LocalDateTime startTime);
     
-    @Query("SELECT i FROM IotSensorData i WHERE i.device.id = :deviceId ORDER BY i.timestamp DESC LIMIT 1")
-    IotSensorData findLatestByDeviceId(@Param("deviceId") Long deviceId);
+    // Sử dụng method naming convention thay vì JPQL với LIMIT
+    Optional<IotSensorData> findFirstByDeviceIdOrderByTimestampDesc(Long deviceId);
     
     @Query("SELECT i FROM IotSensorData i WHERE i.device.id = :deviceId AND i.timestamp BETWEEN :startTime AND :endTime ORDER BY i.timestamp ASC")
     List<IotSensorData> findByDeviceIdAndTimestampBetweenOrderByTimestampAsc(

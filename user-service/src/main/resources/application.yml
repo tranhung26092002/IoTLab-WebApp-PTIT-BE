@@ -89,10 +89,6 @@ user:
     routing:
       key: user.login.routing.key
 
-telegram:
-  chatId: ${TELEGRAM_CHAT_ID}
-  apiToken: ${TELEGRAM_API_TOKEN}
-
 debug: ${DEBUG}
 
 async:
@@ -110,6 +106,15 @@ eureka:
   client:
     serviceUrl:
       defaultZone: ${EUREKA_URI}
+    register-with-eureka: true
+    fetch-registry: true
+    healthcheck:
+      enabled: true
+  instance:
+    prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 30
+    lease-expiration-duration-in-seconds: 90
+    health-check-url-path: /actuator/health
 
 ptit:
   storage-service: ${STORAGE_SERVICE}
@@ -120,3 +125,13 @@ brevo:
   sender:
     email: ${BREVO_SENDER_EMAIL}
     name: ${BREVO_SENDER_NAME}
+
+# Cấu hình actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always

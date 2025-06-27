@@ -1,6 +1,11 @@
 package com.ptit.service.controller;
 
 import com.ptit.service.service.StorageService;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -14,13 +19,22 @@ import java.util.Date;
 
 @RestController
 @RequestMapping("/storage")
+@Api(tags = "File Storage")
 public class StorageController {
 
     @Autowired
     private StorageService storageService;
 
     @PostMapping("/upload")
-    public String uploadFile(@RequestParam("file") MultipartFile file) {
+    @ApiOperation("Upload file lên server")
+    @ApiResponses({
+        @ApiResponse(code = 200, message = "Upload thành công", response = String.class),
+        @ApiResponse(code = 400, message = "Tên file không hợp lệ"),
+        @ApiResponse(code = 500, message = "Lỗi upload file")
+    })
+    public String uploadFile(
+            @ApiParam(value = "File cần upload", required = true) 
+            @RequestParam("file") MultipartFile file) {
         try {
             // Lấy tên file gốc
             String originalFileName = file.getOriginalFilename();
@@ -79,9 +93,16 @@ public class StorageController {
         return temp;
     }
 
-    // Tải tệp xuống
     @GetMapping("/download/{fileName}")
-    public ResponseEntity<byte[]> downloadFile(@PathVariable String fileName) {
+    @ApiOperation("Download file từ server")
+    @ApiResponses({
+        @ApiResponse(code = 200, message = "Download thành công"),
+        @ApiResponse(code = 404, message = "File không tồn tại"),
+        @ApiResponse(code = 500, message = "Lỗi download file")
+    })
+    public ResponseEntity<byte[]> downloadFile(
+            @ApiParam(value = "Tên file cần download", example = "20241201120000_document.pdf", required = true) 
+            @PathVariable String fileName) {
         try {
             byte[] fileContent = storageService.load(fileName);
             return ResponseEntity.ok()
@@ -92,9 +113,16 @@ public class StorageController {
         }
     }
 
-    // API hiển thị ảnh
     @GetMapping("/load/{fileName}")
-    public ResponseEntity<byte[]> viewFile(@PathVariable String fileName) {
+    @ApiOperation("Xem file (hình ảnh, tài liệu) trực tiếp trên browser")
+    @ApiResponses({
+        @ApiResponse(code = 200, message = "Hiển thị file thành công"),
+        @ApiResponse(code = 404, message = "File không tồn tại"),
+        @ApiResponse(code = 500, message = "Lỗi hiển thị file")
+    })
+    public ResponseEntity<byte[]> viewFile(
+            @ApiParam(value = "Tên file cần xem", example = "20241201120000_image.jpg", required = true) 
+            @PathVariable String fileName) {
         try {
             StorageService.FileData imageData = storageService.loadFile(fileName);
 
@@ -106,9 +134,16 @@ public class StorageController {
         }
     }
 
-    // Xóa tệp
     @DeleteMapping("/files/{fileName}")
-    public ResponseEntity<String> deleteFile(@PathVariable String fileName) {
+    @ApiOperation("Xóa file khỏi server")
+    @ApiResponses({
+        @ApiResponse(code = 200, message = "Xóa file thành công"),
+        @ApiResponse(code = 404, message = "File không tồn tại"),
+        @ApiResponse(code = 500, message = "Lỗi xóa file")
+    })
+    public ResponseEntity<String> deleteFile(
+            @ApiParam(value = "Tên file cần xóa", example = "20241201120000_document.pdf", required = true) 
+            @PathVariable String fileName) {
         try {
             storageService.delete(fileName);
             return ResponseEntity.ok("File deleted successfully.");
@@ -117,8 +152,12 @@ public class StorageController {
         }
     }
 
-    // Liệt kê tất cả tệp
     @GetMapping("/files")
+    @ApiOperation("Liệt kê tất cả file trong thư mục storage")
+    @ApiResponses({
+        @ApiResponse(code = 200, message = "Lấy danh sách file thành công"),
+        @ApiResponse(code = 500, message = "Lỗi lấy danh sách file")
+    })
     public ResponseEntity<File[]> listFiles() {
         File[] files = storageService.listAll();
         return ResponseEntity.ok(files);

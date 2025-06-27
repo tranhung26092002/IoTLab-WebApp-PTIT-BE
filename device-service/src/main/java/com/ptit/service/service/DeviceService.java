@@ -1,12 +1,14 @@
 package com.ptit.service.service;
 
-import com.ommanisoft.common.exceptions.ExceptionOm;
-import com.ommanisoft.common.utils.FnCommon;
 import com.ptit.service.dto.DeviceFilterDTO;
 import com.ptit.service.entity.Device;
 import com.ptit.service.entity.enums.DeviceStatus;
+import com.ptit.service.exception.BaseException;
+import com.ptit.service.exception.ErrorCode;
 import com.ptit.service.repository.DeviceRepository;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
@@ -26,7 +28,10 @@ import java.io.InputStream;
 @Service
 @RequiredArgsConstructor
 public class DeviceService {
+    // Getter for DeviceRepository
+    @Getter
     private final DeviceRepository deviceRepository;
+    private final ModelMapper modelMapper;
 
     @Value("${ptit.storage-service}")
     private String storageService;
@@ -38,7 +43,7 @@ public class DeviceService {
     public Device createDevice(Device deviceDto, MultipartFile file) {
         Device newDevice = new Device();
 
-        FnCommon.coppyNonNullProperties(newDevice, deviceDto);
+        modelMapper.map(deviceDto, newDevice);
 
         // Nếu có file ảnh, lưu ảnh và cập nhật đường dẫn ảnh
         if (file != null && !file.isEmpty()) {
@@ -107,10 +112,7 @@ public class DeviceService {
         Device existingDevice = deviceRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Device not found"));
 
-        // Sao chép thuộc tính từ `device` vào `existingDevice` (trừ các thuộc tính cố
-        // định như ID)
-        FnCommon.coppyNonNullProperties(existingDevice, device);
-        // FnCommon.copyProperties(existingDevice, device);
+        modelMapper.map(device, existingDevice); // Cập nhật các trường khác
 
         // Nếu có file ảnh, lưu ảnh và cập nhật đường dẫn ảnh
         if (file != null && !file.isEmpty()) {
@@ -155,12 +157,13 @@ public class DeviceService {
             if (response.getStatusCode() == HttpStatus.OK) {
                 return response.getBody();
             } else {
-                throw new ExceptionOm(HttpStatus.BAD_REQUEST, "Upload file thất bại");
+                throw new BaseException(ErrorCode.INVALID_REQUEST);
             }
         } catch (IOException e) {
             throw new RuntimeException("Error occurred while uploading file: " + e.getMessage(), e);
         }
     }
+
     // Lớp hỗ trợ để chuyển đổi MultipartFile thành Resource
     class MultipartInputStreamFileResource extends InputStreamResource {
         private final String filename;
@@ -179,10 +182,5 @@ public class DeviceService {
         public long contentLength() throws IOException {
             return -1; // Chúng ta không biết trước độ dài của nội dung
         }
-    }
-
-    // Getter for DeviceRepository
-    public DeviceRepository getDeviceRepository() {
-        return deviceRepository;
     }
 }

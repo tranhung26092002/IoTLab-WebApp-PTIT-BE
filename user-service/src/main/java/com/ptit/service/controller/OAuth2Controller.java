@@ -12,6 +12,11 @@ import com.ptit.service.security.JwtService;
 import com.ptit.service.service.AttendanceService;
 import com.ptit.service.service.RefreshTokenService;
 import com.ptit.service.service.UserLoginNotificationService;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +33,7 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/auth/oauth2")
 @RequiredArgsConstructor
+@Api(tags = "OAuth2")
 public class OAuth2Controller extends BaseController {
 
     private final JwtService jwtService;
@@ -38,7 +44,15 @@ public class OAuth2Controller extends BaseController {
 
     @PostMapping("/google")
     @Transactional
-    public ResponseEntity<DataResponse<AuthResponse>> handleGoogleSignIn(@RequestParam String googleToken) {
+    @ApiOperation("Đăng nhập bằng Google Token")
+    @ApiResponses({
+        @ApiResponse(code = 200, message = "Đăng nhập thành công"),
+        @ApiResponse(code = 400, message = "Google token không hợp lệ"),
+        @ApiResponse(code = 500, message = "Lỗi server")
+    })
+    public ResponseEntity<DataResponse<AuthResponse>> handleGoogleSignIn(
+            @ApiParam(value = "Google ID Token", required = true) 
+            @RequestParam String googleToken) {
         try {
             // Giải mã token Google để lấy thông tin người dùng
             Map<String, Object> claims = jwtService.validateGoogleToken(googleToken);
@@ -120,6 +134,11 @@ public class OAuth2Controller extends BaseController {
     // Giữ lại endpoint cũ cho OAuth2 callback
     @GetMapping("/success")
     @Transactional
+    @ApiOperation("OAuth2 Callback Success (Legacy)")
+    @ApiResponses({
+        @ApiResponse(code = 302, message = "Redirect to frontend with tokens"),
+        @ApiResponse(code = 500, message = "Lỗi server")
+    })
     public RedirectView oauth2Success(Authentication authentication) {
         OAuth2User oauth2User = (OAuth2User) authentication.getPrincipal();
         Map<String, Object> attributes = oauth2User.getAttributes();

@@ -14,6 +14,7 @@ import com.ptit.service.entity.PracticeGuide;
 import com.ptit.service.entity.PracticeVideo;
 import com.ptit.service.entity.enums.PracticeStatus;
 import com.ptit.service.service.PracticeService;
+import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -29,12 +30,19 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/practices")
+@Api(tags = "Practice Management", description = "APIs quản lý bài thực hành, video, file và hướng dẫn")
 public class PracticeController extends BaseController {
 
     @Autowired
     private PracticeService practiceService;
 
     @GetMapping
+    @ApiOperation(value = "Lấy danh sách tất cả bài thực hành", notes = "Trả về danh sách bài thực hành có phân trang")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Thành công"),
+        @ApiResponse(code = 401, message = "Chưa xác thực"),
+        @ApiResponse(code = 403, message = "Không có quyền truy cập")
+    })
     public ResponseEntity<DataResponse<PaginationData<PracticeResponse>>> getAllPractices(Pageable pageable) {
         Page<Practice> page = practiceService.getAllPractices(pageable);
         PaginationData<PracticeResponse> paginationData = PaginationData.fromPageWithMapping(page, PracticeResponse.class);
@@ -42,6 +50,11 @@ public class PracticeController extends BaseController {
     }
 
     @GetMapping("/filter")
+    @ApiOperation(value = "Lọc bài thực hành", notes = "Lọc bài thực hành theo các tiêu chí")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Thành công"),
+        @ApiResponse(code = 400, message = "Dữ liệu không hợp lệ")
+    })
     public ResponseEntity<DataResponse<PaginationData<PracticeResponse>>> getPracticeFilter(
             @ModelAttribute PraticeFilterDTO praticeFilterDTO,
             Pageable pageable) {
@@ -58,12 +71,21 @@ public class PracticeController extends BaseController {
     }
 
     @GetMapping("/{id}")
+    @ApiOperation(value = "Lấy thông tin bài thực hành theo ID", notes = "Trả về chi tiết bài thực hành")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Thành công"),
+        @ApiResponse(code = 404, message = "Không tìm thấy bài thực hành")
+    })
     public ResponseEntity<DataResponse<PracticeResponse>> getPracticeById(@PathVariable Long id) {
         PracticeResponse response = practiceService.getPracticeById(id);
         return success(response);
     }
 
     @GetMapping("/all")
+    @ApiOperation(value = "Lấy danh sách bài thực hành đã xuất bản", notes = "Trả về danh sách bài thực hành có trạng thái PUBLISHED")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Thành công")
+    })
     public ResponseEntity<DataResponse<PaginationData<PracticeResponse>>> searchPractices(Pageable pageable) {
         PracticeStatus status = PracticeStatus.PUBLISHED;
         Page<Practice> page = practiceService.searchPractices(status, pageable);
@@ -72,6 +94,13 @@ public class PracticeController extends BaseController {
     }
 
     @PostMapping()
+    @ApiOperation(value = "Tạo bài thực hành mới", notes = "Tạo bài thực hành với file đính kèm")
+    @ApiResponses(value = {
+        @ApiResponse(code = 201, message = "Tạo thành công"),
+        @ApiResponse(code = 400, message = "Dữ liệu không hợp lệ"),
+        @ApiResponse(code = 401, message = "Chưa xác thực"),
+        @ApiResponse(code = 403, message = "Không có quyền tạo")
+    })
     public ResponseEntity<DataResponse<PracticeResponse>> createPractice(
             @RequestParam(value = "practice", required = false) String practiceJson,
             @RequestParam(value = "file", required = false) MultipartFile file) throws IOException {
@@ -102,6 +131,12 @@ public class PracticeController extends BaseController {
 
     // Cập nhật thông tin bài thực hành
     @PutMapping("/{id}")
+    @ApiOperation(value = "Cập nhật bài thực hành", notes = "Cập nhật thông tin bài thực hành theo ID")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Cập nhật thành công"),
+        @ApiResponse(code = 404, message = "Không tìm thấy bài thực hành"),
+        @ApiResponse(code = 400, message = "Dữ liệu không hợp lệ")
+    })
     public ResponseEntity<DataResponse<PracticeResponse>> updatePractice(
             @PathVariable Long id,
             @RequestParam(value = "practice", required = false) String practiceJson,
@@ -138,6 +173,11 @@ public class PracticeController extends BaseController {
 
     // Xóa bài thực hành
     @DeleteMapping("/{id}")
+    @ApiOperation(value = "Xóa bài thực hành", notes = "Xóa bài thực hành theo ID")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Xóa thành công"),
+        @ApiResponse(code = 404, message = "Không tìm thấy bài thực hành")
+    })
     public ResponseEntity<DataResponse<MessageResponse>> deletePractice(@PathVariable Long id) {
         if (practiceService.deletePractice(id)) {
             MessageResponse response = new MessageResponse();
@@ -151,6 +191,11 @@ public class PracticeController extends BaseController {
 
     // Thêm video vào bài thực hành
     @PostMapping("/{id}/videos")
+    @ApiOperation(value = "Thêm video vào bài thực hành", notes = "Upload video cho bài thực hành")
+    @ApiResponses(value = {
+        @ApiResponse(code = 201, message = "Thêm video thành công"),
+        @ApiResponse(code = 404, message = "Không tìm thấy bài thực hành")
+    })
     public ResponseEntity<DataResponse<PracticeVideo>> addVideoToPractice(
             @PathVariable Long id,
             @RequestParam(value = "video", required = false) MultipartFile video,
@@ -166,6 +211,11 @@ public class PracticeController extends BaseController {
 
     // Thêm tài liệu vào bài thực hành
     @PostMapping("/{id}/files")
+    @ApiOperation(value = "Thêm file vào bài thực hành", notes = "Upload file tài liệu cho bài thực hành")
+    @ApiResponses(value = {
+        @ApiResponse(code = 201, message = "Thêm file thành công"),
+        @ApiResponse(code = 404, message = "Không tìm thấy bài thực hành")
+    })
     public ResponseEntity<DataResponse<PracticeFile>> addFileToPractice(
             @PathVariable Long id,
             @RequestParam(value = "file", required = false) MultipartFile file,
@@ -181,6 +231,11 @@ public class PracticeController extends BaseController {
 
     // Thêm hướng dẫn vào bài thực hành
     @PostMapping("/{id}/guides")
+    @ApiOperation(value = "Thêm hướng dẫn vào bài thực hành", notes = "Tạo hướng dẫn mới cho bài thực hành")
+    @ApiResponses(value = {
+        @ApiResponse(code = 201, message = "Thêm hướng dẫn thành công"),
+        @ApiResponse(code = 404, message = "Không tìm thấy bài thực hành")
+    })
     public ResponseEntity<DataResponse<PracticeGuide>> addGuideToPractice(@PathVariable Long id, @RequestBody PracticeGuide guide) {
         Optional<PracticeGuide> createdGuide = practiceService.addGuideToPractice(id, guide);
         if (createdGuide.isPresent()) {
@@ -192,6 +247,11 @@ public class PracticeController extends BaseController {
     }
 
     @PutMapping("/guides/{guideId}")
+    @ApiOperation(value = "Cập nhật hướng dẫn", notes = "Cập nhật thông tin hướng dẫn")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Cập nhật thành công"),
+        @ApiResponse(code = 404, message = "Không tìm thấy hướng dẫn")
+    })
     public ResponseEntity<DataResponse<PracticeGuide>> updateGuide(@PathVariable Long guideId, @RequestBody PracticeGuide guide) {
         Optional<PracticeGuide> updatedGuide = practiceService.updateGuide(guideId, guide);
         if (updatedGuide.isPresent()) {

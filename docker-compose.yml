@@ -40,7 +40,7 @@ services:
     container_name: api-gateway
     image: tranvanhung26092002/api-gateway:latest
     ports:
-      - "8088:8088"
+      - "8080:8080"
     depends_on:
       - eureka-service
     env_file:
@@ -48,22 +48,10 @@ services:
     networks:
       - app-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8088/actuator/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
       interval: 30s
       timeout: 10s
       retries: 3
-
-  device-service:
-    container_name: device-service
-    image: tranvanhung26092002/device-service:latest
-    ports:
-      - "8082:8082"
-    depends_on:
-      - eureka-service
-    env_file:
-      - .env
-    networks:
-      - app-network
 
   user-service:
     container_name: user-service
@@ -77,11 +65,23 @@ services:
     networks:
       - app-network
 
-  notification-service:
-    container_name: notification-service
-    image: tranvanhung26092002/notification-service:latest
+  device-service:
+    container_name: device-service
+    image: tranvanhung26092002/device-service:latest
     ports:
-      - "8087:8087"
+      - "8082:8082"
+    depends_on:
+      - eureka-service
+    env_file:
+      - .env
+    networks:
+      - app-network
+
+  practice-service:
+    container_name: practice-service
+    image: tranvanhung26092002/practice-service:latest
+    ports:
+      - "8083:8083"
     depends_on:
       - eureka-service
     env_file:
@@ -93,17 +93,17 @@ services:
     container_name: mqtt-service
     image: tranvanhung26092002/mqtt-service:latest
     ports:
-      - "8085:8085"
+      - "8084:8084"
     env_file:
       - .env
     networks:
       - app-network
 
-  practice-service:
-    container_name: practice-service
-    image: tranvanhung26092002/practice-service:latest
+  notification-service:
+    container_name: notification-service
+    image: tranvanhung26092002/notification-service:latest
     ports:
-      - "8084:8084"
+      - "8085:8085"
     depends_on:
       - eureka-service
     env_file:
@@ -116,6 +116,18 @@ services:
     image: tranvanhung26092002/storage-service:latest
     ports:
       - "8086:8086"
+    depends_on:
+      - eureka-service
+    env_file:
+      - .env
+    networks:
+      - app-network
+
+  api-docs-service:
+    container_name: api-docs-service
+    image: tranvanhung26092002/api-docs-service:latest
+    ports:
+      - "8087:8087"
     depends_on:
       - eureka-service
     env_file:

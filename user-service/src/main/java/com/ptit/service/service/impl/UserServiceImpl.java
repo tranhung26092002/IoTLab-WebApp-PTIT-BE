@@ -13,7 +13,6 @@ import com.ptit.service.exception.ErrorCode;
 import com.ptit.service.repository.AttendanceRepository;
 import com.ptit.service.repository.UserRepository;
 import com.ptit.service.response.*;
-import com.ptit.service.service.EmailService;
 import com.ptit.service.service.UserNotificationService;
 import com.ptit.service.service.UserService;
 import com.ptit.service.util.AddressUtil;
@@ -52,7 +51,6 @@ import java.util.Map;
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final EmailService emailService;
     private final AddressUtil addressUtil;
     private final AttendanceRepository attendanceRepository;
     private final ModelMapper modelMapper;
