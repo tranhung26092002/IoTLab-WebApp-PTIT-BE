@@ -25,42 +25,42 @@ services:
   user:
     name: "User Service"
     url: ${USER_URL}
-    swagger-ui: ${USER_URL}/swagger-ui/
+    swagger-ui: ${USER_URL}/swagger-ui/index.html#/
     api-docs: ${USER_URL}/v2/api-docs
     description: "Quản lý người dùng và xác thực"
     color: "#007bff"
   device:
     name: "Device Service"
     url: ${DEVICE_URL}
-    swagger-ui: ${DEVICE_URL}/swagger-ui/
+    swagger-ui: ${DEVICE_URL}/swagger-ui/index.html#/
     api-docs: ${DEVICE_URL}/v2/api-docs
     description: "Quản lý thiết bị IoT"
     color: "#28a745"
   practice:
     name: "Practice Service"
     url: ${PRACTICE_URL}
-    swagger-ui: ${PRACTICE_URL}/swagger-ui/
+    swagger-ui: ${PRACTICE_URL}/swagger-ui/index.html#/
     api-docs: ${PRACTICE_URL}/v2/api-docs
     description: "Quản lý thực hành và bài thi"
     color: "#ffc107"
   mqtt:
     name: "MQTT Service"
     url: ${MQTT_URL}
-    swagger-ui: ${MQTT_URL}/swagger-ui/
+    swagger-ui: ${MQTT_URL}/swagger-ui/index.html#/
     api-docs: ${MQTT_URL}/v2/api-docs
     description: "Giao tiếp MQTT với thiết bị"
     color: "#17a2b8"
   notification:
     name: "Notification Service"
     url: ${NOTIFICATION_URL}
-    swagger-ui: ${NOTIFICATION_URL}/swagger-ui/
+    swagger-ui: ${NOTIFICATION_URL}/swagger-ui/index.html#/
     api-docs: ${NOTIFICATION_URL}/v2/api-docs
     description: "Gửi thông báo và email"
     color: "#dc3545"
   storage:
     name: "Storage Service"
     url: ${STORAGE_URL}
-    swagger-ui: ${STORAGE_URL}/swagger-ui/
+    swagger-ui: ${STORAGE_URL}/swagger-ui/index.html#/
     api-docs: ${STORAGE_URL}/v2/api-docs
     description: "Quản lý file và tài liệu"
     color: "#6f42c1"

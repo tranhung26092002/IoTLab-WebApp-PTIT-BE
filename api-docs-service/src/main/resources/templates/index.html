@@ -18,7 +18,7 @@
             box-shadow: 0 10px 25px rgba(0,0,0,0.15);
         }
         .service-header {
-            background: linear-gradient(135deg, var(--service-color), var(--service-color-dark));
+            background: var(--service-color);
             color: white;
             padding: 20px;
             text-align: center;
@@ -156,7 +156,7 @@
                     {
                         name: "User Service",
                         url: "${USER_URL:http://localhost:8081/user}",
-                        swaggerUi: "${USER_URL:http://localhost:8081/user}/swagger-ui/",
+                        swaggerUi: "${USER_URL:http://localhost:8081/user}/swagger-ui/index.html#/",
                         apiDocs: "${USER_URL:http://localhost:8081/user}/v2/api-docs",
                         description: "Quản lý người dùng và xác thực",
                         color: "#007bff",
@@ -167,7 +167,7 @@
                     {
                         name: "Device Service",
                         url: "${DEVICE_URL:http://localhost:8082/device}",
-                        swaggerUi: "${DEVICE_URL:http://localhost:8082/device}/swagger-ui/",
+                        swaggerUi: "${DEVICE_URL:http://localhost:8082/device}/swagger-ui/index.html#/",
                         apiDocs: "${DEVICE_URL:http://localhost:8082/device}/v2/api-docs",
                         description: "Quản lý thiết bị IoT",
                         color: "#28a745",
@@ -178,7 +178,7 @@
                     {
                         name: "Practice Service",
                         url: "${PRACTICE_URL:http://localhost:8083/practice}",
-                        swaggerUi: "${PRACTICE_URL:http://localhost:8083/practice}/swagger-ui/",
+                        swaggerUi: "${PRACTICE_URL:http://localhost:8083/practice}/swagger-ui/index.html#/",
                         apiDocs: "${PRACTICE_URL:http://localhost:8083/practice}/v2/api-docs",
                         description: "Quản lý thực hành và bài thi",
                         color: "#ffc107",
@@ -189,7 +189,7 @@
                     {
                         name: "MQTT Service",
                         url: "${MQTT_URL:http://localhost:8084/mqtt}",
-                        swaggerUi: "${MQTT_URL:http://localhost:8084/mqtt}/swagger-ui/",
+                        swaggerUi: "${MQTT_URL:http://localhost:8084/mqtt}/swagger-ui/index.html#/",
                         apiDocs: "${MQTT_URL:http://localhost:8084/mqtt}/v2/api-docs",
                         description: "Giao tiếp MQTT với thiết bị",
                         color: "#17a2b8",
@@ -200,7 +200,7 @@
                     {
                         name: "Notification Service",
                         url: "${NOTIFICATION_URL:http://localhost:8085/notification}",
-                        swaggerUi: "${NOTIFICATION_URL:http://localhost:8085/notification}/swagger-ui/",
+                        swaggerUi: "${NOTIFICATION_URL:http://localhost:8085/notification}/swagger-ui/index.html#/",
                         apiDocs: "${NOTIFICATION_URL:http://localhost:8085/notification}/v2/api-docs",
                         description: "Gửi thông báo và email",
                         color: "#dc3545",
@@ -211,7 +211,7 @@
                     {
                         name: "Storage Service",
                         url: "${STORAGE_URL:http://localhost:8086/storage}",
-                        swaggerUi: "${STORAGE_URL:http://localhost:8086/storage}/swagger-ui/",
+                        swaggerUi: "${STORAGE_URL:http://localhost:8086/storage}/swagger-ui/index.html#/",
                         apiDocs: "${STORAGE_URL:http://localhost:8086/storage}/v2/api-docs",
                         description: "Quản lý file và tài liệu",
                         color: "#6f42c1",
@@ -243,7 +243,9 @@
                                 </span>
                             </div>
                             <div class="service-header">
-                                <h5 class="mb-2">${service.name}</h5>
+                                <h5 class="mb-2 service-title" style="font-weight: bold; font-size: 1.4rem;">
+                                    ${service.name}
+                                </h5>
                                 <p class="mb-0 small opacity-75">${service.description}</p>
                             </div>
                             <div class="service-body">
@@ -280,8 +282,31 @@
                 
                 // Update services with health status
                 services.forEach(service => {
-                    // Tạo service key từ tên service
-                    const serviceKey = service.name.toLowerCase().replace(/\s+/g, '-') + '-service';
+                    // Tạo service key từ tên service - cải thiện mapping
+                    let serviceKey = '';
+                    switch(service.name.toLowerCase()) {
+                        case 'user service':
+                            serviceKey = 'user-service';
+                            break;
+                        case 'device service':
+                            serviceKey = 'device-service';
+                            break;
+                        case 'practice service':
+                            serviceKey = 'practice-service';
+                            break;
+                        case 'mqtt service':
+                            serviceKey = 'mqtt-service';
+                            break;
+                        case 'notification service':
+                            serviceKey = 'notification-service';
+                            break;
+                        case 'storage service':
+                            serviceKey = 'storage-service';
+                            break;
+                        default:
+                            serviceKey = service.name.toLowerCase().replace(/\s+/g, '-') + '-service';
+                    }
+                    
                     if (healthData[serviceKey]) {
                         const health = healthData[serviceKey];
                         service.isHealthy = health.status === 'UP';
@@ -334,7 +359,31 @@
                 const healthData = await response.json();
                 
                 services.forEach(service => {
-                    const serviceKey = service.name.toLowerCase().replace(/\s+/g, '-') + '-service';
+                    // Sử dụng cùng logic mapping như trong checkAllHealth
+                    let serviceKey = '';
+                    switch(service.name.toLowerCase()) {
+                        case 'user service':
+                            serviceKey = 'user-service';
+                            break;
+                        case 'device service':
+                            serviceKey = 'device-service';
+                            break;
+                        case 'practice service':
+                            serviceKey = 'practice-service';
+                            break;
+                        case 'mqtt service':
+                            serviceKey = 'mqtt-service';
+                            break;
+                        case 'notification service':
+                            serviceKey = 'notification-service';
+                            break;
+                        case 'storage service':
+                            serviceKey = 'storage-service';
+                            break;
+                        default:
+                            serviceKey = service.name.toLowerCase().replace(/\s+/g, '-') + '-service';
+                    }
+                    
                     if (healthData[serviceKey]) {
                         const health = healthData[serviceKey];
                         const newStatus = health.status || 'Unknown';
