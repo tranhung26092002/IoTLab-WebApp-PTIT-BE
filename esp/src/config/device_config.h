@@ -46,4 +46,7 @@
 // Web Server Configuration
 #define WEB_SERVER_PORT 80
 
+// LED Status Pin
+#define STATUS_LED_PIN 2  // Chân GPIO2 thường có sẵn led trên board ESP32
+
 #endif 

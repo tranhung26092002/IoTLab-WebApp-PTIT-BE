@@ -1,161 +1,173 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ESP32 IoT Device Configuration</title>
+    <title>Cấu hình thiết bị IoT ESP32</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f5f5f5;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(120deg, #e0e7ff 0%, #f5f5f5 100%);
+            margin: 0;
+            padding: 0;
         }
         .container {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            background: #fff;
+            max-width: 500px;
+            margin: 40px auto;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            padding: 32px 24px 24px 24px;
         }
         h1 {
-            color: #333;
+            color: #1e40af;
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 16px;
+        }
+        .info {
+            background: #f0f9ff;
+            border-left: 4px solid #2563eb;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            font-size: 15px;
+        }
+        .info strong {
+            color: #1e40af;
         }
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 18px;
         }
         label {
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 6px;
             display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-            color: #555;
         }
         input[type="text"], input[type="password"], textarea {
             width: 100%;
             padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 15px;
+            background: #f9fafb;
             box-sizing: border-box;
         }
         textarea {
-            height: 80px;
+            min-height: 60px;
             resize: vertical;
         }
         button {
-            background-color: #007bff;
-            color: white;
-            padding: 12px 30px;
+            background: linear-gradient(90deg, #2563eb 0%, #1e40af 100%);
+            color: #fff;
             border: none;
-            border-radius: 5px;
+            border-radius: 6px;
+            padding: 12px 0;
             font-size: 16px;
-            cursor: pointer;
+            font-weight: 600;
             width: 100%;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background 0.2s;
         }
         button:hover {
-            background-color: #0056b3;
+            background: linear-gradient(90deg, #1e40af 0%, #2563eb 100%);
         }
-        .info {
-            background-color: #e7f3ff;
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            border-left: 4px solid #007bff;
+        .success {
+            color: #16a34a;
+            text-align: center;
+            margin-top: 20px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>ESP32 IoT Device Configuration</h1>
-        
-        <div class="info">
-            <strong>Device Information:</strong><br>
-            MAC Address: <span id="mac-address">Loading...</span><br>
-            Device Type: <span id="device-type">Loading...</span><br>
-            Active Code: <span id="active-code">Loading...</span>
+        <h1>Cấu hình thiết bị IoT ESP32</h1>
+        <div class="info" id="device-info">
+            <strong>Đang tải thông tin thiết bị...</strong>
         </div>
-        
         <form id="config-form">
             <div class="form-group">
-                <label for="ssid">WiFi Network Name (SSID):</label>
+                <label for="ssid">Tên WiFi (SSID):</label>
                 <input type="text" id="ssid" name="ssid" required>
             </div>
-            
             <div class="form-group">
-                <label for="password">WiFi Password:</label>
+                <label for="password">Mật khẩu WiFi:</label>
                 <input type="password" id="password" name="password" required>
             </div>
-            
             <div class="form-group">
-                <label for="device_name">Device Name:</label>
-                <input type="text" id="device_name" name="device_name" 
-                       placeholder="e.g., Temperature Sensor Lab A" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="device_description">Device Description:</label>
-                <textarea id="device_description" name="device_description" 
-                          placeholder="e.g., Monitor temperature and humidity in Lab A"></textarea>
-            </div>
-            
-            <div class="form-group">
-                <label for="mqtt_broker">MQTT Broker Address:</label>
-                <input type="text" id="mqtt_broker" name="mqtt_broker" placeholder="e.g., broker.hivemq.com" required>
+                <label for="device_name">Tên thiết bị:</label>
+                <input type="text" id="device_name" name="device_name" required>
             </div>
             <div class="form-group">
-                <label for="mqtt_port">MQTT Port:</label>
-                <input type="text" id="mqtt_port" name="mqtt_port" placeholder="e.g., 1883" required>
+                <label for="device_description">Mô tả thiết bị:</label>
+                <textarea id="device_description" name="device_description"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="mqtt_broker">Địa chỉ MQTT Broker:</label>
+                <input type="text" id="mqtt_broker" name="mqtt_broker" required>
+            </div>
+            <div class="form-group">
+                <label for="mqtt_port">Cổng MQTT:</label>
+                <input type="text" id="mqtt_port" name="mqtt_port" required>
             </div>
             <div class="form-group">
                 <label for="mqtt_username">MQTT Username:</label>
-                <input type="text" id="mqtt_username" name="mqtt_username" placeholder="(optional)">
+                <input type="text" id="mqtt_username" name="mqtt_username">
             </div>
             <div class="form-group">
                 <label for="mqtt_password">MQTT Password:</label>
-                <input type="password" id="mqtt_password" name="mqtt_password" placeholder="(optional)">
+                <input type="password" id="mqtt_password" name="mqtt_password">
             </div>
-            
-            <button type="submit">Save Configuration</button>
+            <button type="submit">Lưu cấu hình</button>
         </form>
+        <div class="success" id="success-message" style="display:none"></div>
     </div>
-    
     <script>
-        // Display device information
-        document.getElementById('mac-address').textContent = 'AA:BB:CC:DD:EE:FF';
-        document.getElementById('device-type').textContent = 'TEMPERATURE_HUMIDITY_SENSOR';
-        document.getElementById('active-code').textContent = 'IOT_ACT_123456789';
-        
-        // Handle form submission
+        // Lấy thông tin thiết bị động từ ESP32
+        fetch('/device-info')
+            .then(res => res.json())
+            .then(info => {
+                document.getElementById('device-info').innerHTML = `
+                    <strong>Thông tin thiết bị:</strong><br>
+                    <b>Tên thiết bị:</b> ${info.deviceName || 'Chưa đặt'}<br>
+                    <b>Loại thiết bị:</b> ${info.deviceType}<br>
+                    <b>MAC:</b> ${info.mac}<br>
+                    <b>Firmware:</b> ${info.firmware}<br>
+                    <b>Active Code:</b> ${info.activeCode}<br>
+                    <b>SSID:</b> ${info.ssid}<br>
+                    <b>Mô tả:</b> ${info.deviceDescription || 'Chưa có'}
+                `;
+                // Gợi ý điền sẵn các trường nếu đã có cấu hình
+                if(info.deviceName) document.getElementById('device_name').value = info.deviceName;
+                if(info.deviceDescription) document.getElementById('device_description').value = info.deviceDescription;
+                if(info.ssid) document.getElementById('ssid').value = info.ssid;
+                if(info.mqttBroker) document.getElementById('mqtt_broker').value = info.mqttBroker;
+                if(info.mqttPort) document.getElementById('mqtt_port').value = info.mqttPort;
+                if(info.mqttUsername) document.getElementById('mqtt_username').value = info.mqttUsername;
+                if(info.mqttPassword) document.getElementById('mqtt_password').value = info.mqttPassword;
+            })
+            .catch(() => {
+                document.getElementById('device-info').innerHTML = '<span style="color:red">Không lấy được thông tin thiết bị!</span>';
+            });
+        // Xử lý submit form
         document.getElementById('config-form').addEventListener('submit', function(e) {
             e.preventDefault();
-            
             const formData = new FormData(this);
-            
             fetch('/save-config', {
                 method: 'POST',
                 body: formData
             })
             .then(response => response.text())
             .then(data => {
-                alert(data);
+                document.getElementById('success-message').style.display = 'block';
+                document.getElementById('success-message').textContent = data;
                 if (data.includes('successfully')) {
-                    // Show restart message
-                    document.body.innerHTML = `
-                        <div class="container">
-                            <h1>Configuration Saved!</h1>
-                            <div class="info">
-                                <p>Your device configuration has been saved successfully.</p>
-                                <p>The device will now restart and attempt to connect to the specified WiFi network.</p>
-                                <p>You can close this page and disconnect from the ESP32 WiFi network.</p>
-                            </div>
-                        </div>
-                    `;
+                    setTimeout(() => location.reload(), 3000);
                 }
             })
             .catch(error => {
-                alert('Error saving configuration: ' + error);
+                alert('Lỗi khi lưu cấu hình: ' + error);
             });
         });
     </script>

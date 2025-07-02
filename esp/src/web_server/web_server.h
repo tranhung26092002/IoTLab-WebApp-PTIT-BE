@@ -13,10 +13,7 @@ public:
     void begin();
     void startConfigurationMode();
     void stopConfigurationMode();
-    void handleRoot(AsyncWebServerRequest *request);
-    void handleConfigure(AsyncWebServerRequest *request);
     void handleSaveConfig(AsyncWebServerRequest *request);
-    void handleSaveMqttConfig(AsyncWebServerRequest *request);
 };
 
 #endif 

@@ -1,27 +1,54 @@
 #include "web_server.h"
 #include "../config/device_config.h"
 #include "../utils/eeprom_manager.h"
+#include "../utils/led_manager.h"
+
+extern LedManager ledManager;
 
 WebServer::WebServer() : server(WEB_SERVER_PORT) {}
 
 void WebServer::begin() {
-    // Khởi động web server
+    if (!SPIFFS.begin(true)) {
+        Serial.println("Lỗi mount SPIFFS!");
+        return;
+    }
+    server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
+        request->send(SPIFFS, "/config.html", "text/html");
+    });
+    server.on("/device-info", HTTP_GET, [](AsyncWebServerRequest *request){
+        EepromManager eeprom;
+        eeprom.begin();
+        String mac = WiFi.macAddress();
+        String ssid = String(AP_SSID_PREFIX) + mac.substring(mac.length() - 6);
+        String json = "{";
+        json += "\"mac\":\"" + mac + "\",";
+        json += "\"deviceType\":\"" + String(DEVICE_TYPE) + "\",";
+        json += "\"firmware\":\"" + String(FIRMWARE_VERSION) + "\",";
+        json += "\"activeCode\":\"" + String(ACTIVE_CODE) + "\",";
+        json += "\"deviceName\":\"" + eeprom.getDeviceName() + "\",";
+        json += "\"deviceDescription\":\"" + eeprom.getDeviceDescription() + "\",";
+        json += "\"ssid\":\"" + eeprom.getWifiSsid() + "\",";
+        json += "\"mqttBroker\":\"" + eeprom.getMqttBroker() + "\",";
+        json += "\"mqttPort\":\"" + String(eeprom.getMqttPort()) + "\",";
+        json += "\"mqttUsername\":\"" + eeprom.getMqttUsername() + "\",";
+        json += "\"mqttPassword\":\"" + eeprom.getMqttPassword() + "\"";
+        json += "}";
+        request->send(200, "application/json", json);
+    });
+    server.on("/save-config", HTTP_POST, [this](AsyncWebServerRequest *request){
+        this->handleSaveConfig(request);
+    });
+    server.begin();
+    Serial.println("Web server đã khởi động!");
 }
 
 void WebServer::startConfigurationMode() {
     isConfigurationMode = true;
+    ledManager.setStatus(LED_FAST_BLINK);
 }
 
 void WebServer::stopConfigurationMode() {
     isConfigurationMode = false;
-}
-
-void WebServer::handleRoot(AsyncWebServerRequest *request) {
-    // Xử lý root
-}
-
-void WebServer::handleConfigure(AsyncWebServerRequest *request) {
-    // Xử lý cấu hình
 }
 
 void WebServer::handleSaveConfig(AsyncWebServerRequest *request) {
@@ -60,8 +87,4 @@ void WebServer::handleSaveConfig(AsyncWebServerRequest *request) {
     request->send(200, "text/plain", "Configuration saved successfully. Device will restart.");
     delay(1000);
     ESP.restart();
-}
-
-void WebServer::handleSaveMqttConfig(AsyncWebServerRequest *request) {
-    // Lưu thông tin MQTT broker từ request
 } 
