@@ -1,7 +1,0 @@
-me-no-dev/ESPAsyncWebServer @ ^1.2.3
-adafruit/Adafruit BMP280 Library @ ^2.6.6
-bblanchon/ArduinoJson @ ^6.21.3
-adafruit/DHT sensor library @ ^1.4.4
-me-no-dev/AsyncTCP @ ^1.1.1
-adafruit/Adafruit Unified Sensor @ ^1.1.9
-knolleary/PubSubClient @ ^2.8
