@@ -4,7 +4,7 @@ pipeline {
     environment {
         DOCKER_REGISTRY = 'tranvanhung26092002'
         DOCKER_CREDENTIALS = credentials('docker-hub-credentials')
-        SERVICES = ['api-gateway', 'user-service', 'device-service', 'data-service', 'notification-service']
+        SERVICES = ['api-gateway', 'user-service', 'device-service', 'practice-service', 'storage-service']
         MAVEN_OPTS = '-Dmaven.repo.local=/tmp/maven-repo'
         JAVA_HOME = tool 'JDK17'
     }

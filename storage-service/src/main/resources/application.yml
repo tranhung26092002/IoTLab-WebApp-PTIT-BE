@@ -1,15 +1,15 @@
 server:
-  port: 8086
+  port: 8084
   address: 0.0.0.0
   servlet:
     context-path: /storage
 
 spring:
-  mvc:
-    dispatch-options-request: true
   application:
     name: STORAGE-SERVICE
     environment: ${ENVIRONMENT}
+
+  # File Upload Configuration
   servlet:
     multipart:
       enabled: true
@@ -17,21 +17,22 @@ spring:
       max-request-size: 200MB
       file-size-threshold: 10KB
 
+# Storage Configuration
 storage:
-  location: ${STORAGE_LOCATION}
+  location: ${STORAGE_LOCATION:./uploads}
 
-logging:
-  level:
-    org:
-      springframework:
-        boot:
-          autoconfigure: INFO
-
-debug: ${DEBUG}
+# Async Configuration
 async:
   config:
-    core-pool-size: ${ASYNC_CORE_POOL_SIZE}
+    core-pool-size: ${ASYNC_CORE_POOL_SIZE:5}
 
+# Logging Configuration
+logging:
+  level:
+    org.springframework.boot.autoconfigure: INFO
+    com.ptit.service: DEBUG
+
+# Eureka Client Configuration
 eureka:
   client:
     serviceUrl:
@@ -46,10 +47,11 @@ eureka:
     lease-expiration-duration-in-seconds: 90
     health-check-url-path: /actuator/health
 
+# External Service URLs
 ptit:
   storage-service: ${STORAGE_SERVICE}
 
-  # Cấu hình actuator
+# Actuator Configuration
 management:
   endpoints:
     web:

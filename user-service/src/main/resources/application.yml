@@ -4,6 +4,7 @@ server:
   servlet:
     context-path: /user
 
+# JWT Configuration
 jwt:
   secret: ${JWT_SECRET}
   expiration: 86400000 # 24 hours in milliseconds
@@ -13,11 +14,11 @@ refresh-token:
   key: ${REFRESH_TOKEN_KEY}
 
 spring:
-  mvc:
-    dispatch-options-request: true
   application:
     name: USER-SERVICE
     environment: ${ENVIRONMENT}
+
+  # Database Configuration
   datasource:
     url: ${SPRING_DATASOURCE_URL}
     username: ${SPRING_DATASOURCE_USERNAME}
@@ -27,6 +28,7 @@ spring:
       connection-timeout: ${DB_CONNECTION_TIMEOUT}
       maximum-pool-size: ${DB_MAX_POOL_SIZE}
       max-lifetime: ${DB_MAX_LIFETIME}
+
   jpa:
     show-sql: ${DEBUG}
     open-in-view: false
@@ -36,21 +38,18 @@ spring:
     properties:
       hibernate:
         enable_lazy_load_no_trans: true
-        temp:
-          use_jdbc_metadata_defaults: false
-        jdbc:
-          lob:
-            non_contextual_creation: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
         show_sql: ${DEBUG}
-  main:
-    allow-bean-definition-overriding: true
+
+  # File Upload Configuration
   servlet:
     multipart:
       max-file-size: 20MB
       max-request-size: 20MB
       enabled: true
       file-size-threshold: 2KB
+
+  # OAuth2 Configuration
   security:
     oauth2:
       client:
@@ -69,14 +68,14 @@ spring:
               - email
               - public_profile
 
-  # RabbitMQ settings
-  rabbitmq:
-    host: ${RABBITMQ_HOST}
-    port: ${RABBITMQ_PORT}
-    username: ${RABBITMQ_USERNAME}
-    password: ${RABBITMQ_PASSWORD}
+# RabbitMQ Configuration (Disabled)
+rabbitmq:
+  enabled: false
+  host: ${RABBITMQ_HOST}
+  port: ${RABBITMQ_PORT}
+  username: ${RABBITMQ_USERNAME}
+  password: ${RABBITMQ_PASSWORD}
 
-# User Service RabbitMQ Configuration
 user:
   exchange: user.exchange
   created:
@@ -89,19 +88,18 @@ user:
     routing:
       key: user.login.routing.key
 
-debug: ${DEBUG}
-
+# Async Configuration
 async:
   config:
     core-pool-size: ${ASYNC_CORE_POOL_SIZE}
 
+# Logging Configuration
 logging:
   level:
-    org:
-      springframework:
-        boot:
-          autoconfigure: INFO
+    org.springframework.boot.autoconfigure: INFO
+    com.ptit.service: DEBUG
 
+# Eureka Client Configuration
 eureka:
   client:
     serviceUrl:
@@ -116,9 +114,11 @@ eureka:
     lease-expiration-duration-in-seconds: 90
     health-check-url-path: /actuator/health
 
+# External Service URLs
 ptit:
   storage-service: ${STORAGE_SERVICE}
 
+# Email Service Configuration (Brevo)
 brevo:
   api:
     key: ${BREVO_API_KEY}
@@ -126,7 +126,7 @@ brevo:
     email: ${BREVO_SENDER_EMAIL}
     name: ${BREVO_SENDER_NAME}
 
-# Cấu hình actuator
+# Actuator Configuration
 management:
   endpoints:
     web:
@@ -135,3 +135,8 @@ management:
   endpoint:
     health:
       show-details: always
+  health:
+    rabbit:
+      enabled: false
+    db:
+      enabled: true

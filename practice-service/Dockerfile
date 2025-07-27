@@ -8,8 +8,8 @@ WORKDIR /app
 # Giả sử rằng file JAR được tạo ra trong thư mục target với tên tương ứng với project
 COPY target/practice-service.jar app.jar
 
-# Mở cổng 8084 cho device service
-EXPOSE 8084
+# Mở cổng 8083 cho practice service
+EXPOSE 8083
 
 # Chạy ứng dụng Eureka
 ENTRYPOINT ["java", "-jar", "app.jar"]

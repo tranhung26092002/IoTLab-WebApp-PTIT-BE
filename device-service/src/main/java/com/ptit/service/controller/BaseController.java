@@ -22,7 +22,7 @@ public abstract class BaseController {
      * Trả về response thành công với message
      */
     protected ResponseEntity<DataResponse<MessageResponse>> success(String message) {
-        MessageResponse messageResponse = new MessageResponse();
+        MessageResponse messageResponse = MessageResponse.builder().message(message).build();
         return ResponseEntity.ok(DataResponse.success(messageResponse));
     }
 
@@ -37,7 +37,8 @@ public abstract class BaseController {
     /**
      * Trả về response thành công với pagination data từ Page với mapping
      */
-    protected <T, S> ResponseEntity<DataResponse<PaginationData<S>>> successWithPagination(Page<T> page, Class<S> responseClass) {
+    protected <T, S> ResponseEntity<DataResponse<PaginationData<S>>> successWithPagination(Page<T> page,
+            Class<S> responseClass) {
         PaginationData<S> paginationData = PaginationData.fromPageWithMapping(page, responseClass);
         return ResponseEntity.ok(DataResponse.successWithPagination(paginationData));
     }
@@ -45,7 +46,8 @@ public abstract class BaseController {
     /**
      * Trả về response thành công với pagination data từ PaginationData
      */
-    protected <T> ResponseEntity<DataResponse<PaginationData<T>>> successWithPagination(PaginationData<T> paginationData) {
+    protected <T> ResponseEntity<DataResponse<PaginationData<T>>> successWithPagination(
+            PaginationData<T> paginationData) {
         return ResponseEntity.ok(DataResponse.successWithPagination(paginationData));
     }
 
@@ -60,7 +62,7 @@ public abstract class BaseController {
      * Trả về response created với message
      */
     protected ResponseEntity<DataResponse<MessageResponse>> created(String message) {
-        MessageResponse messageResponse = new MessageResponse();
+        MessageResponse messageResponse = MessageResponse.builder().message(message).build();
         return ResponseEntity.ok(DataResponse.created(messageResponse));
     }
 
@@ -70,4 +72,4 @@ public abstract class BaseController {
     protected <T> ResponseEntity<DataResponse<T>> noContent() {
         return ResponseEntity.ok(DataResponse.noContent());
     }
-} 
+}

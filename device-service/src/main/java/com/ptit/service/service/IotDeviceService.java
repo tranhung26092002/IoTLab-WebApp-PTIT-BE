@@ -19,6 +19,10 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -96,7 +100,8 @@ public class IotDeviceService {
             device.setDescription(activationDTO.getDescription());
             device.setStatus(DeviceStatus.ACTIVE);
             device.setActivatedAt(LocalDateTime.now());
-            // device.setActivatedBy(getCurrentUserId()); // TODO: Implement user authentication
+            // device.setActivatedBy(getCurrentUserId()); // TODO: Implement user
+            // authentication
 
             deviceRepository.save(device);
 
@@ -185,8 +190,8 @@ public class IotDeviceService {
         try {
             IotDeviceCommand command = new IotDeviceCommand();
             command.setDevice(device);
-            command.setCommandType("ACTIVATE");
-            
+            command.setCommand("ACTIVATE");
+
             // Create command data
             IotDeviceConfig config = configRepository.findByDeviceId(device.getId()).orElse(null);
             if (config != null) {
@@ -194,7 +199,7 @@ public class IotDeviceService {
                 // Send command via MQTT
                 mqttCommandService.sendActivationCommand(device, config);
             }
-            
+
             command.setStatus("SENT");
             commandRepository.save(command);
 
@@ -209,7 +214,7 @@ public class IotDeviceService {
         try {
             IotDeviceCommand command = new IotDeviceCommand();
             command.setDevice(device);
-            command.setCommandType("DEACTIVATE");
+            command.setCommand("DEACTIVATE");
             command.setStatus("SENT");
             commandRepository.save(command);
 
@@ -227,7 +232,7 @@ public class IotDeviceService {
         try {
             IotDeviceCommand command = new IotDeviceCommand();
             command.setDevice(device);
-            command.setCommandType("RESTART");
+            command.setCommand("RESTART");
             command.setStatus("SENT");
             commandRepository.save(command);
 
@@ -240,4 +245,51 @@ public class IotDeviceService {
             log.error("Error sending restart command: {}", e.getMessage(), e);
         }
     }
-} 
+
+    public boolean sendCommand(Long deviceId, String command) {
+        try {
+            Device device = deviceRepository.findById(deviceId).orElse(null);
+            if (device == null || !device.isIotDevice()) {
+                return false;
+            }
+
+            IotDeviceCommand deviceCommand = new IotDeviceCommand();
+            deviceCommand.setDevice(device);
+            deviceCommand.setCommand("CUSTOM");
+            deviceCommand.setCommandData(command);
+            deviceCommand.setStatus("SENT");
+            commandRepository.save(deviceCommand);
+
+            // Send command via MQTT
+            mqttCommandService.sendCustomCommand(device, command);
+
+            log.info("Custom command sent for device: {}", device.getCode());
+            return true;
+
+        } catch (Exception e) {
+            log.error("Error sending custom command: {}", e.getMessage(), e);
+            return false;
+        }
+    }
+
+    public List<Object> getCommandHistory(Long deviceId) {
+        try {
+            List<IotDeviceCommand> commands = commandRepository.findByDeviceIdOrderByCreatedAtDesc(deviceId.toString());
+            return commands.stream()
+                    .map(cmd -> {
+                        Map<String, Object> commandMap = new HashMap<>();
+                        commandMap.put("id", cmd.getId());
+                        commandMap.put("command", cmd.getCommand());
+                        commandMap.put("commandData", cmd.getCommandData());
+                        commandMap.put("status", cmd.getStatus());
+                        commandMap.put("createdAt", cmd.getCreatedAt());
+                        commandMap.put("executedAt", cmd.getExecutedAt());
+                        return commandMap;
+                    })
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            log.error("Error getting command history: {}", e.getMessage(), e);
+            return new ArrayList<>();
+        }
+    }
+}

@@ -6,6 +6,8 @@ import com.ptit.service.entity.enums.DeviceStatus;
 import com.ptit.service.exception.BaseException;
 import com.ptit.service.exception.ErrorCode;
 import com.ptit.service.repository.DeviceRepository;
+import com.ptit.service.response.DeviceResponse;
+import com.ptit.service.response.ResponsePage;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -38,6 +40,15 @@ public class DeviceService {
 
     public Page<Device> getAllDevices(Pageable pageable) {
         return deviceRepository.findAll(pageable);
+    }
+
+    public ResponsePage<Device, DeviceResponse> getAllDevicesResponse(Pageable pageable) {
+        Page<Device> devices = deviceRepository.findAll(pageable);
+        return new ResponsePage<>(devices, DeviceResponse.class);
+    }
+
+    public Device saveDevice(Device device) {
+        return deviceRepository.save(device);
     }
 
     public Device createDevice(Device deviceDto, MultipartFile file) {
@@ -101,6 +112,10 @@ public class DeviceService {
     public Device getDeviceByCode(String code) {
         return deviceRepository.findByCode(code)
                 .orElseThrow(() -> new RuntimeException("Device not found"));
+    }
+
+    public Device findByCode(String code) {
+        return deviceRepository.findByCode(code).orElse(null);
     }
 
     public void deleteDevice(Long id) {

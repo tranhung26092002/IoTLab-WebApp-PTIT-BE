@@ -10,15 +10,23 @@ spring:
         globalcors:
           add-to-simple-url-handler-mapping: true
 
+  # Template Configuration
+  thymeleaf:
+    cache: false
+    prefix: classpath:/templates/
+    suffix: .html
+
+# Gateway Configuration
 gateway:
   valid-token-url: ${VALID_TOKEN_URL}
 
+# Eureka Client Configuration
 eureka:
   client:
     serviceUrl:
       defaultZone: ${EUREKA_URI}
 
-# Cho phép endpoint health được truy cập
+# Actuator Configuration
 management:
   endpoints:
     web:
@@ -28,3 +36,39 @@ management:
     health:
       show-details: always
 
+# Service Configuration
+services:
+  user:
+    name: "User Service"
+    url: ${USER_URL}
+    swagger-ui: ${USER_URL}/swagger-ui/index.html#/
+    api-docs: ${USER_URL}/v2/api-docs
+    description: "Quản lý người dùng và xác thực"
+    color: "#007bff"
+  device:
+    name: "Device Service"
+    url: ${DEVICE_URL}
+    swagger-ui: ${DEVICE_URL}/swagger-ui/index.html#/
+    api-docs: ${DEVICE_URL}/v2/api-docs
+    description: "Quản lý thiết bị IoT"
+    color: "#28a745"
+  practice:
+    name: "Practice Service"
+    url: ${PRACTICE_URL}
+    swagger-ui: ${PRACTICE_URL}/swagger-ui/index.html#/
+    api-docs: ${PRACTICE_URL}/v2/api-docs
+    description: "Quản lý bài thực hành và bài thi"
+    color: "#ffc107"
+  storage:
+    name: "Storage Service"
+    url: ${STORAGE_URL}
+    swagger-ui: ${STORAGE_URL}/swagger-ui/index.html#/
+    api-docs: ${STORAGE_URL}/v2/api-docs
+    description: "Quản lý lưu trữ file"
+    color: "#6f42c1"
+
+# Logging Configuration
+logging:
+  level:
+    com.ptit.service: DEBUG
+    org.springframework.web: DEBUG

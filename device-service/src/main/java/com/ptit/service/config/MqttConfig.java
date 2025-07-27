@@ -1,22 +1,19 @@
 package com.ptit.service.config;
 
-import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
+import org.eclipse.paho.client.mqttv3.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.integration.annotation.ServiceActivator;
-import org.springframework.integration.channel.DirectChannel;
-import org.springframework.integration.core.MessageProducer;
-import org.springframework.integration.mqtt.core.DefaultMqttPahoClientFactory;
-import org.springframework.integration.mqtt.core.MqttPahoClientFactory;
-import org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter;
-import org.springframework.integration.mqtt.outbound.MqttPahoMessageHandler;
-import org.springframework.integration.mqtt.support.DefaultPahoMessageConverter;
-import org.springframework.messaging.MessageChannel;
-import org.springframework.messaging.MessageHandler;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.web.socket.config.annotation.EnableWebSocket;
 
 @Configuration
+@EnableWebSocket
 public class MqttConfig {
+
+    private static final Logger logger = LoggerFactory.getLogger(MqttConfig.class);
 
     @Value("${mqtt.broker.url}")
     private String brokerUrl;
@@ -30,52 +27,40 @@ public class MqttConfig {
     @Value("${mqtt.password}")
     private String password;
 
-    @Bean
-    public MqttPahoClientFactory mqttClientFactory() {
-        DefaultMqttPahoClientFactory factory = new DefaultMqttPahoClientFactory();
-        MqttConnectOptions options = new MqttConnectOptions();
-        
-        options.setServerURIs(new String[] { brokerUrl });
-        options.setUserName(username);
-        options.setPassword(password.toCharArray());
-        options.setCleanSession(true);
-        options.setConnectionTimeout(30);
-        options.setKeepAliveInterval(60);
-        
-        factory.setConnectionOptions(options);
-        return factory;
+    @Value("${mqtt.topic}")
+    private String topic;
+
+    private final SimpMessagingTemplate messagingTemplate;
+
+    public MqttConfig(SimpMessagingTemplate messagingTemplate) {
+        this.messagingTemplate = messagingTemplate;
     }
 
     @Bean
-    public MessageChannel mqttInputChannel() {
-        return new DirectChannel();
-    }
+    public MqttClient mqttClient() {
+        try {
+            logger.info("Initializing MQTT client...");
+            logger.debug("Broker URL: {}", brokerUrl);
+            logger.debug("Client ID: {}", clientId);
+            logger.debug("Username: {}", username);
 
-    @Bean
-    public MessageChannel mqttOutboundChannel() {
-        return new DirectChannel();
-    }
+            MqttClient client = new MqttClient(brokerUrl, clientId);
+            MqttConnectOptions options = new MqttConnectOptions();
+            options.setCleanSession(true);
 
-    @Bean
-    public MessageProducer inbound() {
-        MqttPahoMessageDrivenChannelAdapter adapter =
-                new MqttPahoMessageDrivenChannelAdapter(clientId + "_inbound", mqttClientFactory(),
-                        "iot/devices/register", "iot/devices/+/data", "iot/devices/+/status");
+            // Thêm thông tin xác thực vào connect options
+            if (username != null && !username.isEmpty()) {
+                options.setUserName(username);
+                options.setPassword(password.toCharArray());
+            }
 
-        adapter.setCompletionTimeout(5000);
-        adapter.setConverter(new DefaultPahoMessageConverter());
-        adapter.setQos(1);
-        adapter.setOutputChannel(mqttInputChannel());
-        return adapter;
-    }
+            client.connect(options);
+            logger.info("MQTT client connected successfully to broker at: {}", brokerUrl);
 
-    @Bean("mqttOutboundHandler")
-    @ServiceActivator(inputChannel = "mqttOutboundChannel")
-    public MqttPahoMessageHandler mqttOutboundHandler() {
-        MqttPahoMessageHandler messageHandler =
-                new MqttPahoMessageHandler(clientId + "_outbound", mqttClientFactory());
-        messageHandler.setAsync(true);
-        messageHandler.setDefaultTopic("iot/devices/commands");
-        return messageHandler;
+            return client;
+        } catch (MqttException e) {
+            logger.error("Failed to connect to MQTT broker at: {}", brokerUrl, e);
+            throw new RuntimeException("Error initializing MQTT client", e);
+        }
     }
-} 
+}

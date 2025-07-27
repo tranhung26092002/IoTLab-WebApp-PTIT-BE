@@ -35,6 +35,11 @@ services:
       - .env
     networks:
       - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   api-gateway:
     container_name: api-gateway
@@ -64,6 +69,11 @@ services:
       - .env
     networks:
       - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/user/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   device-service:
     container_name: device-service
@@ -76,6 +86,12 @@ services:
       - .env
     networks:
       - app-network
+    healthcheck:
+      test:
+        ["CMD", "curl", "-f", "http://localhost:8082/device/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   practice-service:
     container_name: practice-service
@@ -88,52 +104,30 @@ services:
       - .env
     networks:
       - app-network
-
-  mqtt-service:
-    container_name: mqtt-service
-    image: tranvanhung26092002/mqtt-service:latest
-    ports:
-      - "8084:8084"
-    env_file:
-      - .env
-    networks:
-      - app-network
-
-  notification-service:
-    container_name: notification-service
-    image: tranvanhung26092002/notification-service:latest
-    ports:
-      - "8085:8085"
-    depends_on:
-      - eureka-service
-    env_file:
-      - .env
-    networks:
-      - app-network
+    healthcheck:
+      test:
+        ["CMD", "curl", "-f", "http://localhost:8083/practice/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   storage-service:
     container_name: storage-service
     image: tranvanhung26092002/storage-service:latest
     ports:
-      - "8086:8086"
+      - "8084:8084"
     depends_on:
       - eureka-service
     env_file:
       - .env
     networks:
       - app-network
-
-  api-docs-service:
-    container_name: api-docs-service
-    image: tranvanhung26092002/api-docs-service:latest
-    ports:
-      - "8087:8087"
-    depends_on:
-      - eureka-service
-    env_file:
-      - .env
-    networks:
-      - app-network
+    healthcheck:
+      test:
+        ["CMD", "curl", "-f", "http://localhost:8084/storage/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
 volumes:
   postgres_data:

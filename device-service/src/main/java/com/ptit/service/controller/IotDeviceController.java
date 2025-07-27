@@ -50,7 +50,8 @@ public class IotDeviceController extends BaseController {
 
     @PostMapping("/activate")
     @ApiOperation("Activate IoT device using Active Code")
-    public ResponseEntity<DataResponse<MessageResponse>> activateDevice(@RequestBody IotDeviceActivationDTO activationDTO) {
+    public ResponseEntity<DataResponse<MessageResponse>> activateDevice(
+            @RequestBody IotDeviceActivationDTO activationDTO) {
         boolean success = iotDeviceService.activateDevice(activationDTO);
         if (success) {
             return success("Device activated successfully");
@@ -64,12 +65,12 @@ public class IotDeviceController extends BaseController {
     public ResponseEntity<DataResponse<MessageResponse>> activateDeviceByQrCode(@RequestParam String qrCodeData) {
         // Extract Active Code from QR code data
         String activeCode = extractActiveCodeFromQrCode(qrCodeData);
-        
+
         IotDeviceActivationDTO activationDTO = new IotDeviceActivationDTO();
         activationDTO.setActiveCode(activeCode);
         // Set default values for activation
         activationDTO.setDataInterval(30);
-        
+
         boolean success = iotDeviceService.activateDevice(activationDTO);
         if (success) {
             return success("Device activated successfully via QR code");
@@ -95,7 +96,7 @@ public class IotDeviceController extends BaseController {
             @PathVariable Long deviceId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startTime,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endTime) {
-        
+
         List<IotSensorData> sensorData = iotDeviceService.getSensorDataHistory(deviceId, startTime, endTime);
         return success(sensorData);
     }
@@ -122,12 +123,32 @@ public class IotDeviceController extends BaseController {
         }
     }
 
+    @PostMapping("/{deviceId}/command")
+    @ApiOperation("Send command to IoT device")
+    public ResponseEntity<DataResponse<MessageResponse>> sendCommand(
+            @PathVariable Long deviceId,
+            @RequestBody String command) {
+        boolean success = iotDeviceService.sendCommand(deviceId, command);
+        if (success) {
+            return success("Command sent successfully");
+        } else {
+            return ResponseEntity.badRequest().body(DataResponse.badRequest("Failed to send command"));
+        }
+    }
+
+    @GetMapping("/{deviceId}/commands")
+    @ApiOperation("Get command history for device")
+    public ResponseEntity<DataResponse<List<Object>>> getCommandHistory(@PathVariable Long deviceId) {
+        List<Object> commands = iotDeviceService.getCommandHistory(deviceId);
+        return success(commands);
+    }
+
     @GetMapping("/dashboard/overview")
     @ApiOperation("Get dashboard overview (only active devices)")
     public ResponseEntity<DataResponse<Object>> getDashboardOverview() {
         List<Device> activeDevices = iotDeviceService.getActiveIotDevices();
         List<Device> registeredDevices = iotDeviceService.getRegisteredIotDevices();
-        
+
         // Create dashboard overview object
         DashboardOverview overview = new DashboardOverview();
         overview.setTotalDevices(activeDevices.size() + registeredDevices.size());
@@ -135,7 +156,7 @@ public class IotDeviceController extends BaseController {
         overview.setRegisteredDevices(registeredDevices.size());
         overview.setActiveDevicesList(activeDevices);
         overview.setRegisteredDevicesList(registeredDevices);
-        
+
         return success(overview);
     }
 
@@ -154,19 +175,44 @@ public class IotDeviceController extends BaseController {
         private List<Device> registeredDevicesList;
 
         // Getters and setters
-        public int getTotalDevices() { return totalDevices; }
-        public void setTotalDevices(int totalDevices) { this.totalDevices = totalDevices; }
-        
-        public int getActiveDevices() { return activeDevices; }
-        public void setActiveDevices(int activeDevices) { this.activeDevices = activeDevices; }
-        
-        public int getRegisteredDevices() { return registeredDevices; }
-        public void setRegisteredDevices(int registeredDevices) { this.registeredDevices = registeredDevices; }
-        
-        public List<Device> getActiveDevicesList() { return activeDevicesList; }
-        public void setActiveDevicesList(List<Device> activeDevicesList) { this.activeDevicesList = activeDevicesList; }
-        
-        public List<Device> getRegisteredDevicesList() { return registeredDevicesList; }
-        public void setRegisteredDevicesList(List<Device> registeredDevicesList) { this.registeredDevicesList = registeredDevicesList; }
+        public int getTotalDevices() {
+            return totalDevices;
+        }
+
+        public void setTotalDevices(int totalDevices) {
+            this.totalDevices = totalDevices;
+        }
+
+        public int getActiveDevices() {
+            return activeDevices;
+        }
+
+        public void setActiveDevices(int activeDevices) {
+            this.activeDevices = activeDevices;
+        }
+
+        public int getRegisteredDevices() {
+            return registeredDevices;
+        }
+
+        public void setRegisteredDevices(int registeredDevices) {
+            this.registeredDevices = registeredDevices;
+        }
+
+        public List<Device> getActiveDevicesList() {
+            return activeDevicesList;
+        }
+
+        public void setActiveDevicesList(List<Device> activeDevicesList) {
+            this.activeDevicesList = activeDevicesList;
+        }
+
+        public List<Device> getRegisteredDevicesList() {
+            return registeredDevicesList;
+        }
+
+        public void setRegisteredDevicesList(List<Device> registeredDevicesList) {
+            this.registeredDevicesList = registeredDevicesList;
+        }
     }
-} 
+}

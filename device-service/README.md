@@ -1,306 +1,390 @@
-# Hệ thống Quản lý Thiết bị IoT WiFi (ESP32)
+# 📱 Device Service
 
-## Tổng quan
+> Microservice quản lý thiết bị IoT và thiết bị thường cho IoT Lab WebApp
 
-Hệ thống đã được nâng cấp để hỗ trợ quản lý thiết bị IoT WiFi sử dụng ESP32, bao gồm:
-- **Cấu hình WiFi qua Access Point Mode** của ESP32
+## 📋 Mô tả
+
+Device Service là một microservice chịu trách nhiệm quản lý:
+
+- **Thiết bị IoT WiFi** (ESP32) với MQTT integration
+- **Thiết bị thường** (laptop, máy tính, etc.)
 - **Auto-registration** thiết bị IoT với Active Code
 - **QR Code activation** để kích hoạt thiết bị
 - **Thu thập dữ liệu real-time** từ sensors
 - **Dashboard hiển thị** chỉ thiết bị đã active
 - **Quản lý trạng thái và điều khiển** thiết bị từ xa
+- **Lịch sử mượn/trả** thiết bị
 
-## Cấu trúc Database
+## 🚀 Cách chạy
 
-### Bảng mới được thêm:
+### Yêu cầu hệ thống
 
-1. **iot_sensor_data** - Lưu trữ dữ liệu từ sensors
-2. **iot_device_config** - Cấu hình thiết bị IoT
-3. **iot_device_commands** - Lệnh điều khiển thiết bị
+- Java 17+
+- Maven 3.6+
+- PostgreSQL 15 (tùy chọn)
+- MQTT Broker (Mosquitto) - tùy chọn
 
-### Bảng devices được cập nhật:
-- Thêm các trường IoT: `is_iot_device`, `active_code`, `mac_address`, `ip_address`, `firmware_version`, `wifi_ssid`, `last_seen`, `activated_at`, `activated_by`
-- Cập nhật enum `DeviceStatus` để hỗ trợ: `REGISTERED`, `ACTIVE`, `OFFLINE`, `ERROR`, `DEACTIVATED`
-
-## API Endpoints
-
-### IoT Device Management
-
-#### Lấy danh sách thiết bị
-```http
-GET /device/api/iot-devices
-GET /device/api/iot-devices/active
-GET /device/api/iot-devices/registered
-```
-
-#### Kích hoạt thiết bị
-```http
-POST /device/api/iot-devices/activate
-Content-Type: application/json
-
-{
-  "activeCode": "IOT_ACT_123456789",
-  "deviceName": "Temperature Sensor Lab A",
-  "description": "Monitor temperature in Lab A",
-  "location": "Lab A - Room 101",
-  "dataInterval": 30,
-  "alertThresholds": "{\"temperature_min\":18,\"temperature_max\":30}",
-  "displayConfig": "{\"show_on_dashboard\":true}"
-}
-```
-
-#### Kích hoạt bằng QR Code
-```http
-POST /device/api/iot-devices/qr-scan?qrCodeData=IOT_ACT_123456789
-```
-
-#### Dữ liệu sensors
-```http
-GET /device/api/iot-devices/{deviceId}/data/latest
-GET /device/api/iot-devices/{deviceId}/data/history?startTime=2024-01-15T00:00:00&endTime=2024-01-15T23:59:59
-```
-
-#### Điều khiển thiết bị
-```http
-POST /device/api/iot-devices/{deviceId}/deactivate
-POST /device/api/iot-devices/{deviceId}/restart
-```
-
-#### Dashboard
-```http
-GET /device/api/iot-devices/dashboard/overview
-```
-
-### Regular Device Management (Giữ nguyên)
-```http
-GET /device/devices/regular
-GET /device/devices/iot
-```
-
-## MQTT Configuration
-
-### Cấu hình trong application.yml
-```yaml
-mqtt:
-  broker:
-    url: ${MQTT_BROKER_URL:localhost:1883}
-  client:
-    id: ${MQTT_CLIENT_ID:device-service}
-  username: ${MQTT_USERNAME:admin}
-  password: ${MQTT_PASSWORD:admin}
-```
-
-### MQTT Topics
-
-#### Registration
-- `iot/devices/register` - ESP32 gửi registration message
-- `iot/devices/register/response` - Server trả về registration info
-
-#### Device-specific
-- `iot/devices/{device_id}/data` - Device gửi sensor data
-- `iot/devices/{device_id}/config` - Server gửi config updates
-- `iot/devices/{device_id}/commands` - Server gửi commands
-- `iot/devices/{device_id}/status` - Device gửi status updates
-
-## Workflow
-
-### 1. Cấu hình WiFi cho ESP32
-1. ESP32 khởi động ở chế độ Access Point
-2. Admin kết nối vào WiFi "ESP32_Device_[MAC]"
-3. Admin truy cập http://192.168.4.1
-4. Nhập thông tin WiFi lab và tên thiết bị
-5. ESP32 lưu cấu hình và chuyển sang Station Mode
-
-### 2. Auto-Registration
-1. ESP32 kết nối WiFi lab và MQTT Broker
-2. ESP32 gửi registration message với Active Code
-3. Server tạo device với status "REGISTERED"
-4. Server gửi registration response
-
-### 3. QR Code Activation
-1. Admin in QR code chứa Active Code
-2. Admin quét QR code trên web app
-3. Server kích hoạt device (status = "ACTIVE")
-4. Device hiển thị trên dashboard
-
-### 4. Thu thập dữ liệu
-1. ESP32 gửi sensor data theo interval
-2. Server lưu dữ liệu vào database
-3. Dashboard hiển thị real-time (chỉ thiết bị ACTIVE)
-
-## ESP32 Firmware Requirements
-
-### Cấu trúc firmware cần có:
-- WiFi Management (AP Mode + Station Mode)
-- Web Server cho cấu hình
-- MQTT Client
-- Active Code Management
-- Sensor Management
-- Command Processing
-
-### Active Code Format
-```cpp
-#define ACTIVE_CODE "IOT_ACT_XXXXXXXXX"
-#define DEVICE_TYPE "TEMPERATURE_HUMIDITY_SENSOR"
-#define FIRMWARE_VERSION "1.0.0"
-```
-
-### Registration Message Format
-```json
-{
-  "mac_address": "AA:BB:CC:DD:EE:FF",
-  "device_name": "Temperature Sensor Lab A",
-  "active_code": "IOT_ACT_123456789",
-  "device_type": "TEMPERATURE_HUMIDITY_SENSOR",
-  "firmware_version": "1.0.0",
-  "sensors": "DHT22,BMP280",
-  "capabilities": "temperature,humidity,pressure",
-  "wifi_ssid": "PTIT_LAB_WIFI"
-}
-```
-
-### Sensor Data Format
-```json
-{
-  "device_id": "IOT_001",
-  "timestamp": "2024-01-15T10:30:00Z",
-  "sensors": {
-    "temperature": 25.5,
-    "humidity": 60.2,
-    "pressure": 1013.25
-  },
-  "system": {
-    "battery_level": 85,
-    "signal_strength": -45,
-    "free_heap": 150000
-  }
-}
-```
-
-## Environment Variables
+### Khởi động service
 
 ```bash
-# MQTT Configuration
+# Clone repository (nếu chưa có)
+cd device-service
+
+# Build project
+mvn clean install
+
+# Chạy service
+mvn spring-boot:run
+```
+
+### Cấu hình môi trường
+
+Tạo file `.env` trong thư mục gốc với các biến:
+
+```env
+# Database Configuration
+SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/iotlab_db
+SPRING_DATASOURCE_USERNAME=postgres
+SPRING_DATASOURCE_PASSWORD=password
+DB_CONNECTION_TIMEOUT=30000
+DB_MAX_POOL_SIZE=10
+DB_MAX_LIFETIME=1800000
+
+# Eureka Configuration
+EUREKA_URI=http://localhost:8761/eureka/
+
+# Environment
+ENVIRONMENT=development
+DEBUG=false
+ASYNC_CORE_POOL_SIZE=5
+
+# External Services
+STORAGE_SERVICE=http://localhost:8084/storage
+
+# MQTT Configuration (Optional)
 MQTT_BROKER_URL=localhost:1883
 MQTT_CLIENT_ID=device-service
 MQTT_USERNAME=admin
 MQTT_PASSWORD=admin
-
-# Database (existing)
-SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/device_db
-SPRING_DATASOURCE_USERNAME=postgres
-SPRING_DATASOURCE_PASSWORD=password
 ```
 
-## Dependencies
+## 🔗 Endpoints
 
-### Maven Dependencies đã thêm:
-```xml
-<!-- MQTT Dependencies -->
-<dependency>
-    <groupId>org.springframework.integration</groupId>
-    <artifactId>spring-integration-mqtt</artifactId>
-</dependency>
-<dependency>
-    <groupId>org.eclipse.paho</groupId>
-    <artifactId>org.eclipse.paho.client.mqttv3</artifactId>
-    <version>1.2.5</version>
-</dependency>
+### Base URL
+
+```
+http://localhost:8082/device
 ```
 
-## Testing
+### IoT Device Management Endpoints
 
-### Test MQTT Connection
+| Method | Endpoint                              | Mô tả                                   |
+| ------ | ------------------------------------- | --------------------------------------- |
+| GET    | `/api/iot-devices`                    | Lấy danh sách tất cả thiết bị IoT       |
+| GET    | `/api/iot-devices/active`             | Lấy danh sách thiết bị IoT đã kích hoạt |
+| GET    | `/api/iot-devices/registered`         | Lấy danh sách thiết bị IoT đã đăng ký   |
+| POST   | `/api/iot-devices/activate`           | Kích hoạt thiết bị IoT                  |
+| POST   | `/api/iot-devices/qr-scan`            | Kích hoạt bằng QR Code                  |
+| GET    | `/api/iot-devices/{id}/data/latest`   | Lấy dữ liệu sensor mới nhất             |
+| GET    | `/api/iot-devices/{id}/data/history`  | Lấy lịch sử dữ liệu sensor              |
+| POST   | `/api/iot-devices/{id}/deactivate`    | Tắt thiết bị IoT                        |
+| POST   | `/api/iot-devices/{id}/restart`       | Khởi động lại thiết bị IoT              |
+| GET    | `/api/iot-devices/dashboard/overview` | Lấy tổng quan dashboard                 |
+
+### Regular Device Management Endpoints
+
+| Method | Endpoint           | Mô tả                         |
+| ------ | ------------------ | ----------------------------- |
+| GET    | `/devices`         | Lấy danh sách tất cả thiết bị |
+| GET    | `/devices/regular` | Lấy danh sách thiết bị thường |
+| GET    | `/devices/iot`     | Lấy danh sách thiết bị IoT    |
+| POST   | `/devices`         | Tạo thiết bị mới              |
+| GET    | `/devices/{id}`    | Lấy chi tiết thiết bị         |
+| PUT    | `/devices/{id}`    | Cập nhật thiết bị             |
+| DELETE | `/devices/{id}`    | Xóa thiết bị                  |
+
+### Borrow/Return Management Endpoints
+
+| Method | Endpoint                            | Mô tả                          |
+| ------ | ----------------------------------- | ------------------------------ |
+| GET    | `/borrow-records`                   | Lấy danh sách lịch sử mượn/trả |
+| POST   | `/borrow-records/borrow`            | Mượn thiết bị                  |
+| POST   | `/borrow-records/return`            | Trả thiết bị                   |
+| GET    | `/borrow-records/user/{userId}`     | Lấy lịch sử mượn của user      |
+| GET    | `/borrow-records/device/{deviceId}` | Lấy lịch sử mượn của thiết bị  |
+
+### Device Category Management Endpoints
+
+| Method | Endpoint           | Mô tả                           |
+| ------ | ------------------ | ------------------------------- |
+| GET    | `/categories`      | Lấy danh sách danh mục thiết bị |
+| POST   | `/categories`      | Tạo danh mục mới                |
+| PUT    | `/categories/{id}` | Cập nhật danh mục               |
+| DELETE | `/categories/{id}` | Xóa danh mục                    |
+
+## 📊 Health Check
+
 ```bash
-# Install Mosquitto client
-mosquitto_pub -h localhost -p 1883 -t "iot/devices/register" -m '{
-  "mac_address": "AA:BB:CC:DD:EE:FF",
-  "device_name": "Test Device",
-  "active_code": "IOT_ACT_TEST123",
-  "device_type": "TEMPERATURE_SENSOR",
-  "firmware_version": "1.0.0",
-  "sensors": "DHT22",
-  "capabilities": "temperature,humidity",
-  "wifi_ssid": "TEST_WIFI"
-}'
+# Kiểm tra trạng thái service
+curl http://localhost:8082/device/actuator/health
+
+# Xem chi tiết health check
+curl http://localhost:8082/device/actuator/health -H "Accept: application/json"
 ```
 
-### Test API Endpoints
-```bash
-# Get all IoT devices
-curl -X GET "http://localhost:8082/device/api/iot-devices"
+## 📚 API Documentation
 
-# Get active devices
-curl -X GET "http://localhost:8082/device/api/iot-devices/active"
+Truy cập Swagger UI để xem và test API:
 
-# Get dashboard overview
-curl -X GET "http://localhost:8082/device/api/iot-devices/dashboard/overview"
+```
+http://localhost:8082/device/swagger-ui/index.html
 ```
 
-## Deployment
+## 🏗️ Cấu trúc dự án
 
-### 1. Setup MQTT Broker (Mosquitto)
-```bash
-# Install Mosquitto
-sudo apt-get install mosquitto mosquitto-clients
-
-# Configure Mosquitto
-sudo nano /etc/mosquitto/mosquitto.conf
-
-# Add authentication
-sudo mosquitto_passwd -c /etc/mosquitto/passwd admin
-
-# Restart Mosquitto
-sudo systemctl restart mosquitto
+```
+device-service/
+├── src/main/java/com/ptit/service/
+│   ├── DeviceServiceApplication.java     # Main application
+│   ├── config/                          # Configuration classes
+│   │   ├── AppConfig.java               # Application configuration
+│   │   ├── CorsConfig.java              # CORS configuration
+│   │   ├── JacksonConfig.java           # JSON configuration
+│   │   ├── RabbitMQConfig.java          # RabbitMQ configuration
+│   │   └── ...
+│   ├── controller/                      # REST controllers
+│   │   ├── DeviceController.java        # Device management endpoints
+│   │   ├── IotDeviceController.java     # IoT device endpoints
+│   │   ├── BorrowRecordController.java  # Borrow/return endpoints
+│   │   ├── CategoryController.java      # Category endpoints
+│   │   └── ...
+│   ├── service/                         # Business logic
+│   │   ├── DeviceService.java           # Device management service
+│   │   ├── IotDeviceService.java        # IoT device service
+│   │   ├── BorrowRecordService.java     # Borrow/return service
+│   │   ├── MqttService.java             # MQTT integration service
+│   │   └── ...
+│   ├── entity/                          # JPA entities
+│   │   ├── Device.java                  # Device entity
+│   │   ├── IotDevice.java               # IoT device entity
+│   │   ├── BorrowRecord.java            # Borrow record entity
+│   │   ├── DeviceCategory.java          # Category entity
+│   │   └── ...
+│   ├── repository/                      # Data access layer
+│   │   ├── DeviceRepository.java        # Device repository
+│   │   ├── IotDeviceRepository.java     # IoT device repository
+│   │   ├── BorrowRecordRepository.java  # Borrow record repository
+│   │   └── ...
+│   ├── dto/                            # Data transfer objects
+│   │   ├── DeviceDTO.java               # Device DTO
+│   │   ├── IotDeviceDTO.java            # IoT device DTO
+│   │   ├── BorrowRecordDTO.java         # Borrow record DTO
+│   │   └── ...
+│   └── response/                       # Response objects
+│       ├── DataResponse.java            # Standard response
+│       ├── DeviceResponse.java          # Device response
+│       └── ...
+└── src/main/resources/
+    └── application.yml                  # Application configuration
 ```
 
-### 2. Database Migration
-```sql
--- Tables will be created automatically by Hibernate
--- Make sure to backup existing data before running
+## 🔧 Cấu hình đặc biệt
+
+### Database Configuration
+
+```yaml
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: org.postgresql.Driver
 ```
 
-### 3. Application Deployment
-```bash
-# Build application
-mvn clean package
+### File Upload Configuration
 
-# Run with environment variables
-java -jar target/device-service.jar
+```yaml
+spring:
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 20MB
+      enabled: true
+      file-size-threshold: 2KB
 ```
 
-## Security Considerations
+### RabbitMQ Configuration
 
-1. **MQTT Authentication**: Sử dụng username/password cho MQTT
-2. **Active Code Validation**: Kiểm tra Active Code hợp lệ
-3. **Data Encryption**: Encrypt sensitive data trong database
-4. **Network Security**: VLAN isolation cho IoT devices
-5. **Input Validation**: Validate tất cả input từ ESP32
+RabbitMQ đã được tắt để tránh lỗi kết nối:
 
-## Troubleshooting
+```yaml
+rabbitmq:
+  enabled: false
+```
 
-### Common Issues
+### MQTT Configuration
 
-1. **MQTT Connection Failed**
-   - Kiểm tra MQTT broker đang chạy
-   - Kiểm tra credentials trong application.yml
-   - Kiểm tra network connectivity
+```yaml
+mqtt:
+  broker:
+    url: ${MQTT_BROKER_URL}
+  client:
+    id: ${MQTT_CLIENT_ID}
+  username: ${MQTT_USERNAME}
+  password: ${MQTT_PASSWORD}
+  topic:
+    device-register: iot/devices/register
+    device-register-response: iot/devices/register/response
+    device-data: iot/devices/+/data
+    device-status: iot/devices/+/status
+    device-commands: iot/devices/+/commands
+```
 
-2. **Device Not Registering**
-   - Kiểm tra Active Code format
-   - Kiểm tra MQTT topic subscription
-   - Kiểm tra JSON message format
+### Health Check Configuration
 
-3. **Sensor Data Not Saving**
-   - Kiểm tra database connection
-   - Kiểm tra JSON parsing
-   - Kiểm tra device exists và is IoT device
+```yaml
+management:
+  health:
+    rabbit:
+      enabled: false
+    db:
+      enabled: true
+```
+
+## 📊 Tính năng chính
+
+### IoT Device Management
+
+- **Auto-registration** thiết bị ESP32 qua MQTT
+- **QR Code activation** để kích hoạt thiết bị
+- **Real-time data collection** từ sensors
+- **Remote control** và monitoring
+- **Dashboard overview** cho thiết bị active
+
+### Regular Device Management
+
+- **CRUD operations** cho thiết bị thường
+- **Category management** cho phân loại thiết bị
+- **Status tracking** và maintenance
+- **File attachment** cho tài liệu thiết bị
+
+### Borrow/Return System
+
+- **Borrow/return tracking** cho thiết bị
+- **User history** và device history
+- **Auto-return scheduling** và notifications
+- **Status management** (AVAILABLE, BORROWED, MAINTENANCE)
+
+## 🔒 Bảo mật
+
+### Authentication & Authorization
+
+- **JWT Token** validation
+- **Role-based access** control
+- **API rate limiting**
+- **Input validation**
+
+### IoT Security
+
+- **MQTT Authentication** với username/password
+- **Active Code validation** cho device activation
+- **Data encryption** cho sensitive data
+- **Network isolation** cho IoT devices
+
+## 📈 Performance
+
+### Caching
+
+- **Device data** caching
+- **IoT device status** caching
+- **Dashboard data** caching
+
+### Optimization
+
+- **Lazy loading** cho relationships
+- **Pagination** cho danh sách lớn
+- **Async processing** cho MQTT messages
+
+## 🐛 Troubleshooting
+
+### Lỗi kết nối Database
+
+- Kiểm tra PostgreSQL đã chạy chưa
+- Kiểm tra thông tin kết nối trong `.env`
+- Kiểm tra database `iotlab_db` đã tồn tại chưa
+
+### Lỗi MQTT Connection
+
+- Kiểm tra MQTT broker (Mosquitto) đã chạy chưa
+- Kiểm tra credentials trong `.env`
+- Kiểm tra network connectivity
+- Kiểm tra MQTT topics đã được subscribe chưa
+
+### Lỗi IoT Device Registration
+
+- Kiểm tra Active Code format đúng không
+- Kiểm tra MQTT message format
+- Kiểm tra device type và capabilities
+- Kiểm tra firmware version compatibility
+
+### Lỗi RabbitMQ
+
+- RabbitMQ đã được tắt trong cấu hình
+- Nếu cần RabbitMQ, hãy cài đặt và khởi động trước
+
+## 📊 Monitoring
+
+### Metrics
+
+- **Device registration rate:** Tỷ lệ đăng ký thiết bị
+- **IoT device activation rate:** Tỷ lệ kích hoạt thiết bị IoT
+- **Borrow/return success rate:** Tỷ lệ mượn/trả thành công
+- **MQTT message success rate:** Tỷ lệ gửi MQTT thành công
 
 ### Logs
-```bash
-# Check application logs
-tail -f logs/device-service.log
 
-# Check MQTT logs
-tail -f /var/log/mosquitto/mosquitto.log
-``` 
+- **Access logs:** Log truy cập API
+- **MQTT logs:** Log MQTT messages
+- **Device logs:** Log hoạt động thiết bị
+- **Error logs:** Log lỗi hệ thống
+
+## 🚀 Deployment
+
+### Production Configuration
+
+```yaml
+spring:
+  jpa:
+    show-sql: false
+  datasource:
+    hikari:
+      maximum-pool-size: 20
+      connection-timeout: 60000
+
+mqtt:
+  broker:
+    url: mqtt://your-mqtt-broker:1883
+  client:
+    id: device-service-prod
+```
+
+### Docker Deployment
+
+```bash
+# Build image
+docker build -t device-service .
+
+# Run container
+docker run -d \
+  -p 8082:8082 \
+  --name device-service \
+  device-service
+```
+
+## 📞 Liên hệ
+
+Nếu có vấn đề, vui lòng tạo issue trong repository chính.
+
+---
+
+Made with ❤️ by Hung Tran
